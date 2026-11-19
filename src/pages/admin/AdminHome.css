@@ -1,62 +1,291 @@
-.aaa-page {
+/* AdminHome.css - the Home page editor. Every class starts with "ahm-". */
+.ahm-page {
   display: grid;
   gap: 18px;
   min-width: 0;
 }
 
-.aaa-page h2 {
+.ahm-loading {
+  color: var(--muted);
+}
+
+.ahm-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ahm-top h2 {
   margin: 0;
   color: var(--ink-900);
   font-family: var(--font-display);
   font-size: clamp(1.45rem, 2.5vw, 2rem);
-  line-height: 1.2;
-  white-space: normal;
 }
 
-.aaa-card {
+.ahm-top a {
+  color: var(--link-on-light);
+  font-weight: 700;
+}
+
+.ahm-card {
   display: grid;
-  justify-items: start;
   gap: 14px;
-  max-width: 720px;
-  padding: clamp(22px, 3vw, 34px);
+  max-width: 860px;
+  padding: clamp(18px, 3vw, 28px);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--white);
   box-shadow: var(--shadow-soft);
 }
 
-.aaa-card p {
+.ahm-card h3 {
   margin: 0;
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.6;
+  color: var(--ink-900);
+  font-family: var(--font-display);
+  font-size: 1.2rem;
 }
 
-.aaa-link {
+.ahm-hint {
+  margin: -6px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* fields */
+.ahm-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ahm-field > span {
+  color: var(--ink-900);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.ahm-field input,
+.ahm-field textarea,
+.ahm-field select,
+.ahm-select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--ink-900) 25%, transparent);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.95rem;
+}
+
+.ahm-field textarea {
+  resize: vertical;
+}
+
+.ahm-field input:focus-visible,
+.ahm-field textarea:focus-visible,
+.ahm-field select:focus-visible,
+.ahm-select:focus-visible,
+.ahm-btn:focus-within,
+.ahm-row__bar button:focus-visible,
+.ahm-photos button:focus-visible {
+  outline: 3px solid var(--focus-on-light);
+  outline-offset: 2px;
+}
+
+.ahm-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* lists */
+.ahm-rows {
+  display: grid;
+  gap: 12px;
+}
+
+.ahm-row {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-blue-light);
+}
+
+.ahm-row__bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ahm-row__bar b {
+  flex: 1;
+  color: var(--ink-800);
+  font-size: 0.85rem;
+}
+
+.ahm-row__bar button {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--ink-900);
+  cursor: pointer;
+}
+
+.ahm-row__bar button:last-child {
+  color: var(--danger);
+}
+
+.ahm-row__bar button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.ahm-pick {
+  margin: 0;
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* buttons */
+.ahm-btn {
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
-  padding: 10px 18px;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--ink-900);
   border-radius: 999px;
-  background: var(--ink-900);
-  color: var(--white);
-  font-size: 1rem;
+  background: var(--white);
+  color: var(--ink-900);
+  font: inherit;
+  font-size: 0.9rem;
   font-weight: 700;
-  text-decoration: none;
-  transition: background 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
 }
 
-.aaa-link:hover {
-  background: var(--sky-700);
-  transform: translateY(-2px);
+.ahm-btn:hover {
+  background: var(--sky-100);
 }
 
-.aaa-link:focus-visible {
-  outline: 3px solid var(--sky-700);
-  outline-offset: 3px;
+.ahm-btn--add {
+  justify-self: start;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .aaa-link { transition: none; }
-  .aaa-link:hover { transform: none; }
+.ahm-btn--save {
+  border-color: var(--orange-500);
+  background: var(--orange-500);
+  color: var(--ink-950);
+}
+
+.ahm-btn--save:hover {
+  background: var(--orange-400);
+}
+
+.ahm-btn--save:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* image field */
+.ahm-image {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.ahm-image__box {
+  width: 150px;
+  aspect-ratio: 16 / 10;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px dashed color-mix(in srgb, var(--ink-900) 30%, transparent);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+}
+
+.ahm-image__box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ahm-image__box em {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* facility photo choice */
+.ahm-photos {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ahm-photos button {
+  width: 110px;
+  aspect-ratio: 16 / 10;
+  padding: 0;
+  overflow: hidden;
+  border: 3px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--sky-100);
+  cursor: pointer;
+}
+
+.ahm-photos button.is-picked {
+  border-color: var(--orange-500);
+}
+
+.ahm-photos img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* sticky save bar */
+.ahm-save {
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+  max-width: 860px;
+  box-sizing: border-box;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--line);
+  background: var(--white);
+  box-shadow: 0 -8px 24px color-mix(in srgb, var(--ink-900) 10%, transparent);
+}
+
+.ahm-save span {
+  color: var(--ink-800);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.ahm-save span.is-error {
+  color: var(--danger);
+}
+
+@media (max-width: 620px) {
+  .ahm-two {
+    grid-template-columns: 1fr;
+  }
 }

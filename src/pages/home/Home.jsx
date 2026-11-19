@@ -1,54 +1,26 @@
-// Home.jsx - the complete Home page, including its content and sections.
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+// Home.jsx - the complete Home page. All text and images come from the database (edited in Admin > Home).
+// Until the first save, the starting content in src/data/homeDefaults.js is shown. Icons and the banner tags stay here.
+import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import * as Fi from "react-icons/fi";
 import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiArrowRight, FiBell, FiArrowUpRight, FiBookOpen, FiBriefcase, FiUsers, FiAward } from "react-icons/fi";
-import { categories, notices as allNotices, sortRows, fileUrl, isNew } from "../../data/notices";
+import { categories, notices as staticNotices, sortRows, fileUrl, isNew } from "../../data/notices";
+import { getHomeContent, mediaUrl } from "../../services/homeService";
+import { mergeHome } from "../../data/homeDefaults";
 import "./Home.css";
 
-const img = (file) => `/images/${file}`;
+const HomeContentContext = createContext(null);
+const useHomeContent = () => useContext(HomeContentContext);
 
-const hero = {
-  // Banner slideshow: put your 3 landscape photos in public/images and list them here.
-  // A file that is missing is skipped automatically, so the banner never shows a broken image.
-  images: ["/images/campus-workshop.jpg", "/images/campus-2.jpg", "/images/campus-3.jpg"],
-  slideDelay: 5000, // ms each photo stays on screen
-  slideSpeed: 900, // ms the slide takes
-  since: 1956,
-  ncc: 1949,
-};
+// Icons are fixed (the admin edits text and images only)
+const reasonIcons = [FiBookOpen, FiBriefcase, FiUsers, FiAward]; // by position
+const courseIcons = { civil: "FiBox", computer: "FiCpu", electrical: "FiZap", electronics: "FiRadio", mechanical: "FiSettings", plastic: "FiDroplet", "applied-science": "FiBookOpen", workshop: "FiTool" };
+const facilityIcons = { hostels: "FiHome", labs: "FiMonitor", library: "FiBookOpen", sports: "FiActivity", workshop: "FiTool" };
 
-// "Latest news" strip under the banner. Add or remove rows freely - the strip scrolls by itself.
-//   text  the headline (any language)      lang  "hi" for Hindi, "en" for English
-//   to    optional page to open when the headline is clicked (leave "" for plain text)
-// REAL: the one headline the live home page shows (an exhibition at the institute). It has no link there.
-const latestNews = [
-  { id: 1, text: "छोटू राम पॉलीटेक्निक में प्रदर्शनी, प्रधान गुलाब दिमाना व प्राचार्य सितेंद्र पावड़िया ने बढ़ाया छात्रों का हौसला", lang: "hi", to: "" },
-];
+const slideTiming = { slideDelay: 5000, slideSpeed: 900 }; // ms each photo stays / ms the slide takes
 
-const principal = {
-  eyebrow: "From the Principal's desk",
-  quote: "We do not only teach a trade - we help young people become confident, employable engineers.",
-  paragraphs: [
-    "Chhotu Ram Polytechnic began with two-year draftsman courses and has grown into one of the leading technical institutes in the region. Our strength is the link between classroom, workshop and industry.",
-    "Every student here gets practical training, industrial exposure and a placement cell that works all year. I invite you to visit the campus and see it for yourself.",
-  ],
-  name: "Dr. Sitender Kumar",
-  role: "Principal, Chhotu Ram Polytechnic",
-  photo: img("principal.png"),
-  link: { label: "Read the full message", to: "/about/principal-message" },
-};
-
-const news = {
-  tag: "Latest news",
-  title: "Students and guests at the institute's annual exhibition",
-  text: "The institute's exhibition drew students, faculty and guests, who were encouraged by the President and the Principal to keep building and presenting their work.",
-  image: img("news-1.jpg"),
-};
-
-// The notice board shows the newest notices from the SAME list as the Notices page (src/data/notices.js).
-// Clicking a row opens that notice's file. Tabs filter by category; "View all notices" opens the full page.
+// Notice board: tabs filter the chosen notices by category; "View all notices" opens the Notices page.
 const noticeTabs = [
   { id: "all", label: "All" },
   { id: "admissions", label: "Admissions" },
@@ -60,107 +32,9 @@ const categoryLabel = (id) => categories.find((item) => item.id === id)?.label ?
 const formatDate = (date) => new Date(`${date}T00:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 const noticeLink = { label: "View all notices", to: "/notices" };
 
-const highlights = [
-  {
-    id: "events",
-    title: "Upcoming events",
-    image: img("events.jpg"),
-    items: [
-      { date: "Dec 2026", text: "Annual technical exhibition" },
-      { date: "Jan 2027", text: "Republic Day parade and NCC display" },
-      { date: "Feb 2027", text: "Cultural fest" },
-    ],
-  },
-  {
-    id: "achievements",
-    title: "Achievements",
-    image: img("achievements.jpg"),
-    items: [
-      { date: "2026", text: "NCC cadets selected for state camp" },
-      { date: "2026", text: "Students win inter-polytechnic sports meet" },
-      { date: "2025", text: "Project showcase recognised by industry guests" },
-    ],
-  },
-  {
-    id: "placement",
-    title: "Placement activities",
-    image: img("placement-activities.jpg"),
-    items: [
-      { date: "23 Feb 2026", text: "Campus drive by VVDN Technologies, Manesar, in the Conference Hall" },
-      { date: "2026", text: "Industrial visits for 3rd and 5th semester students" },
-    ],
-  },
-];
-
-// Only the five main facilities. The first one is shown as the large feature tile.
-const facilities = [
-  { id: "hostels", name: "Hostels", size: "lg", icon: "FiHome", image: img("facility-hostels.jpg"), text: "Separate boys' and girls' hostels with spacious rooms, a kitchen and a mess." },
-  { id: "labs", name: "Computer labs", icon: "FiMonitor", image: img("facility-computer-labs.jpg"), text: "Five labs for software, networking and hardware." },
-  { id: "library", name: "Library", icon: "FiBookOpen", image: img("facility-library.jpg"), text: "Books, journals and newspapers in a quiet, central space." },
-  { id: "sports", name: "Sports", icon: "FiActivity", image: img("facility-sports.jpg"), text: "Volleyball, football, basketball, badminton and kho kho." },
-  { id: "workshop", name: "Workshop", icon: "FiTool", image: img("facility-workshop.jpg"), text: "Hands-on sessions that build practical skills and teamwork." },
-];
-
-const courses = [
-  { id: "civil", name: "Civil Engineering", icon: "FiBox", seats: 60, text: "One of the broadest engineering fields - buildings, roads, water and the structures around us." },
-  { id: "computer", name: "Computer Engineering", icon: "FiCpu", seats: 54, text: "Software development and testing, networking and hardware." },
-  { id: "electrical", name: "Electrical Engineering", icon: "FiZap", seats: 60, text: "Power, machines and control, taught with a mission of high-quality education." },
-  { id: "electronics", name: "Electronics & Communication", icon: "FiRadio", seats: 54, text: "The study and application of physics to design and operate electronic devices." },
-  { id: "mechanical", name: "Mechanical Engineering", icon: "FiSettings", seats: 60, text: "Design, development, building and testing of things that move." },
-  { id: "plastic", name: "Plastic Technology", icon: "FiDroplet", seats: 54, text: "How plastics replace everyday and engineering items - materials, moulding and processing." },
-  { id: "applied-science", name: "Applied Sciences", icon: "FiBookOpen", seats: 0, tag: "Foundation", text: "Communication skills, physics, chemistry and mathematics in the first two semesters." },
-  { id: "workshop", name: "Workshop Department", icon: "FiTool", seats: 0, tag: "Practical", text: "An intensive, short-duration hands-on learning experience." },
-];
-
-const recruiters = [
-  { name: "HCL", logo: img("recruiter-hcl.jpg") },
-  { name: "Jindal Steel & Power", logo: img("recruiter-jindal-steel-power.jpg") },
-  { name: "Tata Motors", logo: img("recruiter-tata-motors.jpg") },
-  { name: "Tech Mahindra", logo: img("recruiter-tech-mahindra.jpg") },
-];
-
-const totalSeats = courses.reduce((sum, course) => sum + course.seats, 0);
-const stats = [
-  { value: courses.filter((course) => course.seats > 0).length, label: "Diploma programmes" },
-  { value: totalSeats, label: "Approved seats" },
-  { value: `${hero.since}`, label: "Serving students since" },
-  { value: `${hero.ncc}`, label: "NCC unit instituted" },
-];
-
-const reasons = [
-  { icon: FiBookOpen, title: "Practical learning", text: "Build skills through workshops, laboratories and hands-on diploma training." },
-  { icon: FiBriefcase, title: "Industry exposure", text: "Connect classroom learning with industrial visits, training and placement activities." },
-  { icon: FiUsers, title: "A supportive campus", text: "Learn in a campus community with student activities, facilities and guidance." },
-  { icon: FiAward, title: "A proud legacy", text: "Be part of an institute with a long-standing contribution to technical education." },
-];
-
-// Leadership cards. Missing portraits fall back to initials.
-const dignitaries = [
-  {
-    name: "Deenbandhu Sir Chhotu Ram",
-    role: "The Messiah of Farmers",
-    text: "A great statesman, social reformer and the voice of the farmers. His vision for rural upliftment and education continues to inspire us.",
-    image: img("leader-chhotu-ram.jpg"),
-    initials: "CR",
-  },
-  {
-    name: "Sh. Gulab Singh",
-    role: "President, JES Society (Regd.)",
-    text: "Committed to providing better academic and infrastructure facilities for the overall growth of our students.",
-    image: img("leader-gulab-singh.jpg"),
-    initials: "GS",
-  },
-  {
-    name: principal.name,
-    role: principal.role,
-    text: "Dedicated to maintaining high standards of technical education and ensuring a bright and successful future for our students.",
-    image: principal.photo || img("leader-principal.jpg"),
-    initials: "SK",
-  },
-];
-
 // Auto-moving "Latest news" strip. Pauses on hover/focus; stands still if the visitor prefers less motion.
 function LatestNews() {
+  const { latestNews: newsItems } = useHomeContent();
   const groupRef = useRef(null);
   const [seconds, setSeconds] = useState(30);
 
@@ -175,12 +49,12 @@ function LatestNews() {
     return () => window.removeEventListener("resize", measure);
   }, []);
 
-  if (latestNews.length === 0) return null;
+  if (newsItems.length === 0) return null;
 
   const items = (hidden) => (
     <ul className="tick__group" ref={hidden ? undefined : groupRef} aria-hidden={hidden || undefined}>
-      {latestNews.map((item) => (
-        <li key={item.id}>
+      {newsItems.map((item) => (
+        <li key={item.id || item._id || item.text}>
           {item.to ? (
             <Link to={item.to} lang={item.lang} tabIndex={hidden ? -1 : undefined}>{item.text}</Link>
           ) : (
@@ -207,12 +81,13 @@ function LatestNews() {
 }
 
 function Hero() {
+  const { hero: heroData } = useHomeContent();
   const ref = useRef(null);
   const [broken, setBroken] = useState([]);
   const [index, setIndex] = useState(0);
   const [animate, setAnimate] = useState(true);
 
-  const slides = hero.images.filter((src) => !broken.includes(src));
+  const slides = heroData.images.filter((image) => !broken.includes(image.src));
   const count = slides.length;
   // the first photo is repeated at the end so the loop never slides backwards
   const track = count > 1 ? [...slides, slides[0]] : slides;
@@ -247,7 +122,7 @@ function Hero() {
   // move to the next photo every few seconds
   useEffect(() => {
     if (count < 2) return undefined;
-    const timer = setInterval(() => setIndex((i) => i + 1), hero.slideDelay);
+    const timer = setInterval(() => setIndex((i) => i + 1), heroData.slideDelay);
     return () => clearInterval(timer);
   }, [count]);
 
@@ -259,7 +134,7 @@ function Hero() {
       setAnimate(false);
       setIndex(0);
       frame = requestAnimationFrame(() => { frame = requestAnimationFrame(() => setAnimate(true)); });
-    }, hero.slideSpeed + 60);
+    }, heroData.slideSpeed + 60);
     return () => { clearTimeout(timer); cancelAnimationFrame(frame); };
   }, [index, count]);
 
@@ -270,19 +145,19 @@ function Hero() {
           className="hero__track"
           style={{
             transform: `translateX(-${index * 100}%)`,
-            transition: animate ? `transform ${hero.slideSpeed}ms cubic-bezier(0.65, 0, 0.35, 1)` : "none",
+            transition: animate ? `transform ${heroData.slideSpeed}ms cubic-bezier(0.65, 0, 0.35, 1)` : "none",
           }}
         >
-          {track.map((src, i) => (
+          {track.map((image, i) => (
             <img
-              key={`${src}-${i}`}
+              key={`${image.src}-${i}`}
               className="hero__image"
-              src={src}
-              alt={i === 0 ? "Chhotu Ram Polytechnic campus" : ""}
+              src={image.src}
+              alt={i === 0 ? image.alt : ""}
               aria-hidden={i > 0 ? "true" : undefined}
               fetchPriority={i === 0 ? "high" : undefined}
               onLoad={fit}
-              onError={() => setBroken((list) => (list.includes(src) ? list : [...list, src]))}
+              onError={() => setBroken((list) => (list.includes(image.src) ? list : [...list, image.src]))}
             />
           ))}
         </div>
@@ -303,10 +178,11 @@ function Hero() {
 }
 
 function StatsBand() {
+  const { stats: statsData } = useHomeContent();
   return (
     <section className="stats on-dark" aria-label="The college in numbers">
       <dl className="container stats__list">
-        {stats.map((stat) => (
+        {statsData.map((stat) => (
           <div key={stat.label}>
             <dt>{stat.value}</dt>
             <dd>{stat.label}</dd>
@@ -317,28 +193,27 @@ function StatsBand() {
   );
 }
 
-const initials = principal.name.replace(/^(Dr|Mr|Mrs|Sh)\.?\s+/i, "").split(" ").map((word) => word[0]).join("").slice(0, 2);
-
 function PrincipalMessage() {
+  const { principal: principalData, principalInitials } = useHomeContent();
   return (
     <section className="section principal reveal">
       <div className="container principal__grid">
         <div className="principal__portrait">
           <div className="principal__frame">
-            {principal.photo
-              ? <img src={principal.photo} alt={principal.name} />
-              : <span className="principal__monogram" aria-hidden="true">{initials}</span>}
+            {principalData.photo
+              ? <img src={principalData.photo} alt={principalData.name} />
+              : <span className="principal__monogram" aria-hidden="true">{principalInitials}</span>}
           </div>
           <div className="principal__badge">
-            <strong>{principal.name}</strong>
-            <span>{principal.role}</span>
+            <strong>{principalData.name}</strong>
+            <span>{principalData.role}</span>
           </div>
         </div>
         <div className="principal__text">
-          <span className="eyebrow">{principal.eyebrow}</span>
-          <blockquote>{principal.quote}</blockquote>
-          {principal.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-          <Link className="btn btn--navy" to={principal.link.to}>{principal.link.label} <FiArrowRight /></Link>
+          <span className="eyebrow">{principalData.eyebrow}</span>
+          <blockquote>{principalData.quote}</blockquote>
+          {principalData.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+          <Link className="btn btn--navy" to={principalData.link.to}>{principalData.link.label} <FiArrowRight /></Link>
         </div>
       </div>
     </section>
@@ -346,19 +221,20 @@ function PrincipalMessage() {
 }
 
 function WhyChooseUs() {
+  const { reasons: reasonsData, sectionContent } = useHomeContent();
   return (
     <section className="section why-us reveal">
       <div className="container">
         <div className="section-head">
-          <span className="eyebrow">The Chhotu Ram advantage</span>
-          <h2>Why choose Us?</h2>
-          <p>A learning environment that brings technical knowledge, practical experience and student growth together.</p>
+          <span className="eyebrow">{sectionContent.whyChooseUs.eyebrow}</span>
+          <h2>{sectionContent.whyChooseUs.title}</h2>
+          <p>{sectionContent.whyChooseUs.description}</p>
         </div>
         <div className="why-us__grid">
-          {reasons.map((reason, index) => {
-            const Icon = reason.icon;
+          {reasonsData.map((reason, index) => {
+            const Icon = reasonIcons[index % reasonIcons.length];
             return (
-              <article className="reason-card" key={reason.title}>
+              <article className="reason-card" key={`${index}-${reason.title}`}>
                 <span className="reason-card__number">0{index + 1}</span>
                 <span className="reason-card__icon"><Icon /></span>
                 <h3>{reason.title}</h3>
@@ -373,15 +249,16 @@ function WhyChooseUs() {
 }
 
 function Dignitaries() {
+  const { dignitaries: dignitariesData, sectionContent } = useHomeContent();
   return (
     <section className="section dignitaries reveal">
       <div className="container">
         <div className="section-head">
-          <span className="eyebrow">Our leadership</span>
-          <h2> Guided by vision and leadership </h2>
+          <span className="eyebrow">{sectionContent.leadership.eyebrow}</span>
+          <h2> {sectionContent.leadership.title} </h2>
         </div>
         <div className="dignitaries__grid">
-          {dignitaries.map((person) => (
+          {dignitariesData.map((person) => (
             <article className="leader-card" key={person.name}>
               <div className="leader-card__photo">
                 <span aria-hidden="true">{person.initials}</span>
@@ -439,8 +316,9 @@ function NoticeRow({ notice, hidden = false }) {
 }
 
 function NoticeBoard() {
+  const { news: featuredNews, notices, sectionContent } = useHomeContent();
   const [tab, setTab] = useState("all");
-  const visible = sortRows(allNotices)
+  const visible = notices
     .filter((notice) => tab === "all" || notice.category === tab)
     .slice(0, BOARD_SIZE);
 
@@ -448,16 +326,16 @@ function NoticeBoard() {
     <section className="section notices reveal">
       <div className="container">
         <div className="section-head">
-          <span className="eyebrow">Stay informed</span>
-          <h2>News & notices</h2>
+          <span className="eyebrow">{sectionContent.notices.eyebrow}</span>
+          <h2>{sectionContent.notices.title}</h2>
         </div>
         <div className="notices__grid">
           <article className="news-card">
-            <div className="news-card__img" style={{ "--img": `url("${news.image}")` }} />
+            <div className="news-card__img" style={{ "--img": `url("${featuredNews.image}")` }} />
             <div className="news-card__body">
-              <span className="news-card__tag">{news.tag}</span>
-              <h3>{news.title}</h3>
-              <p>{news.text}</p>
+              <span className="news-card__tag">{featuredNews.tag}</span>
+              <h3>{featuredNews.title}</h3>
+              <p>{featuredNews.text}</p>
             </div>
           </article>
           <div className="board">
@@ -470,9 +348,9 @@ function NoticeBoard() {
             </div>
             <div className="board__viewport">
               <ul className="board__list">
-                {visible.map((notice) => <NoticeRow key={notice.id} notice={notice} />)}
+                {visible.map((notice) => <NoticeRow key={notice._id || notice.id} notice={notice} />)}
                 {visible.length === 0 && <li className="board__empty">No notices in this category.</li>}
-                {visible.length > 1 && visible.map((notice) => <NoticeRow key={`repeat-${notice.id}`} notice={notice} hidden />)}
+                {visible.length > 1 && visible.map((notice) => <NoticeRow key={`repeat-${notice._id || notice.id}`} notice={notice} hidden />)}
               </ul>
             </div>
             <Link className="board__all" to={noticeLink.to}>{noticeLink.label} →</Link>
@@ -484,15 +362,16 @@ function NoticeBoard() {
 }
 
 function Highlights() {
+  const { highlights: highlightsData, sectionContent } = useHomeContent();
   return (
     <section className="section highlights reveal">
       <div className="container">
         <div className="section-head section-head--light">
-          <span className="eyebrow">Life at the campus</span>
-          <h2>Events, achievements & placements</h2>
+          <span className="eyebrow">{sectionContent.highlights.eyebrow}</span>
+          <h2>{sectionContent.highlights.title}</h2>
         </div>
         <div className="panels">
-          {highlights.map((panel, index) => (
+          {highlightsData.map((panel, index) => (
             <article key={panel.id} className="panel" tabIndex={0} style={{ "--img": `url("${panel.image}")` }}>
               <span className="panel__no">0{index + 1}</span>
               <h3>{panel.title}</h3>
@@ -510,23 +389,24 @@ function Highlights() {
 }
 
 function Facilities() {
+  const { facilityTiles, sectionContent } = useHomeContent();
   return (
     <section className="section facilities reveal">
       <div className="container">
         <div className="section-head">
-          <span className="eyebrow">Campus</span>
-          <h2>Facilities that support every student</h2>
-          <p>Hostels, labs, a library, sports and a hands-on workshop - everything a diploma student needs on one campus.</p>
+          <span className="eyebrow">{sectionContent.facilities.eyebrow}</span>
+          <h2>{sectionContent.facilities.title}</h2>
+          <p>{sectionContent.facilities.description}</p>
         </div>
         <div className="bento">
-          {facilities.map((item, index) => {
-            const Icon = Fi[item.icon] || Fi.FiStar;
+          {facilityTiles.map((item, index) => {
+            const Icon = Fi[facilityIcons[item.id]] || Fi.FiStar;
             return (
               <Link
-                key={item.name}
+                key={`${item.id}-${index}`}
                 to={`/about/facilities?facility=${item.id}`}
                 aria-label={`${item.name} - open on the Facilities page`}
-                className={`tile${item.size ? ` tile--${item.size}` : ""}`}
+                className={`tile${index === 0 ? " tile--lg" : ""}`}
                 style={{ "--img": `url("${item.image}")` }}
               >
                 <div className="tile__shade" />
@@ -546,6 +426,7 @@ function Facilities() {
 }
 
 function Courses() {
+  const { courses: coursesData, sectionContent } = useHomeContent();
   const [flipped, setFlipped] = useState(null); // card pinned open by click / keyboard (desktop)
   const [auto, setAuto] = useState(() => new Set()); // cards flipped by scrolling (phones)
   const [isTouch, setIsTouch] = useState(false);
@@ -593,13 +474,13 @@ function Courses() {
     <section id="courses" className="section courses">
       <div className="container">
         <div className="section-head">
-          <span className="eyebrow">Programmes</span>
-          <h2>Our courses</h2>
-          <p>Six three-year diplomas approved by DTE Haryana and AICTE, supported by two foundation departments.</p>
+          <span className="eyebrow">{sectionContent.courses.eyebrow}</span>
+          <h2>{sectionContent.courses.title}</h2>
+          <p>{sectionContent.courses.description}</p>
         </div>
         <div className="flip-grid">
-          {courses.map((course, index) => {
-            const Icon = Fi[course.icon] || Fi.FiBookOpen;
+          {coursesData.map((course, index) => {
+            const Icon = Fi[courseIcons[course.id]] || Fi.FiBookOpen;
             const isOpen = auto.has(course.id) || (!isTouch && flipped === course.id);
             return (
               <div
@@ -644,19 +525,20 @@ function Courses() {
 }
 
 function Recruiters() {
-  const loop = [...recruiters, ...recruiters];
+  const { recruiters: recruitersData, sectionContent } = useHomeContent();
+  const loop = [...recruitersData, ...recruitersData];
   return (
     <section className="section recruiters reveal">
       <div className="container">
         <div className="section-head">
-          <span className="eyebrow">Placements</span>
-          <h2>Our recruiters</h2>
+          <span className="eyebrow">{sectionContent.recruiters.eyebrow}</span>
+          <h2>{sectionContent.recruiters.title}</h2>
         </div>
       </div>
       <div className="marquee" aria-label="Recruiting companies">
         <ul className="marquee__track">
           {loop.map((company, index) => (
-            <li key={index} aria-hidden={index >= recruiters.length}>
+            <li key={index} aria-hidden={index >= recruitersData.length}>
               {company.logo ? <img src={company.logo} alt={company.name} /> : <span>{company.name}</span>}
             </li>
           ))}
@@ -667,6 +549,35 @@ function Recruiters() {
 }
 
 export default function Home() {
+  const [saved, setSaved] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    getHomeContent()
+      .then((data) => { if (active) setSaved(data); })
+      .catch((error) => console.warn("Home content is using its starting content:", error.message));
+    return () => { active = false; };
+  }, []);
+
+  // saved content (or the starting content) with every image address ready to use
+  const c = mergeHome(saved);
+  const content = {
+    hero: { ...slideTiming, images: c.banners.map((banner) => ({ src: mediaUrl(banner.image), alt: banner.alt || "" })).filter((banner) => banner.src) },
+    latestNews: c.latestNews,
+    stats: c.stats,
+    reasons: c.reasons,
+    principal: { ...c.principal, photo: mediaUrl(c.principal.photo) },
+    principalInitials: (c.principal.name || "").replace(/^(Dr|Mr|Mrs|Sh)\.?\s+/i, "").split(" ").map((word) => word[0]).join("").slice(0, 2),
+    news: { ...c.news, image: mediaUrl(c.news.image) },
+    dignitaries: c.dignitaries.map((person) => ({ ...person, image: mediaUrl(person.image) })),
+    notices: c.notices || sortRows(staticNotices), // the Notices page's rows (the static list only if the server cannot be reached)
+    highlights: c.highlights.map((panel) => ({ ...panel, image: mediaUrl(panel.image) })),
+    facilityTiles: c.facilityTiles.map((tile) => ({ ...tile, image: mediaUrl(tile.image) })),
+    courses: c.courses,
+    recruiters: c.recruiters.map((company) => ({ ...company, logo: mediaUrl(company.logo) })),
+    sectionContent: c.sectionContent,
+  };
+
   useEffect(() => {
     const sections = document.querySelectorAll("main#main .reveal");
     if (typeof IntersectionObserver === "undefined") {
@@ -687,18 +598,20 @@ export default function Home() {
   }, []);
 
   return (
-    <main id="main">
-      <Hero />
-      <LatestNews />
-      <StatsBand />
-      <WhyChooseUs />
-      <PrincipalMessage />
-      <Dignitaries />
-      <NoticeBoard />
-      <Highlights />
-      <Facilities />
-      <Courses />
-      <Recruiters />
-    </main>
+    <HomeContentContext.Provider value={content}>
+      <main id="main">
+        <Hero />
+        <LatestNews />
+        <StatsBand />
+        <WhyChooseUs />
+        <PrincipalMessage />
+        <Dignitaries />
+        <NoticeBoard />
+        <Highlights />
+        <Facilities />
+        <Courses />
+        <Recruiters />
+      </main>
+    </HomeContentContext.Provider>
   );
 }
