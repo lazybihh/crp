@@ -1,0 +1,62 @@
+.abx-page {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.abx-page h2 {
+  margin: 0;
+  color: var(--ink-900);
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 2.5vw, 2rem);
+  line-height: 1.2;
+  white-space: normal;
+}
+
+.abx-card {
+  display: grid;
+  justify-items: start;
+  gap: 14px;
+  max-width: 720px;
+  padding: clamp(22px, 3vw, 34px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--white);
+  box-shadow: var(--shadow-soft);
+}
+
+.abx-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.abx-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--ink-900);
+  color: var(--white);
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.abx-link:hover {
+  background: var(--sky-700);
+  transform: translateY(-2px);
+}
+
+.abx-link:focus-visible {
+  outline: 3px solid var(--sky-700);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .abx-link { transition: none; }
+  .abx-link:hover { transform: none; }
+}

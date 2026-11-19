@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import * as Fi from "react-icons/fi";
 import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiArrowRight, FiBell, FiArrowUpRight, FiBookOpen, FiBriefcase, FiUsers, FiAward } from "react-icons/fi";
+import { categories, notices as allNotices, sortRows, fileUrl, isNew } from "../../data/notices";
 import "./Home.css";
 
 const img = (file) => `/images/${file}`;
@@ -46,22 +47,17 @@ const news = {
   image: img("news-1.jpg"),
 };
 
-const notices = [
-  { id: 1, kind: "tender", date: "10 Nov 2026", title: "Tender notice", isNew: true },
-  { id: 2, kind: "tender", date: "Undated", title: "Inviting tender for supply of manpower", isNew: true },
-  { id: 3, kind: "admissions", date: "Jul 2026", title: "DET and DET-L merit lists", isNew: false },
-  { id: 4, kind: "admissions", date: "Jul 2026", title: "Admission notice for the new session", isNew: false },
-  { id: 5, kind: "general", date: "Jun 2026", title: "Scholarship update for students", isNew: false },
-  { id: 6, kind: "exam", date: "Jun 2026", title: "Examination datesheet", isNew: false },
-  { id: 7, kind: "exam", date: "May 2026", title: "Result notification", isNew: false },
-  { id: 8, kind: "general", date: "Feb 2026", title: "Campus placement drive - VVDN Technologies", isNew: false },
-];
+// The notice board shows the newest notices from the SAME list as the Notices page (src/data/notices.js).
+// Clicking a row opens that notice's file. Tabs filter by category; "View all notices" opens the full page.
 const noticeTabs = [
   { id: "all", label: "All" },
   { id: "admissions", label: "Admissions" },
-  { id: "exam", label: "Exams" },
-  { id: "tender", label: "Tenders" },
+  { id: "exams", label: "Exams" },
+  { id: "tenders", label: "Tenders" },
 ];
+const BOARD_SIZE = 8; // rows scrolling on the board
+const categoryLabel = (id) => categories.find((item) => item.id === id)?.label ?? "";
+const formatDate = (date) => new Date(`${date}T00:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 const noticeLink = { label: "View all notices", to: "/notices" };
 
 const highlights = [
@@ -98,11 +94,11 @@ const highlights = [
 
 // Only the five main facilities. The first one is shown as the large feature tile.
 const facilities = [
-  { name: "Hostels", size: "lg", icon: "FiHome", image: img("facility-hostels.jpg"), text: "Separate boys' and girls' hostels with spacious rooms, a kitchen and a mess." },
-  { name: "Computer labs", icon: "FiMonitor", image: img("facility-computer-labs.jpg"), text: "Five labs for software, networking and hardware." },
-  { name: "Library", icon: "FiBookOpen", image: img("facility-library.jpg"), text: "Books, journals and newspapers in a quiet, central space." },
-  { name: "Sports", icon: "FiActivity", image: img("facility-sports.jpg"), text: "Volleyball, football, basketball, badminton and kho kho." },
-  { name: "Workshop", icon: "FiTool", image: img("facility-workshop.jpg"), text: "Hands-on sessions that build practical skills and teamwork." },
+  { id: "hostels", name: "Hostels", size: "lg", icon: "FiHome", image: img("facility-hostels.jpg"), text: "Separate boys' and girls' hostels with spacious rooms, a kitchen and a mess." },
+  { id: "labs", name: "Computer labs", icon: "FiMonitor", image: img("facility-computer-labs.jpg"), text: "Five labs for software, networking and hardware." },
+  { id: "library", name: "Library", icon: "FiBookOpen", image: img("facility-library.jpg"), text: "Books, journals and newspapers in a quiet, central space." },
+  { id: "sports", name: "Sports", icon: "FiActivity", image: img("facility-sports.jpg"), text: "Volleyball, football, basketball, badminton and kho kho." },
+  { id: "workshop", name: "Workshop", icon: "FiTool", image: img("facility-workshop.jpg"), text: "Hands-on sessions that build practical skills and teamwork." },
 ];
 
 const courses = [
@@ -411,9 +407,42 @@ function Dignitaries() {
   );
 }
 
+// One row of the board. A notice with a file opens that file in a new tab; one without a file opens the Notices page.
+function NoticeRow({ notice, hidden = false }) {
+  const url = fileUrl(notice);
+  const content = (
+    <>
+      <span className="board__icon"><FiBell aria-hidden="true" /></span>
+      <div>
+        <p>{notice.title}{isNew(notice) && <em>NEW</em>}</p>
+        {notice.date
+          ? <time dateTime={notice.date}>{formatDate(notice.date)}</time>
+          : <span className="board__meta">{categoryLabel(notice.category)}</span>}
+      </div>
+      <FiArrowUpRight className="board__go" aria-hidden="true" />
+    </>
+  );
+  // the repeated copy (for the endless scroll) is hidden from screen readers and skipped by the Tab key
+  const extra = hidden ? { tabIndex: -1 } : {};
+  return (
+    <li aria-hidden={hidden ? "true" : undefined}>
+      {url ? (
+        <a className="board__link" href={url} target="_blank" rel="noopener noreferrer" {...extra}>
+          {content}
+          {!hidden && <span className="sr-only">(opens in a new tab)</span>}
+        </a>
+      ) : (
+        <Link className="board__link" to={noticeLink.to} {...extra}>{content}</Link>
+      )}
+    </li>
+  );
+}
+
 function NoticeBoard() {
   const [tab, setTab] = useState("all");
-  const visible = tab === "all" ? notices : notices.filter((notice) => notice.kind === tab);
+  const visible = sortRows(allNotices)
+    .filter((notice) => tab === "all" || notice.category === tab)
+    .slice(0, BOARD_SIZE);
 
   return (
     <section className="section notices reveal">
@@ -441,24 +470,9 @@ function NoticeBoard() {
             </div>
             <div className="board__viewport">
               <ul className="board__list">
-                {visible.map((notice) => (
-                  <li key={notice.id}>
-                    <span className="board__icon"><FiBell /></span>
-                    <div>
-                      <p>{notice.title}{notice.isNew && <em>NEW</em>}</p>
-                      <time>{notice.date}</time>
-                    </div>
-                    <FiArrowUpRight className="board__go" />
-                  </li>
-                ))}
+                {visible.map((notice) => <NoticeRow key={notice.id} notice={notice} />)}
                 {visible.length === 0 && <li className="board__empty">No notices in this category.</li>}
-                {visible.length > 1 && visible.map((notice) => (
-                  <li key={`repeat-${notice.id}`} aria-hidden="true">
-                    <span className="board__icon"><FiBell /></span>
-                    <div><p>{notice.title}{notice.isNew && <em>NEW</em>}</p><time>{notice.date}</time></div>
-                    <FiArrowUpRight className="board__go" />
-                  </li>
-                ))}
+                {visible.length > 1 && visible.map((notice) => <NoticeRow key={`repeat-${notice.id}`} notice={notice} hidden />)}
               </ul>
             </div>
             <Link className="board__all" to={noticeLink.to}>{noticeLink.label} →</Link>
@@ -508,9 +522,10 @@ function Facilities() {
           {facilities.map((item, index) => {
             const Icon = Fi[item.icon] || Fi.FiStar;
             return (
-              <article
+              <Link
                 key={item.name}
-                tabIndex={0}
+                to={`/about/facilities?facility=${item.id}`}
+                aria-label={`${item.name} - open on the Facilities page`}
                 className={`tile${item.size ? ` tile--${item.size}` : ""}`}
                 style={{ "--img": `url("${item.image}")` }}
               >
@@ -521,7 +536,7 @@ function Facilities() {
                   <h3>{item.name}</h3>
                   <p>{item.text}</p>
                 </div>
-              </article>
+              </Link>
             );
           })}
         </div>

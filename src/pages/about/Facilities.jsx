@@ -15,8 +15,8 @@
 // Nothing is loaded from another website. A missing file shows a clean "Photo coming soon" tile.
 //
 // Styles are in Facilities.css (every class starts with "fac-").
-import { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import {
   FiMapPin, FiChevronRight, FiCheckCircle, FiImage, FiHome, FiMonitor, FiBookOpen, FiActivity, FiTool,
@@ -360,7 +360,18 @@ function Photo({ src, alt, Icon, className }) {
 }
 
 export default function Facilities() {
-  const [active, setActive] = useState(0);
+  // /about/facilities?facility=hostels opens that tab (the Home page facility cards link here)
+  const [params] = useSearchParams();
+  const wanted = facilities.findIndex((item) => item.id === params.get("facility"));
+  const [active, setActive] = useState(wanted >= 0 ? wanted : 0);
+
+  // coming from a Home card: bring the facility panel into view instead of leaving the visitor at the top
+  useEffect(() => {
+    if (wanted < 0) return undefined;
+    const timer = setTimeout(() => document.getElementById("explore")?.scrollIntoView({ block: "start", behavior: "instant" }), 60);
+    return () => clearTimeout(timer);
+  }, [wanted]);
+
   const tabListRef = useRef(null);
   const tabRefs = useRef([]);
   const current = facilities[active];

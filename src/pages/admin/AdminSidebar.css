@@ -1,0 +1,434 @@
+/* AdminSidebar.css - the admin frame: sidebar, top bar, drawer. Every class starts with "asb-". Colours come from theme.css only.
+   Type rule: body text 16px or more, small text never under 12px. */
+
+.asb-shell {
+  display: grid;
+  grid-template-columns: 296px minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--surface-blue-light);
+  color: var(--text);
+}
+
+.asb-skip {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--ink-900);
+  color: var(--white);
+  font-weight: 700;
+}
+
+.asb-skip:focus {
+  top: 12px;
+}
+
+/* ============ SIDEBAR ============ */
+.asb-side {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background:
+    radial-gradient(70% 40% at 0% 0%, color-mix(in srgb, var(--sky-500) 18%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--ink-900), var(--ink-950));
+  color: var(--logo-white);
+  border-right: 3px solid var(--orange-500);
+}
+
+.asb-brand {
+  display: grid;
+  gap: 8px;
+  padding: 22px 20px 16px;
+  border-bottom: 1px solid color-mix(in srgb, var(--white) 12%, transparent);
+}
+
+.asb-brand img {
+  display: block;
+  width: 210px;
+  max-width: 100%;
+  height: auto;
+}
+
+.asb-brand span {
+  color: var(--orange-400);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.asb-close {
+  display: none;
+}
+
+.asb-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 12px;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--white) 30%, transparent) transparent;
+}
+
+.asb-label {
+  margin: 20px 12px 8px;
+  color: color-mix(in srgb, var(--white) 70%, transparent);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.asb-list,
+.asb-sub {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.asb-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 14px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: color-mix(in srgb, var(--white) 88%, transparent);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.asb-link svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+
+.asb-link:hover {
+  background: color-mix(in srgb, var(--white) 9%, transparent);
+  color: var(--white);
+}
+
+.asb-link.is-active {
+  background: linear-gradient(135deg, var(--orange-400), var(--orange-500));
+  color: var(--ink-950);
+}
+
+.asb-group.has-active {
+  color: var(--orange-400);
+}
+
+.asb-caret {
+  margin-left: auto;
+  transition: transform 0.25s var(--ease);
+}
+
+.asb-group[aria-expanded="true"] .asb-caret {
+  transform: rotate(180deg);
+}
+
+.asb-badge {
+  margin-left: auto;
+  min-width: 24px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: var(--white);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.asb-sub {
+  margin: 4px 0 8px 22px;
+  padding-left: 14px;
+  border-left: 2px solid color-mix(in srgb, var(--white) 16%, transparent);
+}
+
+.asb-sub[hidden] {
+  display: none;
+}
+
+.asb-sublink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  color: color-mix(in srgb, var(--white) 82%, transparent);
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.35;
+  transition: background 0.2s, color 0.2s;
+}
+
+.asb-sublink small {
+  flex: none;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--white) 12%, transparent);
+  color: color-mix(in srgb, var(--white) 78%, transparent);
+  font-size: 0.8rem;
+}
+
+.asb-sublink:hover {
+  background: color-mix(in srgb, var(--white) 9%, transparent);
+  color: var(--white);
+}
+
+.asb-sublink.is-active {
+  background: color-mix(in srgb, var(--orange-500) 24%, transparent);
+  color: var(--orange-400);
+  font-weight: 700;
+}
+
+.asb-foot {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--white) 12%, transparent);
+}
+
+.asb-foot__link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: color-mix(in srgb, var(--white) 86%, transparent);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.asb-foot__link:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--white) 9%, transparent);
+  color: var(--white);
+}
+
+.asb-foot__link:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.asb-foot__link svg {
+  width: 18px;
+  height: 18px;
+}
+
+.asb-link:focus-visible,
+.asb-sublink:focus-visible,
+.asb-foot__link:focus-visible,
+.asb-close:focus-visible {
+  outline: 3px solid var(--focus-on-dark);
+  outline-offset: 2px;
+}
+
+/* ============ TOP BAR + PAGE ============ */
+.asb-body {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+}
+
+.asb-top {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px clamp(16px, 3vw, 32px);
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--white) 92%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.asb-title {
+  margin: 0;
+  color: var(--ink-900);
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 2.4vw, 1.8rem);
+  line-height: 1.2;
+  white-space: normal;
+}
+
+.asb-top__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.asb-top__site {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--ink-900);
+  font-size: 0.95rem;
+  font-weight: 700;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.asb-top__site:hover {
+  border-color: var(--sky-500);
+  background: var(--sky-100);
+}
+
+.asb-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: var(--ink-900);
+  color: var(--white);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.asb-menu-btn {
+  display: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+  color: var(--ink-900);
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+.asb-menu-btn:focus-visible,
+.asb-top__site:focus-visible {
+  outline: 3px solid var(--sky-700);
+  outline-offset: 2px;
+}
+
+.asb-main {
+  min-width: 0;
+  padding: clamp(18px, 3vw, 36px) clamp(16px, 3vw, 32px) clamp(40px, 5vw, 64px);
+  outline: none;
+}
+
+.asb-backdrop {
+  display: none;
+}
+
+/* ============ TABLETS AND PHONES: sidebar becomes a drawer ============ */
+@media (max-width: 1000px) {
+  .asb-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .asb-side {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(320px, 86vw);
+    transform: translateX(-102%);
+    transition: transform 0.3s var(--ease);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .asb-side.is-open {
+    transform: none;
+  }
+
+  .asb-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    display: block;
+    border: 0;
+    background: color-mix(in srgb, var(--ink-950) 60%, transparent);
+  }
+
+  .asb-menu-btn {
+    display: grid;
+  }
+
+  .asb-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid color-mix(in srgb, var(--white) 24%, transparent);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--white) 8%, transparent);
+    color: var(--white);
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+}
+
+@media (max-width: 560px) {
+  .asb-top__site {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .asb-side,
+  .asb-caret,
+  .asb-link,
+  .asb-sublink {
+    transition: none;
+  }
+}
+
+.asb-shell,
+.asb-shell button,
+.asb-shell a {
+  font-family: var(--font-body);
+}
+
+.asb-group:focus-visible,
+.asb-menu-btn:focus-visible,
+.asb-top-site:focus-visible,
+.asb-close:focus-visible,
+.asb-foot-link:focus-visible {
+  outline: 3px solid var(--focus-on-dark);
+  outline-offset: 3px;
+}
+
+.asb-main {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1000px) {
+  .asb-side {
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 560px) {
+  .asb-user {
+    display: none;
+  }
+}
+

@@ -563,20 +563,38 @@ main#main > .section.principal {
 }
 
 .board__list li {
+  border-bottom: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  transition: background 0.25s, transform 0.3s var(--ease);
+}
+
+.board__list li:hover,
+.board__list li:focus-within {
+  background: var(--paper);
+  transform: translateX(6px);
+}
+
+/* the whole row is one link: it opens the notice's file */
+.board__link {
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: 14px;
   align-items: center;
   min-height: 72px;
   padding: 12px 8px;
-  border-bottom: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  transition: background 0.25s, transform 0.3s var(--ease);
+  color: inherit;
 }
 
-.board__list li:hover {
-  background: var(--paper);
-  transform: translateX(6px);
+.board__link:focus-visible {
+  outline: 3px solid var(--sky-700);
+  outline-offset: -3px;
+  border-radius: var(--radius-sm);
+}
+
+.board__meta {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--muted);
 }
 
 .board__icon {
@@ -619,7 +637,8 @@ main#main > .section.principal {
   transition: opacity 0.25s;
 }
 
-.board__list li:hover .board__go {
+.board__list li:hover .board__go,
+.board__list li:focus-within .board__go {
   opacity: 1;
 }
 
