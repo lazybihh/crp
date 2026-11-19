@@ -98,8 +98,7 @@
   .wor-hero { height: auto; aspect-ratio: 7 / 3; }
   .wor-hero__photo { background-size: contain, auto; }
   .wor-hero__tags { display: none; }
-  .wor-crumbs { left: 10px; bottom: 10px; padding: 6px 12px; gap: 6px; font-size: 0.95rem; }
-  .wor-crumbs svg { width: 12px; height: 12px; }
+  .wor-crumbs { display: none; }
 }
 
 

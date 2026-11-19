@@ -98,8 +98,7 @@
   .adm-hero { height: auto; aspect-ratio: 7 / 3; }
   .adm-hero__photo { background-size: contain, auto; }
   .adm-hero__tags { display: none; }
-  .adm-crumbs { left: 10px; bottom: 10px; padding: 6px 12px; gap: 6px; font-size: 0.95rem; }
-  .adm-crumbs svg { width: 12px; height: 12px; }
+  .adm-crumbs { display: none; }
 }
 
 

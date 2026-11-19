@@ -110,8 +110,7 @@ main#main.prj-page h3 {
   .prj-hero { height: auto; aspect-ratio: 7 / 3; }
   .prj-hero__photo { background-size: contain, auto; }
   .prj-hero__tags { display: none; }
-  .prj-crumbs { left: 10px; bottom: 10px; padding: 6px 12px; gap: 6px; font-size: 0.95rem; }
-  .prj-crumbs svg { width: 12px; height: 12px; }
+  .prj-crumbs { display: none; }
 }
 
 

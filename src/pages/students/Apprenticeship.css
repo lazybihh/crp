@@ -98,8 +98,7 @@
   .app-hero { height: auto; aspect-ratio: 7 / 3; }
   .app-hero__photo { background-size: contain, auto; }
   .app-hero__tags { display: none; }
-  .app-crumbs { left: 10px; bottom: 10px; padding: 6px 12px; gap: 6px; font-size: 0.95rem; }
-  .app-crumbs svg { width: 12px; height: 12px; }
+  .app-crumbs { display: none; }
 }
 
 

@@ -98,8 +98,7 @@
   .ntc-hero { height: auto; aspect-ratio: 7 / 3; }
   .ntc-hero__photo { background-size: contain, auto; }
   .ntc-hero__tags { display: none; }
-  .ntc-crumbs { left: 10px; bottom: 10px; padding: 6px 12px; gap: 6px; font-size: 0.95rem; }
-  .ntc-crumbs svg { width: 12px; height: 12px; }
+  .ntc-crumbs { display: none; }
 }
 
 

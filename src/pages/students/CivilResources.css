@@ -98,8 +98,7 @@
   .rciv-hero { height: auto; aspect-ratio: 7 / 3; }
   .rciv-hero__photo { background-size: contain, auto; }
   .rciv-hero__tags { display: none; }
-  .rciv-crumbs { left: 10px; bottom: 10px; padding: 6px 12px; gap: 6px; font-size: 0.95rem; }
-  .rciv-crumbs svg { width: 12px; height: 12px; }
+  .rciv-crumbs { display: none; }
 }
 
 

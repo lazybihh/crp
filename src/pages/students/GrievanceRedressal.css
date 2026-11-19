@@ -98,8 +98,7 @@
   .grv-hero { height: auto; aspect-ratio: 7 / 3; }
   .grv-hero__photo { background-size: contain, auto; }
   .grv-hero__tags { display: none; }
-  .grv-crumbs { left: 10px; bottom: 10px; padding: 6px 12px; gap: 6px; font-size: 0.95rem; }
-  .grv-crumbs svg { width: 12px; height: 12px; }
+  .grv-crumbs { display: none; }
 }
 
 

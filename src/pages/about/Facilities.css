@@ -112,8 +112,7 @@ main#main.fac-page h4 {
   .fac-hero { height: auto; aspect-ratio: 7 / 3; }
   .fac-hero__photo { background-size: contain, auto; }
   .fac-hero__tags { display: none; }
-  .fac-crumbs { left: 10px; bottom: 10px; padding: 6px 12px; gap: 6px; font-size: 0.95rem; }
-  .fac-crumbs svg { width: 12px; height: 12px; }
+  .fac-crumbs { display: none; }
 }
 
 

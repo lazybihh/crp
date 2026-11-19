@@ -110,8 +110,7 @@ main#main.al-page h3 {
   .al-hero { height: auto; aspect-ratio: 7 / 3; }
   .al-hero__photo { background-size: contain, auto; }
   .al-hero__tags { display: none; }
-  .al-crumbs { left: 10px; bottom: 10px; padding: 6px 12px; gap: 6px; font-size: 0.95rem; }
-  .al-crumbs svg { width: 12px; height: 12px; }
+  .al-crumbs { display: none; }
 }
 
 /* photo fills the whole banner; if the file is missing the navy gradient stays */

@@ -98,8 +98,7 @@
   .soc-hero { height: auto; aspect-ratio: 7 / 3; }
   .soc-hero__photo { background-size: contain, auto; }
   .soc-hero__tags { display: none; }
-  .soc-crumbs { left: 10px; bottom: 10px; padding: 6px 12px; gap: 6px; font-size: 0.95rem; }
-  .soc-crumbs svg { width: 12px; height: 12px; }
+  .soc-crumbs { display: none; }
 }
 
 /* breadcrumb pill, bottom-left of the banner */

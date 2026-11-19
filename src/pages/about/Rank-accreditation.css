@@ -110,8 +110,7 @@ main#main.rk-page h3 {
   .rk-hero { height: auto; aspect-ratio: 7 / 3; }
   .rk-hero__photo { background-size: contain, auto; }
   .rk-hero__tags { display: none; }
-  .rk-crumbs { left: 10px; bottom: 10px; padding: 6px 12px; gap: 6px; font-size: 0.95rem; }
-  .rk-crumbs svg { width: 12px; height: 12px; }
+  .rk-crumbs { display: none; }
 }
 
 /* photo fills the whole banner; if the file is missing the navy gradient stays */

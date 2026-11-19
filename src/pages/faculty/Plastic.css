@@ -98,8 +98,7 @@
   .pla-hero { height: auto; aspect-ratio: 7 / 3; }
   .pla-hero__photo { background-size: contain, auto; }
   .pla-hero__tags { display: none; }
-  .pla-crumbs { left: 10px; bottom: 10px; padding: 6px 12px; gap: 6px; font-size: 0.95rem; }
-  .pla-crumbs svg { width: 12px; height: 12px; }
+  .pla-crumbs { display: none; }
 }
 
 

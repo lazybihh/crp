@@ -110,8 +110,7 @@ main#main.lum-page h3 {
   .lum-hero { height: auto; aspect-ratio: 7 / 3; }
   .lum-hero__photo { background-size: contain, auto; }
   .lum-hero__tags { display: none; }
-  .lum-crumbs { left: 10px; bottom: 10px; padding: 6px 12px; gap: 6px; font-size: 0.95rem; }
-  .lum-crumbs svg { width: 12px; height: 12px; }
+  .lum-crumbs { display: none; }
 }
 
 

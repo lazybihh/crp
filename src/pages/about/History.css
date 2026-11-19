@@ -110,8 +110,7 @@ main#main.hist-page h3 {
   .hist-hero { height: auto; aspect-ratio: 7 / 3; }
   .hist-hero__photo { background-size: contain, auto; }
   .hist-hero__tags { display: none; }
-  .hist-crumbs { left: 10px; bottom: 10px; padding: 6px 12px; gap: 6px; font-size: 0.95rem; }
-  .hist-crumbs svg { width: 12px; height: 12px; }
+  .hist-crumbs { display: none; }
 }
 
 /* photo fills the whole banner; if the file is missing the navy gradient stays */

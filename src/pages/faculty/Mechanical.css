@@ -98,8 +98,7 @@
   .mec-hero { height: auto; aspect-ratio: 7 / 3; }
   .mec-hero__photo { background-size: contain, auto; }
   .mec-hero__tags { display: none; }
-  .mec-crumbs { left: 10px; bottom: 10px; padding: 6px 12px; gap: 6px; font-size: 0.95rem; }
-  .mec-crumbs svg { width: 12px; height: 12px; }
+  .mec-crumbs { display: none; }
 }
 
 

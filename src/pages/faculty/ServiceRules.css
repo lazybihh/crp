@@ -98,8 +98,7 @@
   .pol-hero { height: auto; aspect-ratio: 7 / 3; }
   .pol-hero__photo { background-size: contain, auto; }
   .pol-hero__tags { display: none; }
-  .pol-crumbs { left: 10px; bottom: 10px; padding: 6px 12px; gap: 6px; font-size: 0.95rem; }
-  .pol-crumbs svg { width: 12px; height: 12px; }
+  .pol-crumbs { display: none; }
 }
 
 .pol-wrap {
