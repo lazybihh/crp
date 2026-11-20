@@ -28,18 +28,12 @@ import {
   FiMapPin, FiChevronRight as FiCrumbArrow, FiSearch, FiFileText, FiImage, FiGrid, FiExternalLink, FiClock,
   FiBell, FiPhone, FiMail, FiArrowRight, FiChevronDown,
 } from "react-icons/fi";
-import { FILE_FOLDER, categories, notices, activities, sortRows } from "../../data/notices";
+import { categories, notices as starterNotices, activities, sortRows } from "../../data/notices";
+import { getNotices, getNoticePage, mediaUrl, noticeFileUrl } from "../../services/noticeService";
 import "./Notices.css";
+import { useSite } from "../../context/SiteSettingsContext";
 
-const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
-
-const intro = {
-  eyebrow: "Latest updates",
-  title: "Notices",
-  lead: "Admission lists, exam datesheets, scholarships, holidays and other announcements from the institute.",
-};
-
-const contact = { phones: ["01262-274667", "01262-285667"], email: "crprohtak@hry.nic.in" };
+const defaultPage = { banner:"/images/pages-banner.png", eyebrow:"Latest updates", title:"Notices", lead:"Admission lists, exam datesheets, scholarships, holidays and other announcements from the institute.", leftTag:"Government Polytechnic", rightTag:"Rohtak (Haryana)", glanceTitle:"At a glance", noticesLabel:"Notices", activitiesLabel:"Activities", latestLabel:"Latest notice", browseEyebrow:"Browse", listTitle:"All announcements", searchPlaceholder:"Search by title", helpTitle:"Can't find a notice?", helpText:"Ask the institute office. Some older notices may not be on this page.", homeBreadcrumb:"Home", noticesBreadcrumb:"Notices", allLabel:"All", chooseCategoryLabel:"Choose a category", fileMissingLabel:"File coming soon", openFileLabel:"Open", emptyMessage:"No notices match your search. Try a different word or choose All.", showMoreLabel:"Show more", showingLabel:"Showing", categoryAdmissions:"Admissions", categoryExams:"Exams", categoryScholarships:"Scholarships", categoryEvents:"Holidays & events", categoryTenders:"Tenders", categoryOther:"Other" };
 
 const PAGE_SIZE = 10; // rows shown at first, and added each time "Show more" is pressed
 
@@ -56,11 +50,23 @@ const FILE_TYPES = {
 };
 
 const fileType = (file) => FILE_TYPES[file.split(".").pop().toLowerCase()] || { label: "File", icon: FiFileText };
-const categoryLabel = (id) => categories.find((item) => item.id === id)?.label ?? "";
+const categoryLabel = (id, page) => ({ admissions:page.categoryAdmissions, exams:page.categoryExams, scholarships:page.categoryScholarships, events:page.categoryEvents, tenders:page.categoryTenders, other:page.categoryOther }[id] || "");
 const formatDate = (date) =>
   new Date(`${date}T00:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 
 export default function Notices() {
+  const { contact } = useSite();
+  const [noticeRows, setNoticeRows] = useState(starterNotices);
+  const [page, setPage] = useState(defaultPage);
+  useEffect(() => {
+    let active = true;
+    Promise.all([getNotices(), getNoticePage()]).then(([noticeData, pageData]) => {
+      if (!active) return;
+      setNoticeRows(noticeData.notices || []);
+      setPage({ ...defaultPage, ...(pageData.page || {}) });
+    }).catch(() => {});
+    return () => { active = false; };
+  }, []);
   const [tab, setTab] = useState("notices"); // "notices" or "activities"
   const [category, setCategory] = useState("all");
   const [query, setQuery] = useState("");
@@ -78,7 +84,7 @@ export default function Notices() {
     return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); };
   }, [pickOpen]);
 
-  const source = tab === "notices" ? notices : activities;
+  const source = tab === "notices" ? noticeRows : activities;
 
   const rows = useMemo(() => {
     const text = query.trim().toLowerCase();
@@ -90,7 +96,7 @@ export default function Notices() {
   }, [source, tab, category, query]);
 
   const visible = rows.slice(0, shown);
-  const latest = sortRows(notices)[0];
+  const latest = sortRows(noticeRows)[0];
 
   const changeTab = (next) => { setTab(next); setCategory("all"); setShown(PAGE_SIZE); };
   const changeCategory = (next) => { setCategory(next); setShown(PAGE_SIZE); setPickOpen(false); };
@@ -98,22 +104,22 @@ export default function Notices() {
 
   return (
     <main id="main" className="ntc-page">
-      <section className="ntc-hero" aria-label="Notices" style={{ "--img": `url("${hero.image}")` }}>
+      <section className="ntc-hero" aria-label="Notices" style={{ "--img": `url("${mediaUrl(page.banner)}")` }}>
         <div className="ntc-hero__photo" />
         <div className="ntc-hero__tags">
           <span className="ntc-hero__tag ntc-hero__tag--left">
             <span className="ntc-hero__tag-icon"><FaGraduationCap aria-hidden="true" /></span>
-            Government Polytechnic
+            {page.leftTag}
           </span>
           <span className="ntc-hero__tag ntc-hero__tag--right">
             <span className="ntc-hero__tag-icon"><FiMapPin aria-hidden="true" /></span>
-            Rohtak (Haryana)
+            {page.rightTag}
           </span>
         </div>
         <nav className="ntc-crumbs" aria-label="Breadcrumb">
-          <Link to="/">Home</Link>
+          <Link to="/">{page.homeBreadcrumb}</Link>
           <FiCrumbArrow aria-hidden="true" />
-          <span aria-current="page">Notices</span>
+          <span aria-current="page">{page.noticesBreadcrumb}</span>
         </nav>
       </section>
 
@@ -121,27 +127,27 @@ export default function Notices() {
         {/* ---- title + navy "at a glance" card ---- */}
         <div className="ntc-top">
           <header className="ntc-intro">
-            <span className="ntc-eyebrow">{intro.eyebrow}</span>
-            <h1>{intro.title}</h1>
-            <p>{intro.lead}</p>
+            <span className="ntc-eyebrow">{page.eyebrow}</span>
+            <h1>{page.title}</h1>
+            <p>{page.lead}</p>
           </header>
 
           <aside className="ntc-glance" aria-labelledby="ntc-glance-title">
             <span className="ntc-glance__icon"><FiBell aria-hidden="true" /></span>
-            <h2 id="ntc-glance-title">At a glance</h2>
+            <h2 id="ntc-glance-title">{page.glanceTitle}</h2>
             <dl>
               <div>
-                <dt>Notices</dt>
-                <dd>{notices.length}</dd>
+                <dt>{page.noticesLabel}</dt>
+                <dd>{noticeRows.length}</dd>
               </div>
               <div>
-                <dt>Activities</dt>
+                <dt>{page.activitiesLabel}</dt>
                 <dd>{activities.length}</dd>
               </div>
             </dl>
             {latest && (
               <p className="ntc-glance__latest">
-                <span>Latest notice</span>
+                <span>{page.latestLabel}</span>
                 {latest.title}
               </p>
             )}
@@ -151,27 +157,27 @@ export default function Notices() {
         {/* ---- tabs, search, chips and the list ---- */}
         <section className="ntc-block" aria-labelledby="ntc-list-title">
           <header className="ntc-head">
-            <span className="ntc-eyebrow ntc-eyebrow--line">Browse</span>
-            <h2 id="ntc-list-title">All <span>announcements</span></h2>
+            <span className="ntc-eyebrow ntc-eyebrow--line">{page.browseEyebrow}</span>
+            <h2 id="ntc-list-title">{page.listTitle}</h2>
           </header>
 
           <div className="ntc-bar">
             <div className="ntc-tabs" role="group" aria-label="Choose a list">
               <button type="button" aria-pressed={tab === "notices"} onClick={() => changeTab("notices")}>
-                Notices <span>{notices.length}</span>
+                {page.noticesLabel} <span>{noticeRows.length}</span>
               </button>
               <button type="button" aria-pressed={tab === "activities"} onClick={() => changeTab("activities")}>
-                Activities <span>{activities.length}</span>
+                {page.activitiesLabel} <span>{activities.length}</span>
               </button>
             </div>
 
             <label className="ntc-search">
-              <span className="sr-only">Search notices by title</span>
+              <span className="sr-only">{page.searchPlaceholder}</span>
               <FiSearch aria-hidden="true" />
               <input
                 type="search"
                 value={query}
-                placeholder="Search by title"
+                placeholder={page.searchPlaceholder}
                 onChange={(event) => changeQuery(event.target.value)}
               />
             </label>
@@ -179,10 +185,10 @@ export default function Notices() {
 
           {tab === "notices" && (
             <div className="ntc-chips" role="group" aria-label="Filter by category">
-              <button type="button" aria-pressed={category === "all"} onClick={() => changeCategory("all")}>All</button>
+              <button type="button" aria-pressed={category === "all"} onClick={() => changeCategory("all")}>{page.allLabel}</button>
               {categories.map((item) => (
                 <button key={item.id} type="button" aria-pressed={category === item.id} onClick={() => changeCategory(item.id)}>
-                  {item.label}
+                  {categoryLabel(item.id, page)}
                 </button>
               ))}
             </div>
@@ -191,7 +197,7 @@ export default function Notices() {
           {/* small screens: "All" stays outside, the other categories are in a dropdown (two per row) */}
           {tab === "notices" && (
             <div className="ntc-pick" ref={pickRef} role="group" aria-label="Filter by category">
-              <button type="button" className="ntc-pick__all" aria-pressed={category === "all"} onClick={() => changeCategory("all")}>All</button>
+              <button type="button" className="ntc-pick__all" aria-pressed={category === "all"} onClick={() => changeCategory("all")}>{page.allLabel}</button>
               <button
                 type="button"
                 className={`ntc-pick__btn${category !== "all" ? " is-set" : ""}`}
@@ -199,14 +205,14 @@ export default function Notices() {
                 aria-controls="ntc-pick-panel"
                 onClick={() => setPickOpen((open) => !open)}
               >
-                <span>{category === "all" ? "Choose a category" : categoryLabel(category)}</span>
+                <span>{category === "all" ? page.chooseCategoryLabel : categoryLabel(category, page)}</span>
                 <FiChevronDown aria-hidden="true" />
               </button>
               {pickOpen && (
                 <div id="ntc-pick-panel" className="ntc-pick__panel">
                   {categories.map((item) => (
                     <button key={item.id} type="button" aria-pressed={category === item.id} onClick={() => changeCategory(item.id)}>
-                      {item.label}
+                      {categoryLabel(item.id, page)}
                     </button>
                   ))}
                 </div>
@@ -215,7 +221,7 @@ export default function Notices() {
           )}
 
           <p className="ntc-count" aria-live="polite">
-            Showing {visible.length} of {rows.length}
+            {page.showingLabel} {visible.length} of {rows.length}
           </p>
 
           {visible.length > 0 ? (
@@ -229,27 +235,27 @@ export default function Notices() {
                     <div className="ntc-row__body">
                       <h3>{row.title}</h3>
                       <p className="ntc-row__meta">
-                        {tab === "notices" && row.category && <span className="ntc-row__tag">{categoryLabel(row.category)}</span>}
+                        {tab === "notices" && row.category && <span className="ntc-row__tag">{categoryLabel(row.category, page)}</span>}
                         {type && <span className="ntc-row__type">{type.label}</span>}
                         {row.date && <span className="ntc-row__date">{formatDate(row.date)}</span>}
                       </p>
                       {row.note && <p className="ntc-row__note">{row.note}</p>}
                     </div>
                     {row.file ? (
-                      <a className="ntc-open" href={`${FILE_FOLDER}${row.file}`} target="_blank" rel="noopener noreferrer">
-                        Open
+                      <a className="ntc-open" href={noticeFileUrl(row.file)} target="_blank" rel="noopener noreferrer">
+                        {page.openFileLabel}
                         <FiExternalLink aria-hidden="true" />
                         <span className="sr-only"> {row.title} (opens in a new tab)</span>
                       </a>
                     ) : (
-                      <span className="ntc-soon">File coming soon</span>
+                      <span className="ntc-soon">{page.fileMissingLabel}</span>
                     )}
                   </li>
                 );
               })}
             </ul>
           ) : (
-            <p className="ntc-empty">No notices match your search. Try a different word or choose All.</p>
+            <p className="ntc-empty">{page.emptyMessage}</p>
           )}
 
           {rows.length > shown && (
@@ -262,8 +268,8 @@ export default function Notices() {
         {/* ---- help strip ---- */}
         <section className="ntc-help" aria-labelledby="ntc-help-title">
           <div>
-            <h2 id="ntc-help-title">Can&apos;t find a notice?</h2>
-            <p>Ask the institute office. Some older notices may not be on this page.</p>
+            <h2 id="ntc-help-title">{page.helpTitle}</h2>
+            <p>{page.helpText}</p>
           </div>
           <div className="ntc-help__actions">
             <a className="ntc-btn ntc-btn--primary" href={`tel:${contact.phones[0].replace(/-/g, "")}`}>

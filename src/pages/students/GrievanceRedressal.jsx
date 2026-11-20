@@ -21,6 +21,7 @@ import {
   FiMessageCircle, FiExternalLink, FiUsers, FiUser, FiMonitor,
 } from "react-icons/fi";
 import "./GrievanceRedressal.css";
+import { useSite } from "../../context/SiteSettingsContext";
 
 const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
@@ -30,8 +31,6 @@ const intro = {
   lead: "If something is troubling you at the institute, you can say so. Your concern is read by a committee and acted on.", // SAMPLE wording
 };
 
-const contact = { phones: ["01262-274667", "01262-285667"], email: "crprohtak@hry.nic.in" };
-
 // SAMPLE wording of the REAL procedure: members review suggestions and take corrective action promptly.
 const steps = [
   { icon: FiEdit3, title: "Share it", text: "Fill in the form or tell the office." },
@@ -40,23 +39,6 @@ const steps = [
 ];
 
 // REAL - the two Google Forms. Both open in a new tab.
-const forms = [
-  {
-    icon: FiMessageCircle,
-    title: "Grievances form",
-    text: "Use this form to raise a grievance with the committee.",
-    label: "Open the grievances form",
-    href: "https://forms.gle/59a69DF2cuMYr7vy7",
-  },
-  {
-    icon: FiEdit3,
-    title: "Students feedback form",
-    text: "Share your feedback or suggestions about the institute.",
-    label: "Open the feedback form",
-    href: "https://forms.gle/uDDtofTbuHvyN7QU9",
-  },
-];
-
 // The two committees. REAL structure; names and designations are TO FILL from the live page (see the top of this file).
 // Keep the Chairman first. An empty name shows "Name to be added".
 const committees = [
@@ -85,6 +67,11 @@ const committees = [
 ];
 
 export default function GrievanceRedressal() {
+  const { contact, links } = useSite();
+  const forms = [
+    { icon: FiMessageCircle, title: "Grievances form", text: "Use this form to raise a grievance with the committee.", label: "Open the grievances form", href: links?.grievanceForm || "" },
+    { icon: FiEdit3, title: "Students feedback form", text: "Share your feedback or suggestions about the institute.", label: "Open the feedback form", href: links?.studentFeedbackForm || "" },
+  ].filter((item) => item.href);
   return (
     <main id="main" className="grv-page">
       <section className="grv-hero" aria-label="Grievance redressal" style={{ "--img": `url("${hero.image}")` }}>

@@ -14,7 +14,7 @@
 .vid-hero__photo {
   position: absolute;
   inset: 0;
-  background-image: var(--img), linear-gradient(135deg, var(--ink-700), var(--ink-950));
+  background-image: var(--img, none), linear-gradient(135deg, var(--ink-700), var(--ink-950));
   background-size: cover, auto;
   background-position: center, center;
   background-repeat: no-repeat, no-repeat;

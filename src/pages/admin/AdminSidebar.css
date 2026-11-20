@@ -1,28 +1,17 @@
-/* AdminSidebar.css - the admin frame: sidebar, top bar, drawer. Every class starts with "asb-". Colours come from theme.css only.
-   Type rule: body text 16px or more, small text never under 12px. */
+/* AdminSidebar.css - the admin frame: sidebar, top bar, drawer. Every class starts with "asb-". Colours come from theme.css only. */
 
 .asb-shell {
   display: grid;
-  grid-template-columns: 296px minmax(0, 1fr);
+  grid-template-columns: 272px minmax(0, 1fr);
   min-height: 100vh;
   background: var(--surface-blue-light);
   color: var(--text);
 }
 
-.asb-skip {
-  position: absolute;
-  left: 12px;
-  top: -60px;
-  z-index: 100;
-  padding: 10px 16px;
-  border-radius: 10px;
-  background: var(--ink-900);
-  color: var(--white);
-  font-weight: 700;
-}
-
-.asb-skip:focus {
-  top: 12px;
+.asb-shell,
+.asb-shell button,
+.asb-shell a {
+  font-family: var(--font-body);
 }
 
 /* ============ SIDEBAR ============ */
@@ -34,29 +23,47 @@
   flex-direction: column;
   height: 100vh;
   background:
-    radial-gradient(70% 40% at 0% 0%, color-mix(in srgb, var(--sky-500) 18%, transparent), transparent 70%),
+    radial-gradient(80% 36% at 0% 0%, color-mix(in srgb, var(--sky-500) 20%, transparent), transparent 70%),
     linear-gradient(180deg, var(--ink-900), var(--ink-950));
   color: var(--logo-white);
   border-right: 3px solid var(--orange-500);
 }
 
+/* small logo + name, one row */
 .asb-brand {
-  display: grid;
-  gap: 8px;
-  padding: 22px 20px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 16px 14px;
   border-bottom: 1px solid color-mix(in srgb, var(--white) 12%, transparent);
 }
 
 .asb-brand img {
+  flex: none;
   display: block;
-  width: 210px;
-  max-width: 100%;
-  height: auto;
+  width: 46px;
+  height: 46px;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--white);
+  object-fit: contain;
+}
+
+.asb-brand div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.asb-brand strong {
+  color: var(--white);
+  font-size: 0.95rem;
+  line-height: 1.2;
 }
 
 .asb-brand span {
   color: var(--orange-400);
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -67,17 +74,18 @@
 }
 
 .asb-nav {
+  position: relative; /* the active link's position is measured from here */
   flex: 1;
   overflow-y: auto;
-  padding: 14px 12px;
+  padding: 12px 10px;
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--white) 30%, transparent) transparent;
 }
 
 .asb-label {
-  margin: 20px 12px 8px;
-  color: color-mix(in srgb, var(--white) 70%, transparent);
-  font-size: 0.8rem;
+  margin: 18px 12px 8px;
+  color: color-mix(in srgb, var(--white) 62%, transparent);
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -86,7 +94,7 @@
 .asb-list,
 .asb-sub {
   display: grid;
-  gap: 4px;
+  gap: 3px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -95,42 +103,59 @@
 .asb-link {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 11px;
   width: 100%;
-  padding: 11px 14px;
+  padding: 7px 10px 7px 8px;
   border: 0;
   border-radius: 12px;
   background: transparent;
   color: color-mix(in srgb, var(--white) 88%, transparent);
-  font: inherit;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   text-align: left;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
 
-.asb-link svg {
+/* each menu icon sits in a small rounded tile */
+.asb-link svg:first-child {
   flex: none;
-  width: 20px;
-  height: 20px;
+  box-sizing: border-box;
+  width: 32px;
+  height: 32px;
+  padding: 7px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--white) 9%, transparent);
+  transition: background 0.2s, color 0.2s;
 }
 
 .asb-link:hover {
-  background: color-mix(in srgb, var(--white) 9%, transparent);
+  background: color-mix(in srgb, var(--white) 8%, transparent);
   color: var(--white);
 }
 
 .asb-link.is-active {
   background: linear-gradient(135deg, var(--orange-400), var(--orange-500));
   color: var(--ink-950);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--orange-500) 28%, transparent);
+}
+
+.asb-link.is-active svg:first-child {
+  background: color-mix(in srgb, var(--ink-950) 14%, transparent);
 }
 
 .asb-group.has-active {
   color: var(--orange-400);
 }
 
+.asb-group.has-active svg:first-child {
+  background: color-mix(in srgb, var(--orange-500) 24%, transparent);
+}
+
 .asb-caret {
+  flex: none;
+  width: 16px;
+  height: 16px;
   margin-left: auto;
   transition: transform 0.25s var(--ease);
 }
@@ -139,20 +164,9 @@
   transform: rotate(180deg);
 }
 
-.asb-badge {
-  margin-left: auto;
-  min-width: 24px;
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: var(--danger);
-  color: var(--white);
-  font-size: 0.8rem;
-  text-align: center;
-}
-
 .asb-sub {
-  margin: 4px 0 8px 22px;
-  padding-left: 14px;
+  margin: 4px 0 8px 26px;
+  padding-left: 12px;
   border-left: 2px solid color-mix(in srgb, var(--white) 16%, transparent);
 }
 
@@ -161,30 +175,18 @@
 }
 
 .asb-sublink {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 8px 12px;
-  border-radius: 10px;
-  color: color-mix(in srgb, var(--white) 82%, transparent);
-  font-size: 0.95rem;
+  display: block;
+  padding: 7px 12px;
+  border-radius: 9px;
+  color: color-mix(in srgb, var(--white) 80%, transparent);
+  font-size: 0.9rem;
   font-weight: 500;
   line-height: 1.35;
   transition: background 0.2s, color 0.2s;
 }
 
-.asb-sublink small {
-  flex: none;
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--white) 12%, transparent);
-  color: color-mix(in srgb, var(--white) 78%, transparent);
-  font-size: 0.8rem;
-}
-
 .asb-sublink:hover {
-  background: color-mix(in srgb, var(--white) 9%, transparent);
+  background: color-mix(in srgb, var(--white) 8%, transparent);
   color: var(--white);
 }
 
@@ -195,41 +197,33 @@
 }
 
 .asb-foot {
-  display: grid;
-  gap: 4px;
-  padding: 12px;
+  padding: 10px;
   border-top: 1px solid color-mix(in srgb, var(--white) 12%, transparent);
 }
 
 .asb-foot__link {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 10px;
   padding: 10px 14px;
-  border: 0;
+  border: 1px solid color-mix(in srgb, var(--white) 22%, transparent);
   border-radius: 12px;
-  background: transparent;
-  color: color-mix(in srgb, var(--white) 86%, transparent);
-  font: inherit;
-  font-size: 0.95rem;
+  color: color-mix(in srgb, var(--white) 90%, transparent);
+  font-size: 0.92rem;
   font-weight: 600;
-  text-align: left;
-  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
 }
 
-.asb-foot__link:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--white) 9%, transparent);
+.asb-foot__link:hover {
+  border-color: var(--orange-400);
+  background: color-mix(in srgb, var(--white) 8%, transparent);
   color: var(--white);
 }
 
-.asb-foot__link:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
 .asb-foot__link svg {
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
 }
 
 .asb-link:focus-visible,
@@ -254,7 +248,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px clamp(16px, 3vw, 32px);
+  padding: 12px clamp(16px, 3vw, 32px);
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--white) 92%, transparent);
   -webkit-backdrop-filter: blur(8px);
@@ -265,7 +259,7 @@
   margin: 0;
   color: var(--ink-900);
   font-family: var(--font-display);
-  font-size: clamp(1.3rem, 2.4vw, 1.8rem);
+  font-size: clamp(1.25rem, 2.2vw, 1.6rem);
   line-height: 1.2;
   white-space: normal;
 }
@@ -273,7 +267,7 @@
 .asb-top__right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   margin-left: auto;
 }
 
@@ -281,12 +275,12 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 16px;
+  padding: 8px 15px;
   border: 1.5px solid var(--line);
   border-radius: 999px;
   background: var(--white);
   color: var(--ink-900);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
   transition: border-color 0.2s, background 0.2s;
 }
@@ -300,11 +294,11 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 16px;
+  padding: 8px 15px;
   border-radius: 999px;
   background: var(--ink-900);
   color: var(--white);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
 }
 
@@ -329,7 +323,8 @@
 
 .asb-main {
   min-width: 0;
-  padding: clamp(18px, 3vw, 36px) clamp(16px, 3vw, 32px) clamp(40px, 5vw, 64px);
+  padding: clamp(18px, 3vw, 32px) clamp(16px, 3vw, 32px) clamp(40px, 5vw, 64px);
+  overflow-wrap: anywhere;
   outline: none;
 }
 
@@ -347,6 +342,7 @@
     position: fixed;
     inset: 0 auto 0 0;
     width: min(320px, 86vw);
+    overflow: hidden;
     transform: translateX(-102%);
     transition: transform 0.3s var(--ease);
     box-shadow: var(--shadow-lift);
@@ -369,6 +365,10 @@
     display: grid;
   }
 
+  .asb-brand {
+    padding-right: 66px; /* room for the close button */
+  }
+
   .asb-close {
     position: absolute;
     top: 14px;
@@ -387,7 +387,8 @@
 }
 
 @media (max-width: 560px) {
-  .asb-top__site {
+  .asb-top__site,
+  .asb-user {
     display: none;
   }
 }
@@ -400,35 +401,5 @@
     transition: none;
   }
 }
-
-.asb-shell,
-.asb-shell button,
-.asb-shell a {
-  font-family: var(--font-body);
-}
-
-.asb-group:focus-visible,
-.asb-menu-btn:focus-visible,
-.asb-top-site:focus-visible,
-.asb-close:focus-visible,
-.asb-foot-link:focus-visible {
-  outline: 3px solid var(--focus-on-dark);
-  outline-offset: 3px;
-}
-
-.asb-main {
-  overflow-wrap: anywhere;
-}
-
-@media (max-width: 1000px) {
-  .asb-side {
-    overflow: hidden;
-  }
-}
-
-@media (max-width: 560px) {
-  .asb-user {
-    display: none;
-  }
-}
-
+/* live admin enquiry count */
+.asb-badge { margin-left: auto; min-width: 22px; height: 22px; display: inline-grid; place-items: center; border-radius: 999px; background: #ef7d32; color: #fff; font-size: .75rem; }

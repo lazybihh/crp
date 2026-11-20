@@ -30,19 +30,17 @@ import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiChevronRight as FiCrumbArrow } from "react-icons/fi";
 import "./Admissions.css";
+import { useSite } from "../../context/SiteSettingsContext";
 
 const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
 const session = "2026-27";
-const portalUrl = "https://techadmissionshry.gov.in/";
 
 const intro = {
   eyebrow: "Students",
   title: `Admissions ${session}`,
   lead: "Admissions are open for the three-year diploma programmes. Follow the four steps below, keep the key dates handy and apply on the state admissions portal.",
 };
-
-const contact = { phones: ["01262-274667", "01262-285667"], email: "crprohtak@hry.nic.in" };
 
 // Same six programmes and seats as the Courses page.
 const courses = [
@@ -118,6 +116,8 @@ function Poster({ src, label }) {
 }
 
 export default function Admissions() {
+  const { contact, links } = useSite();
+  const portalUrl = links?.admissionPortal || "";
   return (
     <main id="main" className="ads-page">
       <section className="ads-hero" aria-label="Admissions" style={{ "--img": `url("${hero.image}")` }}>

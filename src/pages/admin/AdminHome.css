@@ -9,6 +9,11 @@
   color: var(--muted);
 }
 
+.ahm-loading.is-error {
+  color: var(--danger);
+  font-weight: 600;
+}
+
 .ahm-top {
   display: flex;
   align-items: center;
@@ -30,25 +35,78 @@
 }
 
 .ahm-card {
-  display: grid;
-  gap: 14px;
   max-width: 860px;
-  padding: clamp(18px, 3vw, 28px);
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   background: var(--white);
   box-shadow: var(--shadow-soft);
 }
 
-.ahm-card h3 {
+/* closed section: title on the left, field count on the right */
+.ahm-card__head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px clamp(16px, 3vw, 24px);
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: var(--ink-900);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ahm-card__head:hover {
+  background: var(--surface-blue-light);
+}
+
+.ahm-card__head:focus-visible {
+  outline: 3px solid var(--focus-on-light);
+  outline-offset: -3px;
+}
+
+.ahm-card__head h3 {
   margin: 0;
   color: var(--ink-900);
-  font-family: var(--font-display);
-  font-size: 1.2rem;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.ahm-card__head span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  color: var(--ink-800);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.ahm-card__head svg {
+  transition: transform 0.2s ease;
+}
+
+.ahm-card.is-open .ahm-card__head svg {
+  transform: rotate(90deg);
+}
+
+.ahm-card.is-open .ahm-card__head {
+  border-bottom: 1px solid var(--line);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.ahm-card__body {
+  display: grid;
+  gap: 14px;
+  padding: clamp(16px, 3vw, 24px);
 }
 
 .ahm-hint {
-  margin: -6px 0 0;
+  margin: 0;
   color: var(--muted);
   font-size: 0.9rem;
 }
@@ -192,9 +250,17 @@
   background: var(--orange-400);
 }
 
-.ahm-btn--save:disabled {
-  opacity: 0.6;
+.ahm-btn:disabled {
+  opacity: 0.5;
   cursor: default;
+}
+
+.ahm-btn:disabled:hover {
+  background: var(--white);
+}
+
+.ahm-btn--save:disabled:hover {
+  background: var(--orange-500);
 }
 
 /* image field */
@@ -275,6 +341,7 @@
 }
 
 .ahm-save span {
+  margin-right: auto;
   color: var(--ink-800);
   font-size: 0.92rem;
   font-weight: 600;

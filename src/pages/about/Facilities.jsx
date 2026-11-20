@@ -14,6 +14,10 @@
 // PHOTOS: images live in public/images/; unavailable photos show a "Photo coming soon" tile.
 // Nothing is loaded from another website. A missing file shows a clean "Photo coming soon" tile.
 //
+// DATABASE: the banner, text and photos come from the database (edited in Admin > About us > Facilities).
+// The lists in this file are only the starting copy that shows while loading or when the server is down - keep them in step with
+// backend/models/Facility.js and backend/models/FacilitiesPage.js. Icons are chosen here, by the facility's id.
+//
 // Styles are in Facilities.css (every class starts with "fac-").
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -22,17 +26,18 @@ import {
   FiMapPin, FiChevronRight, FiCheckCircle, FiImage, FiHome, FiMonitor, FiBookOpen, FiActivity, FiTool,
   FiMic, FiWifi, FiUsers, FiTruck, FiCoffee, FiBriefcase, FiAward, FiFlag, FiCpu, FiNavigation, FiMusic,
 } from "react-icons/fi";
+import { getFacilities, mediaUrl } from "../../services/facilityService";
 import "./Facilities.css";
 
 const hero = { image: "/images/pages-banner.png" }; // if it is missing a patterned navy banner shows instead
 
-const intro = {
+const fallbackIntro = {
   eyebrow: "About us",
   title: "Facilities",
   lead: "Hostels, labs, a library, sports and a hands-on workshop - everything a diploma student needs on one campus. Pick a facility below to see what it offers.",
 };
 
-const facilities = [
+const fallbackFacilities = [
   {
     id: "labs",
     label: "Labs",
@@ -323,27 +328,50 @@ const facilities = [
   },
 ];
 
-const total = facilities.length;
-
-// The top stat card follows the list, so "Campus facilities" never goes out of date.
-const stats = [
-  { value: String(total), label: "Campus facilities" },
+// The top stat card: an empty first number shows the live count of facilities, so "Campus facilities" never goes out of date.
+const fallbackStats = [
+  { value: "", label: "Campus facilities" },
   { value: "2", label: "Hostels, boys and girls" },
   { value: "5", label: "Computer labs" },
   { value: "5+", label: "Sports and games" },
 ];
 
-const closingStats = [
+const fallbackClosingStats = [
   { value: "6", label: "Diploma programmes" },
   { value: "342", label: "Approved seats" },
   { value: "1956", label: "Serving students since" },
   { value: "1949", label: "NCC unit instituted" },
 ];
 
+// The page-level text (the starting copy of backend/models/FacilitiesPage.js).
+const fallbackPage = {
+  intro: fallbackIntro,
+  stats: fallbackStats,
+  explore: { eyebrow: "Choose a facility", titleStart: "Explore Each", titleHighlight: "Facility" },
+  panel: { aboutHeading: "About this facility", factsHeading: "At a glance", photoPlaceholder: "Photo coming soon" },
+  closingStats: fallbackClosingStats,
+};
+
+// each facility's icon, by its id (a facility from the database is matched to its icon by its slug)
+const iconById = Object.fromEntries(fallbackFacilities.map((item) => [item.id, item.icon]));
+
+// a database row -> the shape this page uses (always 3 photo slots; an empty one shows the placeholder tile)
+const fromDatabase = (row) => ({
+  id: row.slug,
+  label: row.label || "",
+  icon: iconById[row.slug] || FiImage,
+  headline: row.headline || "",
+  text: row.text || "",
+  points: row.points || [],
+  more: row.more || [],
+  facts: row.facts || [],
+  photos: [0, 1, 2].map((index) => mediaUrl(row.photos?.[index] || "")),
+});
+
 const pad = (n) => String(n).padStart(2, "0");
 
 // One photo slot. If the file is missing, a clean placeholder tile is shown instead.
-function Photo({ src, alt, Icon, className }) {
+function Photo({ src, alt, Icon, className, placeholder }) {
   const [failed, setFailed] = useState(false);
   return (
     <figure className={`fac-photo ${className}`}>
@@ -352,7 +380,7 @@ function Photo({ src, alt, Icon, className }) {
       ) : (
         <div className="fac-photo__empty" aria-hidden="true">
           <Icon />
-          <span>Photo coming soon</span>
+          <span>{placeholder}</span>
         </div>
       )}
     </figure>
@@ -362,8 +390,38 @@ function Photo({ src, alt, Icon, className }) {
 export default function Facilities() {
   // /about/facilities?facility=hostels opens that tab (the Home page facility cards link here)
   const [params] = useSearchParams();
-  const wanted = facilities.findIndex((item) => item.id === params.get("facility"));
+  const [content, setContent] = useState({ page: fallbackPage, facilities: fallbackFacilities });
+  const { page, facilities } = content;
+  const total = facilities.length;
+  const wantedId = params.get("facility");
+  const wanted = facilities.findIndex((item) => item.id === wantedId);
   const [active, setActive] = useState(wanted >= 0 ? wanted : 0);
+  const [heroImage, setHeroImage] = useState(hero.image);
+
+  // the text and photos come from the database; until they arrive (or if the server is down) the copy in this file is shown
+  useEffect(() => {
+    getFacilities()
+      .then(({ page: saved, facilities: rows }) => {
+        if (saved.bannerImage) setHeroImage(mediaUrl(saved.bannerImage) || hero.image);
+        setContent({
+          page: {
+            intro: { ...fallbackPage.intro, ...saved.intro },
+            stats: saved.stats ?? fallbackPage.stats,
+            explore: { ...fallbackPage.explore, ...saved.explore },
+            panel: { ...fallbackPage.panel, ...saved.panel },
+            closingStats: saved.closingStats ?? fallbackPage.closingStats,
+          },
+          facilities: rows.map(fromDatabase),
+        });
+      })
+      .catch(() => {});
+  }, []);
+
+  // when the list arrives or changes, keep the open tab valid (and open the facility named in the link, if any)
+  useEffect(() => {
+    const index = facilities.findIndex((item) => item.id === wantedId);
+    setActive((now) => (index >= 0 ? index : Math.min(now, Math.max(facilities.length - 1, 0))));
+  }, [facilities, wantedId]);
 
   // coming from a Home card: bring the facility panel into view instead of leaving the visitor at the top
   useEffect(() => {
@@ -375,7 +433,7 @@ export default function Facilities() {
   const tabListRef = useRef(null);
   const tabRefs = useRef([]);
   const current = facilities[active];
-  const CurrentIcon = current.icon;
+  const CurrentIcon = current?.icon;
 
   // Selecting a tab also scrolls it into view, which matters on phones where the tabs swipe sideways.
   const select = (index, focus = false) => {
@@ -412,7 +470,7 @@ export default function Facilities() {
   return (
     <main id="main" className="fac-page">
       {/* ---- hero ---- */}
-      <section className="fac-hero" aria-label="Campus facilities" style={{ "--img": `url("${hero.image}")` }}>
+      <section className="fac-hero" aria-label="Campus facilities" style={{ "--img": `url("${heroImage || hero.image}")` }}>
         <div className="fac-hero__photo" />
         <div className="fac-hero__tags">
           <span className="fac-hero__tag fac-hero__tag--left">
@@ -437,14 +495,14 @@ export default function Facilities() {
         {/* ---- title + stat card ---- */}
         <div className="fac-top">
           <header className="fac-intro">
-            <span className="fac-eyebrow">{intro.eyebrow}</span>
-            <h1>{intro.title}</h1>
-            <p>{intro.lead}</p>
+            <span className="fac-eyebrow">{page.intro.eyebrow}</span>
+            <h1>{page.intro.title}</h1>
+            <p>{page.intro.lead}</p>
           </header>
           <dl className="fac-stats">
-            {stats.map((item) => (
-              <div key={item.label}>
-                <dt>{item.value}</dt>
+            {page.stats.map((item, index) => (
+              <div key={index}>
+                <dt>{index === 0 && !item.value ? String(total) : item.value}</dt>
                 <dd>{item.label}</dd>
               </div>
             ))}
@@ -452,11 +510,12 @@ export default function Facilities() {
         </div>
 
         {/* ---- explorer: tabs + detail panel ---- */}
+        {current && (
         <section id="explore" className="fac-explorer" aria-labelledby="fac-explore-title">
           <header className="fac-head">
-            <span className="fac-eyebrow fac-eyebrow--line">Choose a facility</span>
+            <span className="fac-eyebrow fac-eyebrow--line">{page.explore.eyebrow}</span>
             <h2 id="fac-explore-title">
-              Explore Each <span>Facility</span>
+              {page.explore.titleStart} <span>{page.explore.titleHighlight}</span>
             </h2>
           </header>
 
@@ -506,8 +565,8 @@ export default function Facilities() {
                 <h3>{current.headline}</h3>
                 <p>{current.text}</p>
                 <ul className="fac-points">
-                  {current.points.map((point) => (
-                    <li key={point}>
+                  {current.points.map((point, index) => (
+                    <li key={index}>
                       <FiCheckCircle aria-hidden="true" />
                       <span>{point}</span>
                     </li>
@@ -518,7 +577,8 @@ export default function Facilities() {
               <div className="fac-gallery">
                 {current.photos.map((src, n) => (
                   <Photo
-                    key={src}
+                    key={n}
+                    placeholder={page.panel.photoPlaceholder}
                     src={src}
                     alt={`${current.label} at C.R. Polytechnic, photo ${n + 1}`}
                     Icon={n === 0 ? CurrentIcon : FiImage}
@@ -532,18 +592,18 @@ export default function Facilities() {
               <div className={`fac-details${current.more.length === 0 || current.facts.length === 0 ? " fac-details--single" : ""}`}>
                 {current.more.length > 0 && (
                   <div className="fac-about">
-                    <h4 className="fac-subhead">About this facility</h4>
-                    {current.more.map((paragraph) => (
-                      <p key={paragraph}>{paragraph}</p>
+                    <h4 className="fac-subhead">{page.panel.aboutHeading}</h4>
+                    {current.more.map((paragraph, index) => (
+                      <p key={index}>{paragraph}</p>
                     ))}
                   </div>
                 )}
                 {current.facts.length > 0 && (
                   <div className="fac-facts">
-                    <h4 className="fac-subhead">At a glance</h4>
+                    <h4 className="fac-subhead">{page.panel.factsHeading}</h4>
                     <dl>
-                      {current.facts.map((fact) => (
-                        <div key={fact.label}>
+                      {current.facts.map((fact, index) => (
+                        <div key={index}>
                           <dt>{fact.label}</dt>
                           <dd>{fact.value}</dd>
                         </div>
@@ -555,11 +615,12 @@ export default function Facilities() {
             )}
           </article>
         </section>
+        )}
 
         <section className="fac-strip" aria-label="Institute at a glance">
           <dl className="fac-strip__list">
-            {closingStats.map((item) => (
-              <div key={item.label}>
+            {page.closingStats.map((item, index) => (
+              <div key={index}>
                 <dt>{item.value}</dt>
                 <dd>{item.label}</dd>
               </div>

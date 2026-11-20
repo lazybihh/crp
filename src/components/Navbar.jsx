@@ -12,23 +12,8 @@ import {
   FiArrowRight,
   FiArrowUpRight,
 } from "react-icons/fi";
-import { FaFacebookF, FaInstagram } from "react-icons/fa";
+import { socialIcon, telHref, useSite } from "../context/SiteSettingsContext";
 import "./Navbar.css";
-
-const site = {
-  name: "Chhotu Ram Polytechnic",
-  city: "Rohtak",
-  tagline: "Government Polytechnic, Rohtak, Haryana",
-  phones: ["01262-274667", "01262-285667"],
-  email: "crprohtak@hry.nic.in",
-  map: { url: "https://www.google.com/maps?q=28.885496,76.617082" },
-};
-
-// REAL - the institute's social pages (shown in the top strip). Add a row to show another icon.
-const social = [
-  { icon: FaFacebookF, label: "Facebook", href: "https://www.facebook.com/C.R.POLYTECHNIC.ROHTAK" },
-  { icon: FaInstagram, label: "Instagram", href: "https://www.instagram.com/crprohtak/" },
-];
 
 const link = (label, to) => ({ label, to });
 const external = (label, href) => ({ label, href });
@@ -44,11 +29,6 @@ const departments = [
   link("Workshop Department", "/departments/workshop"),
   link("Administrative", "/departments/administrative"),
 ];
-
-// "Pay Online Fee" opens the institute's SBI Collect fee page in a new tab.
-const payFeeUrl = "https://sbcollect.sbi.bank.in/sbicollect/icollecthome.htm";
-
-const navCta = { label: "Admissions Open", to: "/admissions" };
 
 const navItems = [
   { label: "Home", to: "/", icon: FiHome },
@@ -95,7 +75,7 @@ const navItems = [
         items: [
           link("Academic calendar", "/students/academic-calendar"),
           link("Admissions", "/students/admissions"),
-          external("Exams (HSBTE)", "https://hsbte.org.in"),
+          external("Exams (HSBTE)", ""),
           link("Online learning portals", "/students/online-learning"),
           external("Code of conduct", "/docs/code-of-conduct-for-students.pdf"),
           link("Student helpline", "/students/helpline"),
@@ -145,7 +125,7 @@ const navItems = [
         title: "Services",
         items: [
           link("IQAC", "/faculty/iqac"),
-          external("HRMS", "https://intrahry.gov.in"),
+          external("HRMS", ""),
           link("E-services", "/faculty/e-services"),
         ],
       },
@@ -167,11 +147,14 @@ const navItems = [
 ];
 
 function Brand() {
+  const { institute, images, mediaUrl } = useSite();
+  const siteName = institute?.name || "Chhotu Ram Polytechnic";
+  const siteCity = institute?.city || "Rohtak";
   return (
-    <Link className="navbar__brand" to="/" aria-label={`${site.name}, ${site.city} - home`}>
+    <Link className="navbar__brand" to="/" aria-label={`${siteName}, ${siteCity} - home`}>
       <img
         className="navbar__brand-logo"
-        src="/logo.png"
+        src={mediaUrl(images?.logo) || "/logo.png"}
         width="180"
         height="180"
         alt=""
@@ -213,8 +196,10 @@ function MenuLink({ item, onNavigate }) {
 
 /* "Pay Online Fee" call-to-action (header on desktop, drawer on mobile). */
 function PayFee({ className = "", onNavigate }) {
+  const { links } = useSite();
+  if (!links?.payFee) return null;
   return (
-    <a className={`pay-fee ${className}`} href={payFeeUrl} target="_blank" rel="noopener noreferrer" onClick={onNavigate}>
+    <a className={`pay-fee ${className}`} href={links.payFee} target="_blank" rel="noopener noreferrer" onClick={onNavigate}>
       <span className="pay-fee__icon" aria-hidden="true">&#8377;</span>
       <span className="pay-fee__label">Pay Online Fee</span>
       <FiArrowRight aria-hidden="true" />
@@ -272,11 +257,13 @@ function Laurel({ flip = false }) {
 }
 
 function EstablishedBadge() {
+  const { institute } = useSite();
+  const establishedYear = institute?.establishedYear || "1956";
   return (
-    <div className="est-badge" role="img" aria-label="Established in 1956 - years of excellence">
+    <div className="est-badge" role="img" aria-label={`Established in ${establishedYear} - years of excellence`}>
       <Laurel />
       <div className="est-badge__center">
-        <strong>1956</strong>
+        <strong>{establishedYear}</strong>
         <span>Years of Excellence</span>
         <em aria-hidden="true">&#9733; &#9733; &#9733;</em>
       </div>
@@ -286,6 +273,35 @@ function EstablishedBadge() {
 }
 
 export default function Navbar() {
+  const { institute, contact, socialLinks, images, headerButton, links, mediaUrl } = useSite();
+  const site = {
+    name: institute?.name || "Chhotu Ram Polytechnic",
+    city: institute?.city || "Rohtak",
+    tagline: institute?.tagline || "Government Polytechnic, Rohtak, Haryana",
+    phones: Array.isArray(contact?.phones) ? contact.phones.filter(Boolean) : [],
+    email: contact?.email || "",
+  };
+  const social = (socialLinks || []).filter((item) => item?.url).map((item) => ({
+    icon: socialIcon(item.platform),
+    label: item.label || item.platform,
+    href: item.url,
+  }));
+  const navCta = headerButton?.show !== false
+    ? { label: headerButton?.label || "Admissions Open", to: headerButton?.link || "/admissions" }
+    : null;
+  const activeNavItems = navItems.map((group) => ({
+    ...group,
+    columns: group.columns?.map((column) => ({
+      ...column,
+      items: column.items
+        .map((item) => {
+          if (item.label === "Exams (HSBTE)") return links?.hsbte ? { ...item, href: links.hsbte } : null;
+          if (item.label === "HRMS") return links?.hrms ? { ...item, href: links.hrms } : null;
+          return item;
+        })
+        .filter(Boolean),
+    })),
+  }));
   const { pathname } = useLocation();
   const [open, setOpen] = useState(null);
   const [drawer, setDrawer] = useState(false);
@@ -385,17 +401,21 @@ export default function Navbar() {
             </p>
 
             <div className="topstrip__contact">
-              <a href={`tel:${site.phones[0].replace(/-/g, "")}`}>
-                <FiPhone aria-hidden="true" />
-                {site.phones[0]}
-              </a>
+              {site.phones[0] && (
+                <a href={telHref(site.phones[0])}>
+                  <FiPhone aria-hidden="true" />
+                  {site.phones[0]}
+                </a>
+              )}
 
               <span className="topstrip__divider" aria-hidden="true" />
 
-              <a className="topstrip__mail" href={`mailto:${site.email}`}>
-                <FiMail aria-hidden="true" />
-                {site.email}
-              </a>
+              {site.email && (
+                <a className="topstrip__mail" href={`mailto:${site.email}`}>
+                  <FiMail aria-hidden="true" />
+                  {site.email}
+                </a>
+              )}
 
               <span className="topstrip__divider topstrip__divider--social" aria-hidden="true" />
 
@@ -423,7 +443,7 @@ export default function Navbar() {
         <div className="container navbar__row">
             <div className="navbar__identity">
               <Link className="navbar__logo-link" to="/" aria-label={`${site.name}, ${site.city} - home`}>
-                <img src="/logo.png" width="180" height="180" alt="" />
+                <img src={mediaUrl(images?.logo) || "/logo.png"} width="180" height="180" alt="" />
               </Link>
 
               <div className="navbar__title">
@@ -467,7 +487,7 @@ export default function Navbar() {
         <div className="container menubar__row">
           <nav className="menu" aria-label="Main">
             <ul>
-              {navItems.filter((item) => !item.hidden).map((item) => {
+              {activeNavItems.filter((item) => !item.hidden).map((item) => {
                 if (item.to) {
                   return (
                     <li key={item.label}>
@@ -530,10 +550,19 @@ export default function Navbar() {
             </ul>
           </nav>
 
-          <Link className="navbar__cta" to={navCta.to}>
-            {navCta.label}
-            <FiArrowRight aria-hidden="true" />
-          </Link>
+          {navCta && (
+            navCta.to.startsWith("/") ? (
+              <Link className="navbar__cta" to={navCta.to}>
+                {navCta.label}
+                <FiArrowRight aria-hidden="true" />
+              </Link>
+            ) : (
+              <a className="navbar__cta" href={navCta.to} target="_blank" rel="noopener noreferrer">
+                {navCta.label}
+                <FiArrowRight aria-hidden="true" />
+              </a>
+            )
+          )}
         </div>
       </div>
 
@@ -563,7 +592,7 @@ export default function Navbar() {
 
         <nav aria-label="Mobile">
           <ul className="drawer__list">
-            {navItems.filter((item) => !item.hidden).map((item) => {
+            {activeNavItems.filter((item) => !item.hidden).map((item) => {
               if (item.to) {
                 return (
                   <li key={item.label}>
@@ -616,20 +645,33 @@ export default function Navbar() {
         <div className="drawer__foot">
           <PayFee className="pay-fee--drawer" onNavigate={closeAll} />
 
-          <Link className="btn btn--cta" to={navCta.to} onClick={closeAll}>
-            {navCta.label}
-            <FiArrowRight aria-hidden="true" />
-          </Link>
+          {navCta && (
+            navCta.to.startsWith("/") ? (
+              <Link className="btn btn--cta" to={navCta.to} onClick={closeAll}>
+                {navCta.label}
+                <FiArrowRight aria-hidden="true" />
+              </Link>
+            ) : (
+              <a className="btn btn--cta" href={navCta.to} target="_blank" rel="noopener noreferrer" onClick={closeAll}>
+                {navCta.label}
+                <FiArrowRight aria-hidden="true" />
+              </a>
+            )
+          )}
 
           <div className="drawer__contact">
-            <a href={`tel:${site.phones[0].replace(/-/g, "")}`}>
-              <FiPhone aria-hidden="true" />
-              {site.phones[0]}
-            </a>
-            <a href={`mailto:${site.email}`}>
-              <FiMail aria-hidden="true" />
-              {site.email}
-            </a>
+            {site.phones[0] && (
+              <a href={telHref(site.phones[0])}>
+                <FiPhone aria-hidden="true" />
+                {site.phones[0]}
+              </a>
+            )}
+            {site.email && (
+              <a href={`mailto:${site.email}`}>
+                <FiMail aria-hidden="true" />
+                {site.email}
+              </a>
+            )}
             <ul className="drawer__social" aria-label="Social media">
               {social.map((item) => {
                 const Icon = item.icon;

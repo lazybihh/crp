@@ -20,6 +20,7 @@ import {
   FiBriefcase, FiAward, FiTarget, FiFolder, FiSend, FiPhone, FiMail, FiInfo,
 } from "react-icons/fi";
 import "./Freelancing.css";
+import { useSite } from "../../context/SiteSettingsContext";
 
 const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
@@ -27,8 +28,6 @@ const intro = {
   eyebrow: "Students",
   title: "Freelancing",
 };
-
-const contact = { phones: ["01262-274667", "01262-285667"], email: "crprohtak@hry.nic.in" };
 
 // The navy "where do I start" card. Each line opens a page that already exists on this site.
 const guide = [
@@ -58,6 +57,7 @@ const related = [
 ];
 
 export default function Freelancing() {
+  const { contact } = useSite();
   return (
     <main id="main" className="frl-page">
       <section className="frl-hero" aria-label="Freelancing" style={{ "--img": `url("${hero.image}")` }}>

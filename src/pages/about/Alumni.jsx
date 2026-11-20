@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiChevronRight, FiFileText, FiDownload, FiArrowRight, FiMessageCircle, FiGift, FiMail } from "react-icons/fi";
 import "./Alumni.css";
+import { useSite } from "../../context/SiteSettingsContext";
 
 const hero = { image: "/images/pages-banner.png" };
 
@@ -41,13 +42,16 @@ const contributions = [
   "Connecting students with internships and industry opportunities.",
 ];
 
-const contact = { email: "crprohtak1956@gmail.com", phone: "01262-274667" };
-
 const downloads = [
   { label: "Annual Report, 2024", href: "/docs/annual-report-2024.pdf", type: "PDF" },
 ];
 
 export default function Alumni() {
+  const { contact: contactSettings } = useSite();
+  const contact = {
+    email: contactSettings?.alumniEmail || "",
+    phone: contactSettings?.phones?.[0] || "",
+  };
   return (
     <main id="main" className="al-page">
       {/* ---- hero ---- */}

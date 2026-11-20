@@ -8,6 +8,7 @@ import {
   FiTool, FiArrowRight, FiExternalLink,
 } from "react-icons/fi";
 import "./Courses.css";
+import { useSite } from "../../context/SiteSettingsContext";
 
 const hero = { image: "/images/pages-banner.png" };
 
@@ -31,10 +32,6 @@ const foundation = [
   { id: "workshop", name: "Workshop Department", icon: FiTool, text: "An intensive, short-duration hands-on learning experience." },
 ];
 
-const admission = [
-  { title: "Admissions", text: "Admissions to the diploma programmes run through the state technical admissions portal.", label: "Admissions portal", href: "https://techadmissionshry.gov.in/" },
-  { title: "Examinations", text: "Examinations are conducted by the Haryana State Board of Technical Education, Panchkula.", label: "HSBTE", href: "http://hsbte.org.in/" },
-];
 
 const downloads = [
   { label: "Extension of Approval, 2025-26", href: "/docs/extension-of-approval-2025-26.pdf", type: "PDF" },
@@ -42,6 +39,11 @@ const downloads = [
 ];
 
 export default function Courses() {
+  const { links } = useSite();
+  const admission = [
+    { title: "Admissions", text: "Admissions to the diploma programmes run through the state technical admissions portal.", label: "Admissions portal", href: links?.admissionPortal || "" },
+    { title: "Examinations", text: "Examinations are conducted by the Haryana State Board of Technical Education, Panchkula.", label: "HSBTE", href: links?.hsbte || "" },
+  ].filter((item) => item.href);
   const totalSeats = courses.reduce((sum, course) => sum + course.seats, 0);
 
   return (

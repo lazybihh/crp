@@ -32,6 +32,7 @@ import {
   FiDownload, FiCheckCircle, FiImage, FiInfo, FiPhone, FiMail,
 } from "react-icons/fi";
 import "./NccNss.css";
+import { useSite } from "../../context/SiteSettingsContext";
 
 const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 const photo = { src: "/images/ncc/ncc-activity.jpg", alt: "NCC cadets taking part in an activity at the institute" };
@@ -41,8 +42,6 @@ const intro = {
   title: "NCC & NSS",
   lead: "The National Cadet Corps builds discipline, leadership and a spirit of service. Read how it works at the institute, who can join and what cadets can earn.",
 };
-
-const contact = { phones: ["01262-274667", "01262-285667"], email: "crprohtak@hry.nic.in" };
 
 // From the About NCC document - confirm these are still current.
 const about = [
@@ -134,6 +133,7 @@ function Photo({ src, alt }) {
 }
 
 export default function NccNss() {
+  const { contact } = useSite();
   return (
     <main id="main" className="ncc-page">
       <section className="ncc-hero" aria-label="NCC and NSS" style={{ "--img": `url("${hero.image}")` }}>

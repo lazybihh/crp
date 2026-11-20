@@ -60,3 +60,30 @@
   .acd-link { transition: none; }
   .acd-link:hover { transform: none; }
 }
+
+.ass-page { display: grid; gap: 14px; min-width: 0; }
+.ass-heading h2 { margin: 0 0 4px; color: var(--ink-900); font-family: var(--font-display); }
+.ass-message { margin: 0; padding: 12px 14px; border-radius: 10px; background: #eaf7ef; color: #1d6337; }
+.ass-message.is-error { background: #fdecec; color: #9b2020; }
+.ass-card { border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--white); overflow: hidden; }
+.ass-card__head { width: 100%; min-height: 58px; display: flex; align-items: center; justify-content: space-between; border: 0; background: transparent; padding: 12px 18px; color: var(--ink-900); cursor: pointer; }
+.ass-card__head h3 { margin: 0; font-size: 1rem; }
+.ass-card__head span { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
+.ass-card.is-open .ass-card__head svg { transform: rotate(90deg); }
+.ass-card__body { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding: 18px; border-top: 1px solid var(--line); }
+.ass-field { display: grid; gap: 7px; color: var(--ink-900); font-weight: 700; }
+.ass-field input, .ass-field textarea { width: 100%; min-height: 42px; border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; color: var(--ink-900); background: #fff; font: inherit; }
+.ass-field textarea { resize: vertical; }
+.ass-rows, .ass-row { grid-column: 1 / -1; }
+.ass-row { display: grid; grid-template-columns: 150px 1fr 1.5fr 42px; gap: 10px; align-items: end; margin-bottom: 10px; }
+.ass-phone { display: grid; grid-template-columns: 1fr 42px; gap: 8px; align-items: end; }
+.ass-row > button, .ass-phone > button { width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: #9b2020; cursor: pointer; }
+.ass-btn { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; background: #fff; color: var(--ink-900); font-weight: 700; cursor: pointer; }
+.ass-btn:disabled { opacity: .55; cursor: not-allowed; }
+.ass-btn--save { border-color: var(--sky-700); background: var(--sky-700); color: #fff; }
+.ass-image { display: flex; align-items: center; gap: 10px; }
+.ass-image__box { width: 90px; height: 70px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.ass-image__box img { width: 100%; height: 100%; object-fit: contain; }
+.ass-toggle { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; }
+.ass-save { position: sticky; bottom: 10px; display: flex; justify-content: flex-end; gap: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.96); z-index: 5; }
+@media (max-width: 760px) { .ass-card__body { grid-template-columns: 1fr; } .ass-row { grid-template-columns: 1fr 42px; } .ass-row .ass-field { grid-column: 1 / -1; } }

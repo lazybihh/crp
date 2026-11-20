@@ -1,31 +1,23 @@
-// Gallery.jsx - Media > Photos (route: /media/photos).
-// Page order: hero -> title + stat card -> search and category bar -> photo grid -> "show more" -> full-screen viewer.
-//
-// ADDING PHOTOS: use an existing image under public/ with its root-relative URL.
-//   src       path of the photo, for example "/images/campus-2.jpg"
-//   title     short caption
-//   category  groups photos under a filter chip - a new category name creates a new chip by itself
-// The wall shows 12 photos first and a "Show more" button loads 12 more each time, so the list can grow to hundreds.
-// Nothing is loaded from another website. A missing file shows a "Photo coming soon" tile.
+// Gallery.jsx - Media > Photos
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FiX, FiChevronLeft, FiChevronRight, FiImage, FiMaximize2, FiSearch, FiPlus } from "react-icons/fi";
+import {
+  FiX,
+  FiChevronLeft,
+  FiChevronRight,
+  FiImage,
+  FiMaximize2,
+  FiSearch,
+  FiPlus,
+} from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiChevronRight as FiCrumbArrow } from "react-icons/fi";
 import "./Gallery.css";
-
-const hero = { image: "/images/pages-banner.png" }; // if it is missing a patterned navy banner shows instead
+import { getMedia, mediaUrl } from "../../services/mediaService";
 
 const PAGE_SIZE = 12;
 
-const intro = {
-  eyebrow: "Media",
-  title: "Photo Gallery",
-  lead: "Campus life, labs, hostels, events and sports - all in pictures. Search or pick a category, then tap any photo to see it full screen.",
-};
-
-// ---------------------------------------------------------------------------
-const photos = [
+const FALLBACK_PHOTOS = [
   { src: "/images/campus-2.jpg", title: "Main campus", category: "Campus" },
   { src: "/images/campus-3.jpg", title: "Campus grounds", category: "Campus" },
   { src: "/images/campus-workshop.jpg", title: "Workshop session", category: "Workshop" },
@@ -38,10 +30,23 @@ const photos = [
   { src: "/images/placement-activities.jpg", title: "Placement activities", category: "Placements" },
 ];
 
-const categories = [...new Set(photos.map((photo) => photo.category))];
-const countOf = (name) => photos.filter((photo) => photo.category === name).length;
+const FALLBACK_CATEGORIES = [
+  "Campus",
+  "Workshop",
+  "Events",
+  "Labs",
+  "Library",
+  "Hostels",
+  "Sports",
+  "Placements",
+];
 
-// Shown when a photo file is missing.
+const intro = {
+  eyebrow: "Media",
+  title: "Photo Gallery",
+  lead: "Campus life, labs, hostels, events and sports - all in pictures. Search or pick a category, then tap any photo to see it full screen.",
+};
+
 function Empty() {
   return (
     <div className="gal-empty" aria-hidden="true">
@@ -65,39 +70,103 @@ function Tile({ photo, index, onOpen }) {
       {failed ? (
         <Empty />
       ) : (
-        <img src={photo.src} alt={photo.title} loading="lazy" decoding="async" onError={() => setFailed(true)} />
+        <img
+          src={mediaUrl(photo.src)}
+          alt={photo.title}
+          loading="lazy"
+          decoding="async"
+          onError={() => setFailed(true)}
+        />
       )}
+
       <span className="gal-tile__tag">{photo.category}</span>
-      <span className="gal-tile__zoom" aria-hidden="true"><FiMaximize2 /></span>
+      <span className="gal-tile__zoom" aria-hidden="true">
+        <FiMaximize2 />
+      </span>
       <span className="gal-tile__caption">{photo.title}</span>
     </button>
   );
 }
 
-// A picture inside the full-screen viewer or a thumbnail.
 function Picture({ src, alt }) {
   const [failed, setFailed] = useState(false);
+
   if (!src || failed) return <Empty />;
-  return <img src={src} alt={alt} decoding="async" onError={() => setFailed(true)} />;
+
+  return (
+    <img
+      src={mediaUrl(src)}
+      alt={alt}
+      decoding="async"
+      onError={() => setFailed(true)}
+    />
+  );
 }
 
 export default function Gallery() {
+  const [photos, setPhotos] = useState(FALLBACK_PHOTOS);
+  const [photoCategories, setPhotoCategories] = useState(FALLBACK_CATEGORIES);
+  const [banner, setBanner] = useState("");
   const [category, setCategory] = useState("All");
   const [query, setQuery] = useState("");
   const [limit, setLimit] = useState(PAGE_SIZE);
-  const [openAt, setOpenAt] = useState(null); // index inside `results`, or null when the viewer is closed
+  const [openAt, setOpenAt] = useState(null);
+
   const closeRef = useRef(null);
   const returnRef = useRef(null);
   const touchX = useRef(null);
 
+  useEffect(() => {
+    let active = true;
+
+    getMedia()
+      .then(({ media }) => {
+        if (!active) return;
+
+        setPhotos((media?.photos || []).filter((photo) => photo.src));
+
+        setPhotoCategories(
+          media?.photoCategories?.length
+            ? media.photoCategories
+            : FALLBACK_CATEGORIES
+        );
+
+        setBanner(media?.banners?.gallery || "");
+      })
+      .catch((error) => {
+        console.warn(
+          "Media API unavailable; showing local photo gallery.",
+          error
+        );
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const categories = useMemo(
+    () =>
+      photoCategories.filter((name) =>
+        photos.some((photo) => photo.category === name)
+      ),
+    [photoCategories, photos]
+  );
+
+  const countOf = (name) =>
+    photos.filter((photo) => photo.category === name).length;
+
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
+
     return photos.filter(
       (photo) =>
         (category === "All" || photo.category === category) &&
-        (!q || photo.title.toLowerCase().includes(q) || photo.category.toLowerCase().includes(q)),
+        (!q ||
+          photo.title.toLowerCase().includes(q) ||
+          photo.category.toLowerCase().includes(q))
     );
-  }, [category, query]);
+  }, [category, query, photos]);
 
   const shown = results.slice(0, limit);
   const remaining = results.length - shown.length;
@@ -107,6 +176,7 @@ export default function Gallery() {
     setCategory(name);
     setLimit(PAGE_SIZE);
   };
+
   const changeQuery = (value) => {
     setQuery(value);
     setLimit(PAGE_SIZE);
@@ -116,24 +186,30 @@ export default function Gallery() {
     returnRef.current = button;
     setOpenAt(index);
   };
+
   const closePhoto = () => {
     setOpenAt(null);
     returnRef.current?.focus();
   };
-  const step = (by) => setOpenAt((i) => (i + by + results.length) % results.length);
 
-  // Viewer open: Esc closes, arrows move, the page behind stays still.
+  const step = (by) =>
+    setOpenAt((i) => (i + by + results.length) % results.length);
+
   useEffect(() => {
     if (openAt === null) return undefined;
+
     const onKey = (event) => {
       if (event.key === "Escape") closePhoto();
       else if (event.key === "ArrowRight") step(1);
       else if (event.key === "ArrowLeft") step(-1);
     };
+
     document.addEventListener("keydown", onKey);
+
     const before = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     closeRef.current?.focus();
+
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = before;
@@ -141,40 +217,62 @@ export default function Gallery() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openAt === null, results.length]);
 
-  // Warm up the next and previous photo so arrow keys feel instant.
   useEffect(() => {
     if (openAt === null || results.length < 2) return;
+
     [1, -1].forEach((by) => {
       const image = new Image();
-      image.src = results[(openAt + by + results.length) % results.length].src;
+      image.src = mediaUrl(
+        results[(openAt + by + results.length) % results.length].src
+      );
     });
   }, [openAt, results]);
 
   const onTouchEnd = (event) => {
     if (touchX.current === null) return;
+
     const dx = event.changedTouches[0].clientX - touchX.current;
     touchX.current = null;
+
     if (Math.abs(dx) > 50) step(dx < 0 ? 1 : -1);
   };
 
-  // A strip of up to 9 thumbnails around the open photo.
-  const thumbFrom = openAt === null ? 0 : Math.max(0, Math.min(openAt - 4, results.length - 9));
+  const thumbFrom =
+    openAt === null
+      ? 0
+      : Math.max(0, Math.min(openAt - 4, results.length - 9));
+
   const thumbs = results.slice(thumbFrom, thumbFrom + 9);
 
   return (
     <main id="main" className="gal-page">
-      <section className="gal-hero" aria-label="Photo gallery" style={{ "--img": `url("${hero.image}")` }}>
+      <section
+        className="gal-hero"
+        aria-label="Photo gallery"
+        style={{
+          "--img": `url("${mediaUrl(
+            banner || "/images/pages-banner.png"
+          )}")`,
+        }}
+      >
         <div className="gal-hero__photo" />
+
         <div className="gal-hero__tags">
           <span className="gal-hero__tag gal-hero__tag--left">
-            <span className="gal-hero__tag-icon"><FaGraduationCap aria-hidden="true" /></span>
+            <span className="gal-hero__tag-icon">
+              <FaGraduationCap aria-hidden="true" />
+            </span>
             Government Polytechnic
           </span>
+
           <span className="gal-hero__tag gal-hero__tag--right">
-            <span className="gal-hero__tag-icon"><FiMapPin aria-hidden="true" /></span>
+            <span className="gal-hero__tag-icon">
+              <FiMapPin aria-hidden="true" />
+            </span>
             Rohtak (Haryana)
           </span>
         </div>
+
         <nav className="gal-crumbs" aria-label="Breadcrumb">
           <Link to="/">Home</Link>
           <FiCrumbArrow aria-hidden="true" />
@@ -185,21 +283,29 @@ export default function Gallery() {
       </section>
 
       <div className="container gal-wrap">
-        {/* ---- title + stat card ---- */}
         <div className="gal-top">
           <header className="gal-intro">
             <span className="gal-eyebrow">{intro.eyebrow}</span>
             <h1>{intro.title}</h1>
             <p>{intro.lead}</p>
           </header>
+
           <dl className="gal-stats">
-            <div><dt>{photos.length}</dt><dd>Photos</dd></div>
-            <div><dt>{categories.length}</dt><dd>Categories</dd></div>
-            <div><dt>1956</dt><dd>Serving students since</dd></div>
+            <div>
+              <dt>{photos.length}</dt>
+              <dd>Photos</dd>
+            </div>
+            <div>
+              <dt>{categories.length}</dt>
+              <dd>Categories</dd>
+            </div>
+            <div>
+              <dt>1956</dt>
+              <dd>Serving students since</dd>
+            </div>
           </dl>
         </div>
 
-        {/* ---- search + categories + photo wall ---- */}
         <section className="gal-browser" aria-label="Browse photos">
           <div className="gal-toolbar">
             <div className="gal-toolbar__row">
@@ -213,11 +319,17 @@ export default function Gallery() {
                   aria-label="Search photos"
                 />
               </label>
+
               <p className="gal-count" aria-live="polite">
                 Showing <b>{shown.length}</b> of {results.length}
               </p>
             </div>
-            <div className="gal-filters" role="group" aria-label="Filter photos by category">
+
+            <div
+              className="gal-filters"
+              role="group"
+              aria-label="Filter photos by category"
+            >
               {["All", ...categories].map((name) => (
                 <button
                   key={name}
@@ -227,7 +339,9 @@ export default function Gallery() {
                   onClick={() => pickCategory(name)}
                 >
                   {name}
-                  <span className="gal-chip__n">{name === "All" ? photos.length : countOf(name)}</span>
+                  <span className="gal-chip__n">
+                    {name === "All" ? photos.length : countOf(name)}
+                  </span>
                 </button>
               ))}
             </div>
@@ -236,15 +350,29 @@ export default function Gallery() {
           {results.length > 0 ? (
             <div className="gal-grid">
               {shown.map((photo, index) => (
-                <Tile key={photo.src} photo={photo} index={index} onOpen={openPhoto} />
+                <Tile
+                  key={photo.src}
+                  photo={photo}
+                  index={index}
+                  onOpen={openPhoto}
+                />
               ))}
             </div>
           ) : (
             <div className="gal-none">
-              <span className="gal-none__icon"><FiImage aria-hidden="true" /></span>
+              <span className="gal-none__icon">
+                <FiImage aria-hidden="true" />
+              </span>
               <h2>No photos found</h2>
               <p>Try another word or choose a different category.</p>
-              <button type="button" className="gal-btn" onClick={() => { setQuery(""); pickCategory("All"); }}>
+              <button
+                type="button"
+                className="gal-btn"
+                onClick={() => {
+                  setQuery("");
+                  pickCategory("All");
+                }}
+              >
                 Show all photos
               </button>
             </div>
@@ -252,7 +380,11 @@ export default function Gallery() {
 
           {remaining > 0 && (
             <div className="gal-more">
-              <button type="button" className="gal-btn" onClick={() => setLimit((n) => n + PAGE_SIZE)}>
+              <button
+                type="button"
+                className="gal-btn"
+                onClick={() => setLimit((n) => n + PAGE_SIZE)}
+              >
                 <FiPlus aria-hidden="true" />
                 Show {Math.min(PAGE_SIZE, remaining)} more photos
               </button>
@@ -262,32 +394,61 @@ export default function Gallery() {
         </section>
       </div>
 
-      {/* ---- full-screen viewer ---- */}
       {open && (
-        <div className="gal-viewer" role="dialog" aria-modal="true" aria-label={`Photo viewer: ${open.title}`}>
+        <div
+          className="gal-viewer"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Photo viewer: ${open.title}`}
+        >
           <div className="gal-viewer__top">
-            <span className="gal-viewer__count"><b>{openAt + 1}</b> / {results.length}</span>
-            <button ref={closeRef} type="button" className="gal-viewer__btn" onClick={closePhoto} aria-label="Close viewer">
+            <span className="gal-viewer__count">
+              <b>{openAt + 1}</b> / {results.length}
+            </span>
+
+            <button
+              ref={closeRef}
+              type="button"
+              className="gal-viewer__btn"
+              onClick={closePhoto}
+              aria-label="Close viewer"
+            >
               <FiX aria-hidden="true" />
             </button>
           </div>
 
           <div
             className="gal-viewer__stage"
-            onClick={(event) => { if (event.target === event.currentTarget) closePhoto(); }}
-            onTouchStart={(event) => { touchX.current = event.touches[0].clientX; }}
+            onClick={(event) => {
+              if (event.target === event.currentTarget) closePhoto();
+            }}
+            onTouchStart={(event) => {
+              touchX.current = event.touches[0].clientX;
+            }}
             onTouchEnd={onTouchEnd}
           >
             {results.length > 1 && (
-              <button type="button" className="gal-viewer__btn gal-viewer__nav gal-viewer__nav--prev" onClick={() => step(-1)} aria-label="Previous photo">
+              <button
+                type="button"
+                className="gal-viewer__btn gal-viewer__nav gal-viewer__nav--prev"
+                onClick={() => step(-1)}
+                aria-label="Previous photo"
+              >
                 <FiChevronLeft aria-hidden="true" />
               </button>
             )}
+
             <figure className="gal-viewer__figure" key={open.src}>
               <Picture src={open.src} alt={open.title} />
             </figure>
+
             {results.length > 1 && (
-              <button type="button" className="gal-viewer__btn gal-viewer__nav gal-viewer__nav--next" onClick={() => step(1)} aria-label="Next photo">
+              <button
+                type="button"
+                className="gal-viewer__btn gal-viewer__nav gal-viewer__nav--next"
+                onClick={() => step(1)}
+                aria-label="Next photo"
+              >
                 <FiChevronRight aria-hidden="true" />
               </button>
             )}
@@ -298,18 +459,24 @@ export default function Gallery() {
               <small>{open.category}</small>
               {open.title}
             </p>
+
             {thumbs.length > 1 && (
               <ul className="gal-viewer__thumbs" aria-label="More photos">
                 {thumbs.map((photo, n) => {
                   const index = thumbFrom + n;
+
                   return (
                     <li key={photo.src}>
                       <button
                         type="button"
-                        className={`gal-thumb${index === openAt ? " is-active" : ""}`}
+                        className={`gal-thumb${
+                          index === openAt ? " is-active" : ""
+                        }`}
                         onClick={() => setOpenAt(index)}
                         aria-label={`Show photo ${index + 1}: ${photo.title}`}
-                        aria-current={index === openAt ? "true" : undefined}
+                        aria-current={
+                          index === openAt ? "true" : undefined
+                        }
                       >
                         <Picture src={photo.src} alt="" />
                       </button>

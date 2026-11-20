@@ -8,23 +8,23 @@
 //   The email is the institute's government address (the same as the Navbar and Footer). The live footer also shows a gmail
 //   address; it is NOT used here.
 //
-// ADMIN-READY: all text is in the lists below - `contact`, `forms` and `social`. Change them and the page follows.
-//
-// CONTACT FORM: the message form is displayed directly on the page, above the three online forms.
-//   `formConfig.endpoint` is empty, so sending opens the visitor's email app with the message already written, addressed
-//   to the institute email. To send from the site instead, put the address of a server that accepts a POST with JSON
-//   ({ name, phone, email, topic, message }) in `endpoint`, and nothing else needs to change.
+// ADMIN-READY: Site settings covers contact details and links. The intro and enquiry topics can be
+// edited in Admin > Contact us. Its hero banner is edited there too. Messages from the form are saved as enquiries.
 //
 // NO FILES TO COPY: this page uses no pictures except the shared banner (public/images/pages-banner.png).
 // The map is an embedded Google Map (the only thing loaded from outside). If it cannot load, the "Get directions" button still works.
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { FaGraduationCap, FaFacebookF, FaInstagram } from "react-icons/fa";
+import { FaGraduationCap } from "react-icons/fa";
 import {
   FiMapPin, FiChevronRight as FiCrumbArrow, FiPhone, FiMail, FiNavigation, FiExternalLink, FiUsers, FiMessageSquare,
   FiEdit3, FiArrowRight, FiSend, FiCheckCircle,
 } from "react-icons/fi";
 import "./Contact.css";
+import { socialIcon, useSite } from "../../context/SiteSettingsContext";
+import { sendEnquiry } from "../../services/enquiryService";
+import { getContactPage } from "../../services/contactPageService";
+import { mediaUrl } from "../../services/homeService";
 
 const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
@@ -35,32 +35,9 @@ const intro = {
 };
 
 // REAL - same details as the Navbar and Footer.
-const contact = {
-  name: "Chhotu Ram Polytechnic",
-  phones: ["01262-274667", "01262-285667"],
-  email: "crprohtak@hry.nic.in",
-  address: ["Delhi Road, Rohtak", "Haryana 124001"],
-  directions: "https://goo.gl/maps/ZZ6ig9cBYNjbWiL4A", // "How to reach the institute"
-  mapEmbed:
-    "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d13973.729633770752!2d76.617082!3d28.885496!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x18a060d271041f6f!2sC+R+Polytechnic!5e0!3m2!1sen!2sin!4v1433765486525",
-};
-
 // REAL - the three Google Forms from the live site. All open in a new tab.
-const forms = [
-  { icon: FiUsers, title: "Faculty feedback form", text: "For teachers and staff to share feedback.", href: "https://forms.gle/2RFW2T8tyHKo6xef7" },
-  { icon: FiEdit3, title: "Students feedback form", text: "For students to share feedback and suggestions.", href: "https://forms.gle/uDDtofTbuHvyN7QU9" },
-  { icon: FiMessageSquare, title: "Grievances form", text: "To raise a grievance with the committee.", href: "https://forms.gle/59a69DF2cuMYr7vy7" },
-];
-
-// REAL - the institute's two social pages.
-const social = [
-  { icon: FaFacebookF, label: "Facebook", href: "https://www.facebook.com/C.R.POLYTECHNIC.ROHTAK" },
-  { icon: FaInstagram, label: "Instagram", href: "https://www.instagram.com/crprohtak/" },
-];
-
 // ---- contact form (popup) ----
 const formConfig = {
-  endpoint: "", // empty = open the visitor's email app; or the address of a server that accepts the message (see top of file)
   topics: ["Admissions", "Courses and fees", "Results and exams", "Something else"],
 };
 
@@ -77,11 +54,21 @@ function validate(values) {
 }
 
 // The message form is embedded directly in the page, above the online feedback forms.
-function InlineMessageForm() {
+function InlineMessageForm({ topics, contact }) {
   const formRef = useRef(null);
-  const [values, setValues] = useState(emptyForm);
+  const [values, setValues] = useState({ ...emptyForm, topic: topics[0] || "Something else" });
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle"); // idle | sending | sent | failed
+  const [serverError, setServerError] = useState("");
+  const [website, setWebsite] = useState("");
+  const [sentMode, setSentMode] = useState("saved");
+
+  useEffect(() => {
+    setValues((current) => ({
+      ...current,
+      topic: topics.includes(current.topic) ? current.topic : (topics[0] || ""),
+    }));
+  }, [topics]);
 
   const change = (name) => (event) => {
     setValues((prev) => ({ ...prev, [name]: event.target.value }));
@@ -105,9 +92,11 @@ function InlineMessageForm() {
     errors[name] ? <span className="cnt-field__error" id={`cnt-f-${name}-error`}>{errors[name]}</span> : null;
 
   const reset = () => {
-    setValues(emptyForm);
+    setValues({ ...emptyForm, topic: topics[0] || "Something else" });
     setErrors({});
     setStatus("idle");
+    setServerError("");
+    setWebsite("");
   };
 
   const submit = async (event) => {
@@ -120,23 +109,23 @@ function InlineMessageForm() {
       return;
     }
 
-    if (formConfig.endpoint) {
-      setStatus("sending");
-      try {
-        const response = await fetch(formConfig.endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(values),
-        });
-        if (!response.ok) throw new Error("Request failed");
-        setStatus("sent");
-      } catch {
-        setStatus("failed");
-      }
+    setStatus("sending");
+    setServerError("");
+    try {
+      await sendEnquiry({ ...values, website });
+      setSentMode("saved");
+      setStatus("sent");
+      window.dispatchEvent(new Event("enquiries-updated"));
       return;
+    } catch (error) {
+      if (error.status === 400 || error.status === 429) {
+        setServerError(error.message);
+        setStatus("idle");
+        return;
+      }
     }
 
-    // No server is configured yet: prepare the message in the visitor's email app.
+    // Server unreachable or 5xx: keep the typed values and open the visitor's email app.
     const subject = `${values.topic} - message from ${values.name.trim()}`;
     const lines = [`Name: ${values.name.trim()}`, `Phone: ${values.phone.trim()}`, `I am a: ${values.role}`, `Department / course: ${values.department}`];
     if (values.email.trim()) lines.push(`Email: ${values.email.trim()}`);
@@ -146,6 +135,7 @@ function InlineMessageForm() {
     link.href = `mailto:${contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     link.click();
     setStatus("sent");
+    setSentMode("email");
   };
 
   return (
@@ -160,18 +150,28 @@ function InlineMessageForm() {
         {status === "sent" ? (
           <div className="cnt-modal__done" role="status">
             <FiCheckCircle aria-hidden="true" />
-            <h3>{formConfig.endpoint ? "Message sent" : "Your email is ready"}</h3>
+            <h3>{sentMode === "saved" ? "Message sent" : "Your email is ready"}</h3>
             <p>
-              {formConfig.endpoint
+              {sentMode === "saved"
                 ? "Thank you. The institute office will read your message and get back to you."
                 : "Your email app has opened with your message written. Press Send there to finish. If nothing opened, write to us at "}
-              {!formConfig.endpoint && <a href={`mailto:${contact.email}`}>{contact.email}</a>}
-              {!formConfig.endpoint && "."}
+              {sentMode === "email" && <a href={`mailto:${contact.email}`}>{contact.email}</a>}
+              {sentMode === "email" && "."}
             </p>
             <button type="button" className="cnt-btn cnt-btn--primary" onClick={reset}>Send another message</button>
           </div>
         ) : (
           <form ref={formRef} className="cnt-modal__body" onSubmit={submit} noValidate>
+            <input
+              type="text"
+              name="website"
+              value={website}
+              onChange={(event) => setWebsite(event.target.value)}
+              tabIndex={-1}
+              aria-hidden="true"
+              autoComplete="off"
+              style={{ position: "absolute", left: "-10000px", width: "1px", height: "1px" }}
+            />
             <div className="cnt-form-intro">
               <span className="cnt-form-intro__icon"><FiSend aria-hidden="true" /></span>
               <div><strong>College enquiry form</strong><span>Share your details so we can direct your message to the right place.</span></div>
@@ -222,7 +222,7 @@ function InlineMessageForm() {
               <div className="cnt-field">
                 <label htmlFor="cnt-f-topic">Enquiry topic</label>
                 <select {...fieldProps("topic")}>
-                  {formConfig.topics.map((topic) => (
+                  {topics.map((topic) => (
                     <option key={topic} value={topic}>{topic}</option>
                   ))}
                 </select>
@@ -238,6 +238,9 @@ function InlineMessageForm() {
               <p className="cnt-modal__alert" role="alert">
                 The message could not be sent. Try again, or call {contact.phones[0]}.
               </p>
+            )}
+            {serverError && (
+              <p className="cnt-modal__alert" role="alert">{serverError}</p>
             )}
 
             <div className="cnt-modal__actions">
@@ -255,9 +258,47 @@ function InlineMessageForm() {
 }
 
 export default function Contact() {
+  const { institute, contact: contactSettings, links, socialLinks } = useSite();
+  const [pageText, setPageText] = useState(intro);
+  const [pageTopics, setPageTopics] = useState(formConfig.topics);
+  const [heroImage, setHeroImage] = useState(hero.image);
+  useEffect(() => {
+    let active = true;
+    getContactPage()
+      .then((page) => {
+        if (!active) return;
+        if (page.bannerImage) setHeroImage(mediaUrl(page.bannerImage) || hero.image);
+        setPageText({
+          eyebrow: page.intro?.eyebrow || intro.eyebrow,
+          title: page.intro?.title || intro.title,
+          lead: page.intro?.lead || intro.lead,
+        });
+        if (Array.isArray(page.topics) && page.topics.length) setPageTopics(page.topics);
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+  const contact = {
+    name: institute?.name || "Chhotu Ram Polytechnic",
+    phones: contactSettings?.phones || [],
+    email: contactSettings?.email || "",
+    address: contactSettings?.addressLines || [],
+    directions: contactSettings?.directionsUrl || "",
+    mapEmbed: contactSettings?.mapEmbed || "",
+  };
+  const forms = [
+    { icon: FiUsers, title: "Faculty feedback form", text: "For teachers and staff to share feedback.", href: links?.facultyFeedbackForm || "" },
+    { icon: FiEdit3, title: "Students feedback form", text: "For students to share feedback and suggestions.", href: links?.studentFeedbackForm || "" },
+    { icon: FiMessageSquare, title: "Grievances form", text: "To raise a grievance with the committee.", href: links?.grievanceForm || "" },
+  ].filter((item) => item.href);
+  const social = (socialLinks || []).filter((item) => item?.url).map((item) => ({
+    icon: socialIcon(item.platform),
+    label: item.label || item.platform,
+    href: item.url,
+  }));
   return (
     <main id="main" className="cnt-page">
-      <section className="cnt-hero" aria-label="Contact us" style={{ "--img": `url("${hero.image}")` }}>
+      <section className="cnt-hero" aria-label="Contact us" style={{ "--img": `url("${heroImage || hero.image}")` }}>
         <div className="cnt-hero__photo" />
         <div className="cnt-hero__tags">
           <span className="cnt-hero__tag cnt-hero__tag--left">
@@ -282,9 +323,9 @@ export default function Contact() {
         {/* ---- title + navy "find us" card ---- */}
         <div className="cnt-top">
           <header className="cnt-intro">
-            <span className="cnt-eyebrow">{intro.eyebrow}</span>
-            <h1>{intro.title}</h1>
-            <p>{intro.lead}</p>
+            <span className="cnt-eyebrow">{pageText.eyebrow}</span>
+            <h1>{pageText.title}</h1>
+            <p>{pageText.lead}</p>
           </header>
 
           <aside className="cnt-place" aria-labelledby="cnt-place-title">
@@ -359,7 +400,7 @@ export default function Contact() {
         </section>
 
         {/* ---- inline message form, directly above the existing online forms ---- */}
-        <InlineMessageForm />
+        <InlineMessageForm topics={pageTopics} contact={contact} />
 
         {/* ---- the three forms (same size) ---- */}
         <section className="cnt-block" aria-labelledby="cnt-forms-title">

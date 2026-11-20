@@ -6,23 +6,8 @@
 // ADMIN-READY: all text and links are in the lists below.
 import { Link } from "react-router-dom";
 import { FiMapPin, FiPhone, FiMail, FiArrowUpRight, FiNavigation, FiChevronRight, FiArrowUp } from "react-icons/fi";
-import { FaFacebookF, FaInstagram } from "react-icons/fa";
+import { oneLineAddress, socialIcon, telHref, useSite } from "../context/SiteSettingsContext";
 import "./Footer.css";
-
-const site = {
-  name: "Chhotu Ram Polytechnic",
-  city: "Rohtak",
-  phones: ["01262-274667", "01262-285667"],
-  email: "crprohtak@hry.nic.in",
-  address: "Delhi Road, Rohtak, Haryana 124001",
-  affiliation: "Affiliated to HSBTE, Panchkula & AICTE, New Delhi",
-  map: { url: "https://www.google.com/maps?q=28.885496,76.617082" },
-};
-
-const social = [
-  { icon: FaFacebookF, label: "Facebook", href: "https://www.facebook.com/C.R.POLYTECHNIC.ROHTAK" },
-  { icon: FaInstagram, label: "Instagram", href: "https://www.instagram.com/crprohtak/" },
-];
 
 const columns = [
   { title: "Explore", links: [
@@ -38,18 +23,42 @@ const columns = [
     { label: "Anti sexual harassment", to: "/faculty/anti-sexual-harassment" }, { label: "IQAC", to: "/faculty/iqac" }, { label: "HRMS", to: "/faculty/hrms" },
   ] },
   { title: "Official links", links: [
-    { label: "HSTES", href: "https://hstes.org.in/" }, { label: "HSBTE", href: "https://hsbte.org.in/" }, { label: "AICTE", href: "https://www.aicte-india.org/" },
+    { label: "HSTES", href: "" }, { label: "HSBTE", href: "" }, { label: "AICTE", href: "" },
   ] },
 ];
 
 export default function Footer() {
+  const { institute, contact, socialLinks, images, links, mediaUrl } = useSite();
+  const site = {
+    name: institute?.name || "Chhotu Ram Polytechnic",
+    city: institute?.city || "Rohtak",
+    phones: Array.isArray(contact?.phones) ? contact.phones.filter(Boolean) : [],
+    email: contact?.email || "",
+    address: oneLineAddress(contact?.addressLines),
+    affiliation: `${institute?.affiliatedTo || "Affiliated to HSBTE, Panchkula"} & ${institute?.approvedBy || "Approved by AICTE, New Delhi"}`,
+    mapUrl: contact?.mapUrl || "",
+  };
+  const social = (socialLinks || []).filter((item) => item?.url).map((item) => ({
+    icon: socialIcon(item.platform),
+    label: item.label || item.platform,
+    href: item.url,
+  }));
+  const footerColumns = columns.map((column) =>
+    column.title === "Official links"
+      ? { ...column, links: [
+          { label: "HSTES", href: links?.hstes || "" },
+          { label: "HSBTE", href: links?.hsbte || "" },
+          { label: "AICTE", href: links?.aicte || "" },
+        ].filter((item) => item.href) }
+      : column
+  );
   return (
     <footer className="footer on-dark">
       <div className="container footer__grid">
         <div className="footer__brand">
           <div className="footer__logo-row">
             <Link className="footer__logo" to="/" aria-label={`${site.name}, ${site.city} - home`}>
-              <img src="/logo.png" alt="" loading="lazy" />
+              <img src={mediaUrl(images?.logo) || "/logo.png"} alt="" loading="lazy" />
               <span className="footer__logo-text">
                 <strong>{site.name}</strong>
                 <small>{site.city}, Haryana</small>
@@ -73,18 +82,20 @@ export default function Footer() {
             <p>
               <FiMapPin aria-hidden="true" />
               <span>
-                {site.address}{" "}
-                <a className="footer__map" href={site.map.url} target="_blank" rel="noopener noreferrer">
-                  <FiNavigation aria-hidden="true" /> Directions<span className="sr-only"> (opens in a new tab)</span>
-                </a>
+                {site.address}{site.address && site.mapUrl ? " " : ""}
+                {site.mapUrl && (
+                  <a className="footer__map" href={site.mapUrl} target="_blank" rel="noopener noreferrer">
+                    <FiNavigation aria-hidden="true" /> Directions<span className="sr-only"> (opens in a new tab)</span>
+                  </a>
+                )}
               </span>
             </p>
-            <p><FiPhone aria-hidden="true" /> <span>{site.phones.map((phone, i) => <a key={phone} href={`tel:${phone.replace(/-/g, "")}`}>{phone}{i < site.phones.length - 1 ? ", " : ""}</a>)}</span></p>
-            <p><FiMail aria-hidden="true" /> <a href={`mailto:${site.email}`}>{site.email}</a></p>
+            {site.phones.length > 0 && <p><FiPhone aria-hidden="true" /> <span>{site.phones.map((phone, i) => <a key={phone} href={telHref(phone)}>{phone}{i < site.phones.length - 1 ? ", " : ""}</a>)}</span></p>}
+            {site.email && <p><FiMail aria-hidden="true" /> <a href={`mailto:${site.email}`}>{site.email}</a></p>}
           </address>
         </div>
 
-        {columns.map((column) => (
+        {footerColumns.map((column) => (
           <nav key={column.title} aria-label={column.title}>
             <h2>{column.title}</h2>
             <ul>

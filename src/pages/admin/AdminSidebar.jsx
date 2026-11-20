@@ -1,6 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { FiHome, FiInfo, FiUsers, FiBookOpen, FiLayers, FiBriefcase, FiTool, FiImage, FiBell, FiCalendar, FiPhone, FiSettings, FiGrid, FiMessageSquare, FiChevronDown, FiMenu, FiX, FiExternalLink, FiUser } from "react-icons/fi";
+import { useSite } from "../../context/SiteSettingsContext";
+import { mediaUrl } from "../../services/settingsService";
+import { getEnquiryStats } from "../../services/enquiryService";
 import "./AdminSidebar.css";
 
 // Single source of truth for the admin navigation and editable-page count.
@@ -304,16 +307,42 @@ export const ADMIN_MENU = [
 ];
 const ICONS = { FiHome, FiInfo, FiUsers, FiBookOpen, FiLayers, FiBriefcase, FiTool, FiImage, FiBell, FiCalendar, FiPhone, FiSettings };
 
+// Every admin page draws its own sidebar, so the sidebar is rebuilt on each click. These two remember where the menu was
+// (scroll position and open group) so it does not jump back to the top.
+let savedScroll = 0;
+let savedGroup = null;
+
 export default function AdminSidebar({ title, children }) {
+  const { images } = useSite();
   const { pathname } = useLocation();
-  const [open, setOpen] = useState(null);
+  const activeGroup = ADMIN_MENU.find((group) => group.items.some((item) => pathname === `/admin/${item.path}`));
+  const [open, setOpen] = useState(activeGroup?.label ?? savedGroup);
   const [drawer, setDrawer] = useState(false);
+  const navRef = useRef(null);
+  const [newEnquiries, setNewEnquiries] = useState(0);
 
   useEffect(() => {
-    setDrawer(false);
-    const activeGroup = ADMIN_MENU.find((group) => group.items.some((item) => pathname === `/admin/${item.path}`));
-    if (activeGroup) setOpen(activeGroup.label);
-  }, [pathname]);
+    const load = () => getEnquiryStats().then((stats) => setNewEnquiries(stats.fresh)).catch(() => setNewEnquiries(0));
+    load();
+    window.addEventListener("enquiries-updated", load);
+    return () => window.removeEventListener("enquiries-updated", load);
+  }, []);
+
+  const toggleGroup = (label) => {
+    savedGroup = open === label ? null : label;
+    setOpen(savedGroup);
+  };
+
+  // put the menu back where it was; if the current page is out of view, scroll just enough to show it
+  useLayoutEffect(() => {
+    const nav = navRef.current;
+    nav.scrollTop = savedScroll;
+    const current = nav.querySelector(".is-active");
+    if (current && (current.offsetTop < nav.scrollTop || current.offsetTop + current.offsetHeight > nav.scrollTop + nav.clientHeight)) {
+      nav.scrollTop = current.offsetTop - nav.clientHeight / 2;
+    }
+    savedScroll = nav.scrollTop;
+  }, []);
 
   useEffect(() => {
     if (!drawer) return;
@@ -336,14 +365,17 @@ export default function AdminSidebar({ title, children }) {
       {drawer && <button className="asb-backdrop" type="button" aria-label="Close menu" onClick={() => setDrawer(false)} />}
       <aside id="admin-sidebar" className={`asb-side${drawer ? " is-open" : ""}`} aria-label="Admin menu">
         <div className="asb-brand">
-          <img src="/logo.png" alt="" />
-          <span>Admin panel</span>
+          <img src={mediaUrl(images?.logo) || "/logo.png"} alt="" />
+          <div>
+            <strong>Chhotu Ram Polytechnic</strong>
+            <span>Admin panel</span>
+          </div>
           <button className="asb-close" type="button" aria-label="Close menu" onClick={() => setDrawer(false)}><FiX aria-hidden="true" /></button>
         </div>
-        <nav className="asb-nav" aria-label="Admin sections">
+        <nav ref={navRef} className="asb-nav" aria-label="Admin sections" onScroll={(event) => { savedScroll = event.currentTarget.scrollTop; }}>
           <ul className="asb-list">
             <li><NavLink to="/admin" end className={linkClass}><FiGrid aria-hidden="true" /><span>Dashboard</span></NavLink></li>
-            <li><NavLink to="/admin/enquiries" className={linkClass}><FiMessageSquare aria-hidden="true" /><span>Enquiries</span></NavLink></li>
+            <li><NavLink to="/admin/enquiries" className={linkClass}><FiMessageSquare aria-hidden="true" /><span>Enquiries</span>{newEnquiries > 0 && <b className="asb-badge" aria-label={`${newEnquiries} new enquiries`}>{newEnquiries}</b>}</NavLink></li>
           </ul>
           <p className="asb-label">Website content</p>
           <ul className="asb-list">
@@ -360,7 +392,7 @@ export default function AdminSidebar({ title, children }) {
                     </NavLink>
                   ) : (
                     <>
-                      <button type="button" className={`asb-link asb-group${active ? " has-active" : ""}`} aria-expanded={expanded} aria-controls={`asb-sub-${group.label.replace(/\s/g, "-")}`} onClick={() => setOpen(expanded ? null : group.label)}>
+                      <button type="button" className={`asb-link asb-group${active ? " has-active" : ""}`} aria-expanded={expanded} aria-controls={`asb-sub-${group.label.replace(/\s/g, "-")}`} onClick={() => toggleGroup(group.label)}>
                         <Icon aria-hidden="true" /><span>{group.label}</span><FiChevronDown className="asb-caret" aria-hidden="true" />
                       </button>
                       <ul id={`asb-sub-${group.label.replace(/\s/g, "-")}`} className="asb-sub" hidden={!expanded}>
@@ -375,13 +407,13 @@ export default function AdminSidebar({ title, children }) {
             })}
           </ul>
         </nav>
-        <div className="asb-foot"><Link className="asb-foot-link" to="/" target="_blank" rel="noopener noreferrer"><FiExternalLink aria-hidden="true" />View website</Link></div>
+        <div className="asb-foot"><Link className="asb-foot__link" to="/" target="_blank" rel="noopener noreferrer"><FiExternalLink aria-hidden="true" />View website</Link></div>
       </aside>
       <div className="asb-body">
         <header className="asb-top">
           <button type="button" className="asb-menu-btn" aria-label="Open menu" aria-expanded={drawer} aria-controls="admin-sidebar" onClick={() => setDrawer(true)}><FiMenu aria-hidden="true" /></button>
           <h1 className="asb-title">{title}</h1>
-          <div className="asb-top-right"><Link className="asb-top-site" to="/" target="_blank" rel="noopener noreferrer">View website <FiExternalLink aria-hidden="true" /></Link><span className="asb-user"><FiUser aria-hidden="true" /> Admin</span></div>
+          <div className="asb-top__right"><Link className="asb-top__site" to="/" target="_blank" rel="noopener noreferrer">View website <FiExternalLink aria-hidden="true" /></Link><span className="asb-user"><FiUser aria-hidden="true" /> Admin</span></div>
         </header>
         <main id="admin-main" className="asb-main" tabIndex={-1}>{children}</main>
       </div>

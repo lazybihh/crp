@@ -19,6 +19,7 @@ import {
   FiInfo, FiExternalLink, FiHeadphones,
 } from "react-icons/fi";
 import "./StudentHelpline.css";
+import { useSite } from "../../context/SiteSettingsContext";
 
 const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
@@ -29,12 +30,6 @@ const intro = {
 };
 
 // REAL - same details as the Navbar and Footer.
-const contact = {
-  phones: ["01262-274667", "01262-285667"],
-  email: "crprohtak@hry.nic.in",
-  address: ["Delhi Road, Rohtak", "Haryana 124001"],
-};
-
 // Three same-size cards. `kind` decides what the card shows (phones, email or address).
 const reach = [
   { kind: "phone", icon: FiPhone, title: "Call the office", text: "Speak to the institute office on either number." },
@@ -61,6 +56,12 @@ const other = [
 ];
 
 export default function StudentHelpline() {
+  const { contact: contactSettings } = useSite();
+  const contact = {
+    phones: contactSettings?.phones || [],
+    email: contactSettings?.email || "",
+    address: contactSettings?.addressLines || [],
+  };
   return (
     <main id="main" className="hlp-page">
       <section className="hlp-hero" aria-label="Student helpline" style={{ "--img": `url("${hero.image}")` }}>

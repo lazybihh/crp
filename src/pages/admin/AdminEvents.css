@@ -1,62 +1,84 @@
-.aac-page {
-  display: grid;
-  gap: 18px;
-  min-width: 0;
+/* AdminEvents.css - extras for the Events editor. The rest of the look comes from AdminHome.css ("ahm-" classes). Every class here starts with "aev-". */
+.aev-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  max-width: 860px;
+  margin: 10px 0 0;
 }
 
-.aac-page h2 {
+.aev-heading {
   margin: 0;
   color: var(--ink-900);
   font-family: var(--font-display);
-  font-size: clamp(1.45rem, 2.5vw, 2rem);
-  line-height: 1.2;
+  font-size: 1.25rem;
   white-space: normal;
 }
 
-.aac-card {
-  display: grid;
-  justify-items: start;
-  gap: 14px;
-  max-width: 720px;
-  padding: clamp(22px, 3vw, 34px);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--white);
-  box-shadow: var(--shadow-soft);
+.aev-intro { max-width: 860px; margin: 0; }
+
+.aev-photo__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.aac-card p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
-.aac-link {
-  display: inline-flex;
+/* "Show on the Events page" tick box */
+.aev-check {
+  display: flex;
   align-items: center;
-  min-height: 44px;
-  padding: 10px 18px;
-  border-radius: 999px;
-  background: var(--ink-900);
-  color: var(--white);
+  gap: 10px;
+  color: var(--ink-900);
   font-size: 1rem;
-  font-weight: 700;
-  text-decoration: none;
-  transition: background 0.2s ease, transform 0.2s ease;
+  font-weight: 600;
+  cursor: pointer;
 }
 
-.aac-link:hover {
-  background: var(--sky-700);
-  transform: translateY(-2px);
+.aev-check input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--orange-500);
 }
 
-.aac-link:focus-visible {
-  outline: 3px solid var(--sky-700);
-  outline-offset: 3px;
+.aev-check input:focus-visible { outline: 3px solid var(--focus-on-light, var(--sky-700)); outline-offset: 2px; }
+
+/* the message + buttons bar at the bottom of a card */
+.aev-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .aac-link { transition: none; }
-  .aac-link:hover { transform: none; }
+.aev-actions > span { color: var(--muted); font-size: 0.95rem; font-weight: 600; }
+.aev-actions > span.is-error { color: var(--danger); }
+
+.aev-actions__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
+
+.aev-danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, transparent); }
+.aev-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--danger) 8%, var(--white)); }
+
+@media (max-width: 720px) {
+  .aev-actions__buttons { width: 100%; }
+}
+
+.aev-banner { max-width: 860px; }
+.aev-banner__title { margin: 0; color: var(--ink-900); font-size: 1.1rem; }
+.aev-banner__preview { width: 100%; max-width: 760px; aspect-ratio: 16 / 9; }
+.aev-banner__hint { font-size: 1rem; }
+.aev-banner__message { min-height: 24px; margin: 0; color: var(--muted); font-size: 1rem; }
+.aev-banner__message.is-error { color: var(--danger); }
+.aev-banner__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.aev-banner__button { min-height: 44px; font-size: 1rem; }
+.aev-banner__button:focus-visible { outline: 3px solid var(--focus-on-light); outline-offset: 3px; }
+.aev-banner__file { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); clip-path: inset(50%); }

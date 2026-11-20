@@ -2,10 +2,9 @@
 // Not editable here: icons and the two banner tags (they stay in Home.jsx).
 // Styles are in AdminHome.css (every class starts with "ahm-").
 import { createContext, useContext, useEffect, useState } from "react";
-import { FiArrowDown, FiArrowUp, FiPlus, FiTrash2, FiUpload } from "react-icons/fi";
+import { FiArrowDown, FiArrowUp, FiChevronRight, FiPlus, FiTrash2, FiUpload } from "react-icons/fi";
 import AdminSidebar from "./AdminSidebar";
 import { getHomeContent, getHomeOptions, saveHomeContent, uploadHomeImage, mediaUrl } from "../../services/homeService";
-import { mergeHome } from "../../data/homeDefaults";
 import "./AdminHome.css";
 
 const Editor = createContext(null);
@@ -22,12 +21,29 @@ const setIn = (obj, path, value) => {
 
 /* ---------- small building blocks ---------- */
 
-function Card({ title, hint, children }) {
+// number of fields inside some part of the page (shown on the closed section)
+const countFields = (value) =>
+  Array.isArray(value) ? value.reduce((sum, item) => sum + countFields(item), 0)
+  : value && typeof value === "object" ? Object.entries(value).reduce((sum, [key, item]) => sum + (key === "_id" || (key === "id" && "items" in value) ? 0 : countFields(item)), 0)
+  : 1;
+
+// a section: closed it shows only its title and field count; click to open. One section is open at a time.
+function Card({ title, hint, parts, children }) {
+  const { draft, openCard, setOpenCard } = useContext(Editor);
+  const open = openCard === title;
+  const fields = parts.reduce((sum, path) => sum + countFields(getIn(draft, path)), 0);
   return (
-    <section className="ahm-card">
-      <h3>{title}</h3>
-      {hint && <p className="ahm-hint">{hint}</p>}
-      {children}
+    <section className={`ahm-card${open ? " is-open" : ""}`}>
+      <button type="button" className="ahm-card__head" aria-expanded={open} onClick={() => setOpenCard(open ? "" : title)}>
+        <h3>{title}</h3>
+        <span>{fields} fields <FiChevronRight aria-hidden="true" /></span>
+      </button>
+      {open && (
+        <div className="ahm-card__body">
+          {hint && <p className="ahm-hint">{hint}</p>}
+          {children}
+        </div>
+      )}
     </section>
   );
 }
@@ -108,20 +124,39 @@ function Rows({ path, blank, noun, adder, children }) {
 
 export default function AdminHome() {
   const [draft, setDraft] = useState(null);
+  const [saved, setSaved] = useState(""); // the page as last loaded / saved, to know what changed
+  const [openCard, setOpenCard] = useState("");
+  const [failed, setFailed] = useState(false);
   const [options, setOptions] = useState({ notices: [], facilities: [] });
   const [message, setMessage] = useState({ text: "", error: false });
   const [saving, setSaving] = useState(false);
 
   const say = (text, error = false) => setMessage({ text, error });
-  const set = (path, value) => setDraft((current) => setIn(current, path, value));
+  const set = (path, value) => {
+    setDraft((current) => setIn(current, path, value));
+    setMessage({ text: "", error: false });
+  };
 
   useEffect(() => {
-    Promise.all([getHomeContent().catch(() => null), getHomeOptions().catch(() => null)]).then(([saved, choices]) => {
-      setDraft(structuredClone(mergeHome(saved)));
-      if (choices) setOptions(choices);
-      if (!saved || !choices) say("Cannot reach the server. Start the backend, then reload this page.", true);
+    Promise.all([getHomeContent().catch(() => null), getHomeOptions().catch(() => null)]).then(([content, choices]) => {
+      if (!content || !choices) {
+        say("Cannot reach the server. Start the backend, then reload this page.", true);
+        setFailed(true);
+        return;
+      }
+      const start = structuredClone(content);
+      setDraft(start);
+      setSaved(JSON.stringify(start));
+      setOptions(choices);
     });
   }, []);
+
+  // warn before leaving the page with unsaved changes
+  useEffect(() => {
+    const warn = (event) => { if (draft && JSON.stringify(draft) !== saved) event.preventDefault(); };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [draft, saved]);
 
   const save = async () => {
     setSaving(true);
@@ -129,6 +164,7 @@ export default function AdminHome() {
       const { notices, facilityTiles, ...fields } = draft; // the two ready-made lists are not saved
       fields.facilities = fields.facilities.filter((tile) => tile.facility); // a tile with no facility chosen is skipped
       await saveHomeContent(fields);
+      setSaved(JSON.stringify(draft));
       say("Saved. The Home page now shows these changes.");
     } catch (error) {
       say(error.message, true);
@@ -137,7 +173,19 @@ export default function AdminHome() {
     }
   };
 
-  if (!draft) return <AdminSidebar title="Home"><p className="ahm-loading">Loading...</p></AdminSidebar>;
+  const changed = JSON.stringify(draft) !== saved;
+  const discard = () => {
+    setDraft(JSON.parse(saved));
+    say("");
+  };
+
+  if (!draft) {
+    return (
+      <AdminSidebar title="Home">
+        <p className={failed ? "ahm-loading is-error" : "ahm-loading"}>{failed ? message.text : "Loading..."}</p>
+      </AdminSidebar>
+    );
+  }
 
   const noticeById = (id) => options.notices.find((notice) => notice._id === id);
   const facilityById = (id) => options.facilities.find((facility) => facility._id === id);
@@ -145,14 +193,14 @@ export default function AdminHome() {
 
   return (
     <AdminSidebar title="Home">
-      <Editor.Provider value={{ draft, set, say }}>
+      <Editor.Provider value={{ draft, set, say, openCard, setOpenCard }}>
         <div className="ahm-page">
           <header className="ahm-top">
             <h2>Home page</h2>
             <a href="/" target="_blank" rel="noopener noreferrer">See the live page</a>
           </header>
 
-          <Card title="Banner images" hint="The photos that slide at the top of the Home page. Wide (landscape) photos look best.">
+          <Card title="Banner images" parts={[["banners"]]} hint="The photos that slide at the top of the Home page. Wide (landscape) photos look best.">
             <Rows path={["banners"]} noun="Banner" blank={{ image: "", alt: "" }}>
               {(i, base) => (
                 <>
@@ -163,7 +211,7 @@ export default function AdminHome() {
             </Rows>
           </Card>
 
-          <Card title="Latest news strip" hint="The moving line under the banner. Language: hi = Hindi, en = English. The link is optional (for example /notices).">
+          <Card title="Latest news strip" parts={[["latestNews"]]} hint="The moving line under the banner. Language: hi = Hindi, en = English. The link is optional (for example /notices).">
             <Rows path={["latestNews"]} noun="Headline" blank={{ text: "", lang: "en", to: "" }}>
               {(i, base) => (
                 <>
@@ -177,7 +225,7 @@ export default function AdminHome() {
             </Rows>
           </Card>
 
-          <Card title="Numbers under the banner">
+          <Card title="Numbers under the banner" parts={[["stats"]]}>
             <Rows path={["stats"]} noun="Number" blank={{ value: "", label: "" }}>
               {(i, base) => (
                 <div className="ahm-two">
@@ -188,7 +236,7 @@ export default function AdminHome() {
             </Rows>
           </Card>
 
-          <Card title="Why choose us">
+          <Card title="Why choose us" parts={[["sectionContent", "whyChooseUs"], ["reasons"]]}>
             <Text label="Small heading" path={["sectionContent", "whyChooseUs", "eyebrow"]} />
             <Text label="Title" path={["sectionContent", "whyChooseUs", "title"]} />
             <Text label="Description" path={["sectionContent", "whyChooseUs", "description"]} area />
@@ -202,7 +250,7 @@ export default function AdminHome() {
             </Rows>
           </Card>
 
-          <Card title="Principal's message">
+          <Card title="Principal's message" parts={[["principal"]]}>
             <Text label="Small heading" path={["principal", "eyebrow"]} />
             <Text label="Quote" path={["principal", "quote"]} area />
             <Rows path={["principal", "paragraphs"]} noun="Paragraph" blank="">
@@ -219,7 +267,7 @@ export default function AdminHome() {
             </div>
           </Card>
 
-          <Card title="Leadership">
+          <Card title="Leadership" parts={[["sectionContent", "leadership"], ["dignitaries"]]}>
             <Text label="Small heading" path={["sectionContent", "leadership", "eyebrow"]} />
             <Text label="Title" path={["sectionContent", "leadership", "title"]} />
             <Rows path={["dignitaries"]} noun="Person" blank={{ name: "", role: "", text: "", image: "", initials: "" }}>
@@ -237,7 +285,7 @@ export default function AdminHome() {
             </Rows>
           </Card>
 
-          <Card title="News & notices" hint="Left side: the featured news card. Right side: the notice board.">
+          <Card title="News & notices" parts={[["sectionContent", "notices"], ["news"]]} hint="Left side: the featured news card. Right side: the notice board.">
             <Text label="Small heading" path={["sectionContent", "notices", "eyebrow"]} />
             <Text label="Title" path={["sectionContent", "notices", "title"]} />
             <Text label="Featured news - label" path={["news", "tag"]} />
@@ -246,7 +294,7 @@ export default function AdminHome() {
             <Image label="Featured news - photo" path={["news", "image"]} />
           </Card>
 
-          <Card title="Notice board" hint="Only notices that already exist on the Notices page can be shown here. Leave the list empty to show the newest notices automatically.">
+          <Card title="Notice board" parts={[["noticeIds"]]} hint="Only notices that already exist on the Notices page can be shown here. Leave the list empty to show the newest notices automatically.">
             <Rows
               path={["noticeIds"]}
               noun="Notice"
@@ -261,7 +309,7 @@ export default function AdminHome() {
             </Rows>
           </Card>
 
-          <Card title="Events, achievements & placements">
+          <Card title="Events, achievements & placements" parts={[["sectionContent", "highlights"], ["highlights"]]}>
             <Text label="Small heading" path={["sectionContent", "highlights", "eyebrow"]} />
             <Text label="Title" path={["sectionContent", "highlights", "title"]} />
             <Rows path={["highlights"]} noun="Panel" blank={{ id: "", title: "", image: "", items: [] }}>
@@ -282,7 +330,7 @@ export default function AdminHome() {
             </Rows>
           </Card>
 
-          <Card title="Facilities" hint="Pick a facility from the Facilities page and one of its 3 photos. The first tile is shown large.">
+          <Card title="Facilities" parts={[["sectionContent", "facilities"], ["facilities"]]} hint="Pick a facility from the Facilities page and one of its 3 photos. The first tile is shown large.">
             <Text label="Small heading" path={["sectionContent", "facilities", "eyebrow"]} />
             <Text label="Title" path={["sectionContent", "facilities", "title"]} />
             <Text label="Description" path={["sectionContent", "facilities", "description"]} area />
@@ -324,7 +372,7 @@ export default function AdminHome() {
             </Rows>
           </Card>
 
-          <Card title="Courses">
+          <Card title="Courses" parts={[["sectionContent", "courses"], ["courses"]]}>
             <Text label="Small heading" path={["sectionContent", "courses", "eyebrow"]} />
             <Text label="Title" path={["sectionContent", "courses", "title"]} />
             <Text label="Description" path={["sectionContent", "courses", "description"]} area />
@@ -345,7 +393,7 @@ export default function AdminHome() {
             </Rows>
           </Card>
 
-          <Card title="Recruiters">
+          <Card title="Recruiters" parts={[["sectionContent", "recruiters"], ["recruiters"]]}>
             <Text label="Small heading" path={["sectionContent", "recruiters", "eyebrow"]} />
             <Text label="Title" path={["sectionContent", "recruiters", "title"]} />
             <Rows path={["recruiters"]} noun="Company" blank={{ name: "", logo: "" }}>
@@ -359,8 +407,11 @@ export default function AdminHome() {
           </Card>
 
           <div className="ahm-save">
-            <span className={message.error ? "is-error" : ""} role="status">{message.text}</span>
-            <button type="button" className="ahm-btn ahm-btn--save" onClick={save} disabled={saving}>{saving ? "Saving..." : "Save Home page"}</button>
+            <span className={message.error ? "is-error" : ""} role="status">
+              {message.text || (changed ? "You have unsaved changes" : "No unsaved changes")}
+            </span>
+            <button type="button" className="ahm-btn" onClick={discard} disabled={!changed || saving}>Discard</button>
+            <button type="button" className="ahm-btn ahm-btn--save" onClick={save} disabled={!changed || saving}>{saving ? "Saving..." : "Save changes"}</button>
           </div>
         </div>
       </Editor.Provider>

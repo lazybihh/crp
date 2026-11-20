@@ -26,6 +26,7 @@ import {
   FiInfo,
 } from "react-icons/fi";
 import "./SkillCourses.css";
+import { useSite } from "../../context/SiteSettingsContext";
 
 const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
@@ -34,8 +35,6 @@ const intro = {
   title: "Skill courses",
   lead: "Practical programmes that add skills to your diploma. The institute currently lists two of them: CDTP and Apprenticeship.", // SAMPLE wording
 };
-
-const contact = { phones: ["01262-274667", "01262-285667"], email: "crprohtak@hry.nic.in" };
 
 const programmes = [
   {
@@ -71,6 +70,7 @@ const related = [
 ];
 
 export default function SkillCourses() {
+  const { contact } = useSite();
   const ready = programmes.filter((item) => item.to).length;
 
   return (

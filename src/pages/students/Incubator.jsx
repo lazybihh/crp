@@ -20,6 +20,7 @@ import {
   FiCompass, FiPhone, FiMail, FiInfo,
 } from "react-icons/fi";
 import "./Incubator.css";
+import { useSite } from "../../context/SiteSettingsContext";
 
 const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
@@ -28,8 +29,6 @@ const intro = {
   title: "Incubator",
   lead: "A place where a student idea can grow into something real. The institute is preparing its incubator details - this page shows what an incubator is and where to begin.",
 };
-
-const contact = { phones: ["01262-274667", "01262-285667"], email: "crprohtak@hry.nic.in" };
 
 // SAMPLE - the four stages of a startup idea, in general.
 const journey = [
@@ -54,6 +53,7 @@ const related = [
 ];
 
 export default function Incubator() {
+  const { contact } = useSite();
   return (
     <main id="main" className="inc-page">
       <section className="inc-hero" aria-label="Incubator" style={{ "--img": `url("${hero.image}")` }}>

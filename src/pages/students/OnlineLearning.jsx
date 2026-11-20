@@ -18,6 +18,7 @@ import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiChevronRight as FiCrumbArrow } from "react-icons/fi";
 import "./OnlineLearning.css";
+import { useSite } from "../../context/SiteSettingsContext";
 
 const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
@@ -54,8 +55,8 @@ const portals = [
     id: "hsbte",
     name: "HSBTE e-learning",
     full: "Haryana State Board of Technical Education",
-    host: "hsbte.org.in/digital-elearning",
-    href: "http://hsbte.org.in/digital-elearning",
+    host: "",
+    href: "",
     icon: FiAward,
     accent: "mix",
     text: "The digital learning section of the board that conducts your diploma examinations.",
@@ -76,6 +77,12 @@ const related = [
 ];
 
 export default function OnlineLearning() {
+  const { links } = useSite();
+  const hsbte = portals.find((portal) => portal.id === "hsbte");
+  if (hsbte) {
+    hsbte.href = links?.hsbte ? `${links.hsbte.replace(/\/$/, "")}/digital-elearning` : "";
+    hsbte.host = hsbte.href ? hsbte.href.replace(/^https?:\/\//, "") : "";
+  }
   return (
     <main id="main" className="onl-page">
       <section className="onl-hero" aria-label="Online learning portals" style={{ "--img": `url("${hero.image}")` }}>

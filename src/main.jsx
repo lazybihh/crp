@@ -5,11 +5,14 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./styles/theme.css";
 import "./styles/global.css";
+import { SiteSettingsProvider } from "./context/SiteSettingsContext";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <SiteSettingsProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </SiteSettingsProvider>
   </StrictMode>
 );

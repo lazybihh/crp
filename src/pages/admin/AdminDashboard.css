@@ -1,8 +1,8 @@
-/* Dashboard.css - the admin dashboard only. Every class starts with "adb-". Colours come from theme.css only. */
+/* AdminDashboard.css - the admin dashboard only. Every class starts with "adb-". Colours come from theme.css only. */
 
 .adb-page {
   display: grid;
-  gap: clamp(18px, 2.4vw, 28px);
+  gap: clamp(16px, 2vw, 22px);
 }
 
 .adb-page h2 {
@@ -11,7 +11,7 @@
 
 .adb-eyebrow {
   color: var(--orange-400);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -23,86 +23,86 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 18px 28px;
-  padding: clamp(22px, 3vw, 36px);
-  border-radius: 26px;
+  gap: 16px 28px;
+  padding: clamp(18px, 2.4vw, 28px) clamp(20px, 3vw, 32px);
+  border-radius: 22px;
   color: var(--white);
   background:
     radial-gradient(60% 140% at 0% 0%, color-mix(in srgb, var(--sky-500) 30%, transparent), transparent 70%),
     radial-gradient(40% 120% at 100% 100%, color-mix(in srgb, var(--orange-500) 26%, transparent), transparent 70%),
     linear-gradient(130deg, var(--ink-800), var(--ink-950));
-  box-shadow: var(--shadow-lift);
+  box-shadow: var(--shadow-soft);
 }
 
 .adb-welcome h2 {
-  margin: 8px 0 0;
-  max-width: 28ch;
+  margin: 6px 0 0;
+  max-width: 30ch;
   color: var(--white);
   font-family: var(--font-display);
-  font-size: clamp(1.5rem, 3vw, 2.2rem);
-  line-height: 1.15;
+  font-size: clamp(1.35rem, 2.6vw, 1.85rem);
+  line-height: 1.2;
 }
 
 .adb-welcome p {
-  max-width: 52ch;
-  margin: 10px 0 0;
+  max-width: 54ch;
+  margin: 8px 0 0;
   color: color-mix(in srgb, var(--white) 86%, transparent);
-  font-size: 1.05rem;
-  line-height: 1.6;
+  font-size: 0.98rem;
+  line-height: 1.55;
 }
 
 .adb-btn {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 26px;
+  padding: 12px 22px;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--orange-400), var(--orange-500));
-  box-shadow: 0 12px 28px color-mix(in srgb, var(--orange-500) 34%, transparent);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--orange-500) 34%, transparent);
   color: var(--ink-950);
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   transition: transform 0.3s var(--ease);
 }
 
 .adb-btn:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
 }
 
-/* ---- number cards ---- */
+/* ---- number cards: icon on the left, number + label on the right ---- */
 .adb-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  gap: 14px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .adb-stat {
-  position: relative;
-  display: grid;
-  gap: 2px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
   height: 100%;
-  padding: 20px;
+  padding: 16px;
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: 18px;
   background: var(--white);
   box-shadow: var(--shadow-soft);
   transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
 }
 
 .adb-stat:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
   box-shadow: var(--shadow-lift);
 }
 
 .adb-stat__icon {
+  flex: none;
   display: grid;
   place-items: center;
   width: 46px;
   height: 46px;
-  margin-bottom: 10px;
   border-radius: 14px;
   background: var(--sky-100);
   color: var(--ink-900);
@@ -119,61 +119,58 @@
   color: var(--orange-400);
 }
 
+.adb-stat__text {
+  display: grid;
+  min-width: 0;
+}
+
 .adb-stat__value {
   color: var(--ink-900);
   font-family: var(--font-display);
-  font-size: 2.4rem;
+  font-size: 1.8rem;
   font-weight: 700;
   line-height: 1.1;
 }
 
 .adb-stat__label {
   color: var(--ink-900);
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 700;
 }
 
 .adb-stat__hint {
   color: var(--muted);
-  font-size: 0.95rem;
+  font-size: 0.82rem;
+  line-height: 1.35;
 }
 
 /* ---- cards ---- */
 .adb-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+  gap: clamp(16px, 2vw, 22px);
 }
 
 .adb-card {
-  padding: clamp(20px, 2.4vw, 28px);
+  padding: clamp(18px, 2.2vw, 26px);
   border: 1px solid var(--line);
-  border-radius: 24px;
+  border-radius: 22px;
   background: var(--white);
   box-shadow: var(--shadow-soft);
 }
 
-.adb-card--wide {
-  grid-column: 1 / -1;
-}
-
 .adb-card h2 {
-  margin: 0 0 16px;
+  margin: 0 0 14px;
   color: var(--ink-900);
   font-family: var(--font-display);
-  font-size: 1.35rem;
+  font-size: 1.2rem;
   line-height: 1.2;
 }
 
-.adb-note {
-  margin: -6px 0 18px;
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
+/* quick actions: 2 tiles per row */
 .adb-actions {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin: 0;
   padding: 0;
@@ -183,35 +180,38 @@
 .adb-actions a {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
+  gap: 12px;
+  height: 100%;
+  padding: 12px;
   border: 1px solid var(--line);
-  border-left: 4px solid var(--sky-500);
   border-radius: 14px;
-  background: linear-gradient(180deg, var(--white), var(--surface-blue-light));
+  background: var(--surface-blue-light);
   color: var(--ink-900);
-  font-size: 1rem;
+  font-size: 0.92rem;
   font-weight: 600;
-  transition: transform 0.3s var(--ease), border-left-color 0.3s;
+  line-height: 1.3;
+  transition: transform 0.3s var(--ease), border-color 0.3s;
 }
 
 .adb-actions a:hover {
-  transform: translateX(4px);
-  border-left-color: var(--orange-500);
+  transform: translateY(-2px);
+  border-color: var(--orange-500);
 }
 
 .adb-actions a > span {
+  flex: none;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
   background: linear-gradient(150deg, var(--ink-800), var(--ink-950));
   color: var(--orange-400);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
 }
 
 .adb-actions a > svg {
+  flex: none;
   margin-left: auto;
   color: var(--sky-700);
 }
@@ -221,11 +221,11 @@
   align-items: center;
   gap: 14px;
   margin: 0;
-  padding: 18px;
+  padding: 16px;
   border: 1.5px dashed var(--line);
   border-radius: 16px;
   color: var(--muted);
-  font-size: 1rem;
+  font-size: 0.95rem;
   line-height: 1.5;
 }
 
@@ -255,16 +255,16 @@
 
 .adb-latest span {
   color: var(--muted);
-  font-size: 0.95rem;
+  font-size: 0.92rem;
 }
 
 .adb-more {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-top: 16px;
+  margin-top: 14px;
   color: var(--sky-700);
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
 }
 
@@ -272,63 +272,53 @@
   color: var(--orange-700);
 }
 
-/* ---- content progress ---- */
-.adb-progress {
+/* website sections: one tile per sidebar group */
+.adb-sections {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px 24px;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.adb-progress li {
-  position: relative;
+.adb-sections a {
   display: grid;
-  gap: 6px;
-}
-
-.adb-progress li > div {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 1rem;
-}
-
-.adb-progress strong {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 2px 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-blue-light);
   color: var(--ink-900);
+  transition: transform 0.3s var(--ease), border-color 0.3s;
 }
 
-.adb-progress li > div span {
-  color: var(--muted);
+.adb-sections a:hover {
+  transform: translateY(-2px);
+  border-color: var(--sky-500);
+}
+
+.adb-sections strong {
   font-size: 0.95rem;
-  font-weight: 600;
 }
 
-.adb-bar {
-  display: block;
-  height: 8px;
-  overflow: hidden;
-  border-radius: 8px;
-  background: var(--sky-100);
+.adb-sections span {
+  grid-column: 1;
+  color: var(--muted);
+  font-size: 0.82rem;
 }
 
-.adb-bar i {
-  display: block;
-  height: 100%;
-  border-radius: 8px;
-  background: linear-gradient(90deg, var(--sky-500), var(--orange-500));
-}
-
-.adb-done {
-  position: absolute;
-  top: 2px;
-  right: -2px;
+.adb-sections svg {
+  grid-column: 2;
+  grid-row: 1 / span 2;
   color: var(--sky-700);
 }
 
 .adb-stat:focus-visible,
 .adb-actions a:focus-visible,
+.adb-sections a:focus-visible,
 .adb-btn:focus-visible,
 .adb-more:focus-visible,
 .adb-latest a:focus-visible {
@@ -340,10 +330,6 @@
   .adb-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
-  .adb-progress {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 800px) {
@@ -353,7 +339,8 @@
 }
 
 @media (max-width: 560px) {
-  .adb-progress {
+  .adb-stats,
+  .adb-actions {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -366,12 +353,14 @@
 @media (prefers-reduced-motion: reduce) {
   .adb-stat,
   .adb-actions a,
+  .adb-sections a,
   .adb-btn {
     transition: none;
   }
 
   .adb-stat:hover,
   .adb-actions a:hover,
+  .adb-sections a:hover,
   .adb-btn:hover {
     transform: none;
   }

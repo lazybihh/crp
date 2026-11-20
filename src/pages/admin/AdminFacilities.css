@@ -1,62 +1,105 @@
-.aar-page {
-  display: grid;
-  gap: 18px;
-  min-width: 0;
-}
-
-.aar-page h2 {
-  margin: 0;
+/* AdminFacilities.css - extras for the Facilities editor. The rest of the look comes from AdminHome.css ("ahm-" classes). Every class here starts with "afc-". */
+.afc-heading {
+  max-width: 860px;
+  margin: 10px 0 0;
   color: var(--ink-900);
   font-family: var(--font-display);
-  font-size: clamp(1.45rem, 2.5vw, 2rem);
-  line-height: 1.2;
+  font-size: 1.25rem;
   white-space: normal;
 }
 
-.aar-card {
+.afc-intro { max-width: 860px; margin: 0; }
+
+/* one editable line with its remove button */
+.afc-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.afc-line > input,
+.afc-line > textarea,
+.afc-line > .ahm-two { flex: 1; min-width: 0; }
+
+.afc-icon {
+  flex: none;
   display: grid;
-  justify-items: start;
-  gap: 14px;
-  max-width: 720px;
-  padding: clamp(22px, 3vw, 34px);
+  place-items: center;
+  width: 40px;
+  height: 40px;
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: 10px;
   background: var(--white);
-  box-shadow: var(--shadow-soft);
+  color: var(--danger);
+  cursor: pointer;
 }
 
-.aar-card p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.6;
+.afc-icon:hover { background: color-mix(in srgb, var(--danger) 8%, var(--white)); }
+.afc-icon:focus-visible { outline: 3px solid var(--focus-on-light, var(--sky-700)); outline-offset: 2px; }
+
+/* the 3 photo slots */
+.afc-slots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
 
-.aar-link {
-  display: inline-flex;
+.afc-slot {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-blue-light, var(--white));
+}
+
+.afc-slot > b { color: var(--ink-900); font-size: 0.9rem; }
+.afc-slot .ahm-image__box { width: 100%; }
+.afc-slot small { color: var(--muted); }
+
+.afc-slot__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* the message + buttons bar at the bottom of a card */
+.afc-actions {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  min-height: 44px;
-  padding: 10px 18px;
-  border-radius: 999px;
-  background: var(--ink-900);
-  color: var(--white);
-  font-size: 1rem;
-  font-weight: 700;
-  text-decoration: none;
-  transition: background 0.2s ease, transform 0.2s ease;
+  justify-content: space-between;
+  gap: 12px 16px;
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
 }
 
-.aar-link:hover {
-  background: var(--sky-700);
-  transform: translateY(-2px);
+.afc-actions > span { color: var(--muted); font-size: 0.95rem; font-weight: 600; }
+.afc-actions > span.is-error { color: var(--danger); }
+
+.afc-actions__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.aar-link:focus-visible {
-  outline: 3px solid var(--sky-700);
-  outline-offset: 3px;
+.afc-danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, transparent); }
+.afc-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--danger) 8%, var(--white)); }
+
+@media (max-width: 720px) {
+  .afc-slots { grid-template-columns: 1fr; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .aar-link { transition: none; }
-  .aar-link:hover { transform: none; }
-}
+.afc-banner { max-width: 860px; }
+.afc-banner__title { margin: 0; color: var(--ink-900); font-size: 1.1rem; }
+.afc-banner__preview { width: 100%; max-width: 760px; aspect-ratio: 16 / 9; }
+.afc-banner__hint { font-size: 1rem; }
+.afc-banner__message { min-height: 24px; margin: 0; color: var(--muted); font-size: 1rem; }
+.afc-banner__message.is-error { color: var(--danger); }
+.afc-banner__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.afc-banner__button { min-height: 44px; font-size: 1rem; }
+.afc-banner__button:focus-visible { outline: 3px solid var(--focus-on-light); outline-offset: 3px; }
+.afc-banner__file { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); clip-path: inset(50%); }

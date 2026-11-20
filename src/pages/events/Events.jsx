@@ -7,26 +7,31 @@
 //   MISSING  the live page gives NO date, place or description for any of them (the detail pages would not open),
 //            so `date`, `place` and `text` are empty. Nothing was invented. The page says plainly that details are being added.
 //
-// ADMIN-READY: this page only reads the `events` list. Each event is one row:
+// CONNECTED TO THE DATABASE: the events come from the server (GET /api/events, edited in Admin > Events).
+// The hero banner is stored separately for this page and edited in Admin > Events.
+// The list below (`fallbackEvents`) is only the starting copy: it shows while the page loads or when the server is down.
+// Each event is one row:
 //     { id, title, kind, date, place, text, photo }
 //   kind    "Event" or "Activity" (a label on the card)
 //   date    optional, "YYYY-MM-DD". Dated events are sorted newest first; a future date gets an "Upcoming" badge.
 //   place   optional      text   optional short description (one or two sentences)
 //   photo   path of the picture in public/images/events/ - if the file is missing a clean "Photo coming soon" tile shows
 // The first event in the sorted list becomes the large featured card; the others are cards of one size below it.
-// To connect an admin panel later, replace `events` with data fetched from the server in the same shape.
+// If the admin deletes or hides every event, the page shows a short "no events yet" message instead of cards.
 //
 // FILES TO COPY from the old site (save with these new names in public/images/events/):
 //   orientation-2025.jpg  <- media/Activities/660a394f-5060-4dc4-a661-a1b83dfa4bcc.jpeg
 //   rangoli.jpg           <- media/Activities/WhatsApp_Image_2023-01-23_at_3.18.24_AM.jpeg
 //   ncc-selection.jpg     <- media/Activities/ea4ad141-b6d7-4c34-bc51-d2d720974226_a8Ep18G.jpeg
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import {
   FiMapPin, FiChevronRight as FiCrumbArrow, FiArrowRight, FiCalendar, FiImage, FiInfo, FiPhone, FiMail, FiStar,
 } from "react-icons/fi";
 import "./Events.css";
+import { useSite, telHref } from "../../context/SiteSettingsContext";
+import { getEvents, getEventsBanner, mediaUrl } from "../../services/eventService";
 
 const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
@@ -36,10 +41,8 @@ const intro = {
   lead: "Programmes, competitions and activities at the institute.",
 };
 
-const contact = { phones: ["01262-274667", "01262-285667"], email: "crprohtak@hry.nic.in" };
-
-// REAL - the live Events page. Add new events at the top; fill `date`, `place` and `text` when you have them.
-const events = [
+// Starting copy (same as the database seed in backend/models/Event.js). Shown until the server answers, and if it never does.
+const fallbackEvents = [
   { id: 1, title: "Orientation Program 2025", kind: "Event", date: "", place: "", text: "", photo: "/images/orientation-2025.jpg" },
   { id: 2, title: "Rangoli Competition", kind: "Activity", date: "", place: "", text: "", photo: "/images/rangoli.jpg" },
   { id: 3, title: "एनसीसी प्रथम वर्ष के लिए चयन प्रक्रिया", kind: "Activity", date: "", place: "", text: "", photo: "/images/ncc-selection.jpg" },
@@ -56,10 +59,12 @@ const formatDate = (date) =>
   new Date(`${date}T00:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
 const isUpcoming = (date) => Boolean(date) && new Date(`${date}T23:59:59`) >= new Date();
 
-const sorted = events
-  .map((item, index) => ({ item, index }))
-  .sort((a, b) => (b.item.date || "").localeCompare(a.item.date || "") || a.index - b.index)
-  .map((entry) => entry.item);
+// dated events newest first, the rest keep their list position (the server already sends them in this order)
+const sortEvents = (list) =>
+  list
+    .map((item, index) => ({ item, index }))
+    .sort((a, b) => (b.item.date || "").localeCompare(a.item.date || "") || a.index - b.index)
+    .map((entry) => entry.item);
 
 // One photo. If the file is missing, a clean placeholder tile shows instead.
 function Photo({ src, alt }) {
@@ -74,7 +79,7 @@ function Photo({ src, alt }) {
   }
   return (
     <div className="evt-photo">
-      <img src={src} alt={alt} loading="lazy" onError={() => setFailed(true)} />
+      <img src={mediaUrl(src)} alt={alt} loading="lazy" onError={() => setFailed(true)} />
     </div>
   );
 }
@@ -100,13 +105,40 @@ function Facts({ event }) {
 }
 
 export default function Events() {
+  const { contact } = useSite();
+  const [events, setEvents] = useState(fallbackEvents);
+  const [heroImage, setHeroImage] = useState(hero.image);
+
+  useEffect(() => {
+    let active = true;
+    getEventsBanner()
+      .then(({ page }) => {
+        const image = page?.bannerImage;
+        if (active && image) setHeroImage(mediaUrl(image) || hero.image);
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  // load the saved events once; replace the starting copy only after a successful answer (an empty list is a valid answer)
+  useEffect(() => {
+    let active = true;
+    getEvents()
+      .then((data) => { if (active && Array.isArray(data.events)) setEvents(data.events); })
+      .catch(() => { /* server down: keep the starting copy */ });
+    return () => { active = false; };
+  }, []);
+
+  const sorted = useMemo(() => sortEvents(events), [events]);
   const featured = sorted[0];
   const others = sorted.slice(1);
   const upcoming = sorted.filter((item) => isUpcoming(item.date)).length;
+  const phones = (contact?.phones || []).filter(Boolean);
+  const email = contact?.email || "";
 
   return (
     <main id="main" className="evt-page">
-      <section className="evt-hero" aria-label="Events" style={{ "--img": `url("${hero.image}")` }}>
+      <section className="evt-hero" aria-label="Events" style={{ "--img": `url("${heroImage || hero.image}")` }}>
         <div className="evt-hero__photo" />
         <div className="evt-hero__tags">
           <span className="evt-hero__tag evt-hero__tag--left">
@@ -136,13 +168,24 @@ export default function Events() {
 
           <aside className="evt-count" aria-label="Events in numbers">
             <span className="evt-count__icon"><FiCalendar aria-hidden="true" /></span>
-            <p className="evt-count__number">{events.length}</p>
+            <p className="evt-count__number">{sorted.length}</p>
             <p className="evt-count__label">events and activities</p>
             <p className="evt-count__note">
               {upcoming > 0 ? `${upcoming} coming up` : "New events will be added here"}
             </p>
           </aside>
         </div>
+
+        {/* ---- nothing to show (the admin removed or hid every event) ---- */}
+        {sorted.length === 0 && (
+          <aside className="evt-notice" aria-label="No events">
+            <span className="evt-notice__icon"><FiInfo aria-hidden="true" /></span>
+            <div>
+              <h2>No events yet</h2>
+              <p>New events and activities will be listed here. For now, ask the institute office.</p>
+            </div>
+          </aside>
+        )}
 
         {/* ---- featured event ---- */}
         {featured && (
@@ -167,8 +210,8 @@ export default function Events() {
               <h2 id="evt-more-title">Events and <span>activities</span></h2>
             </header>
             <ul className="evt-grid">
-              {others.map((event) => (
-                <li key={event.id} className="evt-card">
+              {others.map((event, index) => (
+                <li key={event._id || event.id || index} className="evt-card">
                   <Photo src={event.photo} alt={event.title} />
                   <div className="evt-card__body">
                     <span className="evt-card__kind">
@@ -186,6 +229,7 @@ export default function Events() {
         )}
 
         {/* ---- notice ---- */}
+        {sorted.some((item) => !item.date) && sorted.length > 0 && (
         <aside className="evt-notice" aria-label="Details coming">
           <span className="evt-notice__icon"><FiInfo aria-hidden="true" /></span>
           <div>
@@ -193,6 +237,7 @@ export default function Events() {
             <p>The date, place and description of each event will appear on its card soon. For now, ask the institute office.</p>
           </div>
         </aside>
+        )}
 
         {/* ---- related ---- */}
         <section className="evt-related" aria-label="More from the institute">
@@ -214,14 +259,18 @@ export default function Events() {
             <p>Call or write to the institute office.</p>
           </div>
           <div className="evt-help__actions">
-            <a className="evt-btn evt-btn--primary" href={`tel:${contact.phones[0].replace(/-/g, "")}`}>
-              <FiPhone aria-hidden="true" />
-              {contact.phones.join(" / ")}
-            </a>
-            <a className="evt-btn evt-btn--ghost" href={`mailto:${contact.email}`}>
-              <FiMail aria-hidden="true" />
-              {contact.email}
-            </a>
+            {phones.length > 0 && (
+              <a className="evt-btn evt-btn--primary" href={telHref(phones[0])}>
+                <FiPhone aria-hidden="true" />
+                {phones.join(" / ")}
+              </a>
+            )}
+            {email && (
+              <a className="evt-btn evt-btn--ghost" href={`mailto:${email}`}>
+                <FiMail aria-hidden="true" />
+                {email}
+              </a>
+            )}
           </div>
         </section>
       </div>

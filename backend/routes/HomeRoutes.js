@@ -12,15 +12,16 @@ const BOARD_SIZE = 8;
 //   facilityTiles the chosen facilities with the image already picked from the facility's 3 photos
 router.get("/", async (req, res) => {
   try {
-    const home = (await HomeContent.findOne().lean()) || {};
+    // the first time, the record is created from the model's starting content
+    const home = (await HomeContent.findOne().lean()) || (await HomeContent.create({})).toObject();
 
     const ids = home.noticeIds || [];
     let notices;
     if (ids.length) {
-      const rows = await Notice.find({ _id: { $in: ids } }).lean();
+      const rows = await Notice.find({ _id: { $in: ids }, published: { $ne: false } }).lean();
       notices = ids.map((id) => rows.find((row) => String(row._id) === String(id))).filter(Boolean);
     } else {
-      notices = await Notice.find().sort({ date: -1, order: 1 }).limit(BOARD_SIZE).lean();
+      notices = await Notice.find({ published: { $ne: false } }).sort({ date: -1, order: 1 }).limit(BOARD_SIZE).lean();
     }
 
     const tiles = home.facilities || [];
@@ -47,7 +48,7 @@ router.get("/", async (req, res) => {
 // What the admin can choose from: every notice and every facility that exists on their own pages.
 router.get("/options", async (req, res) => {
   try {
-    const notices = await Notice.find().sort({ order: 1 }).select("title category date file").lean();
+    const notices = await Notice.find({ published: { $ne: false } }).sort({ order: 1 }).select("title category date file").lean();
     const facilities = await Facility.find().select("slug label photos").lean();
     res.json({ notices, facilities });
   } catch (error) {

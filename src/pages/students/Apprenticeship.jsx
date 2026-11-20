@@ -21,6 +21,7 @@ import {
   FiLayers, FiHelpCircle, FiPlus, FiPhone, FiMail,
 } from "react-icons/fi";
 import "./Apprenticeship.css";
+import { useSite } from "../../context/SiteSettingsContext";
 
 const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
@@ -29,8 +30,6 @@ const intro = {
   title: "Apprenticeship",
   lead: "Every year the institute offers hands-on training to ITI certificate holders in technical trades. Here is who it is for and what it covers.",
 };
-
-const contact = { phones: ["01262-274667", "01262-285667"], email: "crprohtak@hry.nic.in" };
 
 // The interns training this session (trade only - no names on a public page).
 const session = {
@@ -65,6 +64,7 @@ const related = [
 ];
 
 export default function Apprenticeship() {
+  const { contact } = useSite();
   return (
     <main id="main" className="app-page">
       <section className="app-hero" aria-label="Apprenticeship" style={{ "--img": `url("${hero.image}")` }}>

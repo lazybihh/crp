@@ -22,6 +22,7 @@ import {
   FiExternalLink, FiClock, FiCheck, FiShield,
 } from "react-icons/fi";
 import "./EServices.css";
+import { useSite } from "../../context/SiteSettingsContext";
 
 const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
@@ -30,8 +31,6 @@ const intro = {
   title: "E-services",
   lead: "The institute's online services for students, all in one place. Pick a service and it opens in a new tab.",
 };
-
-const contact = { phones: ["01262-274667", "01262-285667"], email: "crprohtak@hry.nic.in" };
 
 // The three REAL services. Links are ASSUMED (see the top of this file). `site` is the short name shown on the card.
 const services = [
@@ -57,7 +56,7 @@ const services = [
     text: "Digital lessons and learning material for polytechnic students.", // SAMPLE
     site: "HSBTE digital e-learning",
     label: "Open e-contents",
-    href: "http://hsbte.org.in/digital-elearning",
+    href: "",
   },
 ];
 
@@ -75,6 +74,9 @@ const related = [
 ];
 
 export default function EServices() {
+  const { contact, links } = useSite();
+  services.find((service) => service.title === "Online Fees Facility").href = links?.payFee || "";
+  services.find((service) => service.title === "E-Contents").href = links?.hsbte ? `${links.hsbte.replace(/\/$/, "")}/digital-elearning` : "";
   const ready = services.filter((service) => service.href).length;
 
   return (

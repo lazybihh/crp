@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiChevronRight, FiFileText, FiDownload, FiExternalLink, FiAward, FiArrowUpRight } from "react-icons/fi";
 import "./Results.css";
+import { useSite } from "../../context/SiteSettingsContext";
 
 const hero = { image: "/images/pages-banner.png" };
 
@@ -35,6 +36,7 @@ const downloads = [
 ];
 
 export default function Results() {
+  const { links } = useSite();
   return (
     <main id="main" className="res-page">
       {/* ---- hero ---- */}
@@ -109,9 +111,9 @@ export default function Results() {
                 </li>
               ))}
             </ol>
-            <a className="res-pill" href="http://hsbte.org.in/" target="_blank" rel="noopener noreferrer">
+            {links?.hsbte && <a className="res-pill" href={links.hsbte} target="_blank" rel="noopener noreferrer">
               Go to HSBTE <FiArrowUpRight aria-hidden="true" />
-            </a>
+            </a>}
           </section>
 
           <section className="res-toppers" aria-labelledby="res-top-title">
