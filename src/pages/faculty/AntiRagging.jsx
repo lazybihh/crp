@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
+import { getPolicy } from "../../services/facultyContentService";
 
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import {
@@ -22,6 +23,9 @@ const commitments = [
 ];
 
 export default function AntiRagging() {
+  const [backendContent, setBackendContent] = useState(null);
+  useEffect(() => { let active = true; getPolicy("anti-ragging").then(row => { if (active) setBackendContent(row.content || row); }).catch(error => console.error("Faculty page content load failed:", error)); return () => { active = false; }; }, []);
+
   const [formNotice, setFormNotice] = useState("");
 
   const handleSubmit = (event) => {
@@ -30,7 +34,7 @@ export default function AntiRagging() {
   };
 
   return (
-    <main id="main" className="pol-page pol-ragging">
+    <main data-faculty-content-key="anti-ragging" id="main" className="pol-page pol-ragging">
       <section className="pol-hero" aria-label="Anti Ragging" style={{ "--pol-img": 'url("/images/pages-banner.png")' }}>
         <div className="pol-hero__photo" />
         <div className="pol-hero__tags">
@@ -54,7 +58,7 @@ export default function AntiRagging() {
         <header className="pol-intro">
           <span className="pol-eyebrow">Faculty · Policies &amp; Rules</span>
           <h1>Anti <em>Ragging</em></h1>
-          <p>A respectful campus begins with the safety, dignity and wellbeing of every student.</p>
+          <p>{backendContent?.description || "A respectful campus begins with the safety, dignity and wellbeing of every student."}</p>
         </header>
 
         <section className="pol-feature">

@@ -14,12 +14,12 @@
 // The hero shows /images/pages-banner.png exactly as it is (no tint over it).
 // A missing picture shows a clean placeholder, a missing staff photo shows the person's initials.
 //
-// FILES TO COPY from the old website (old path -> new path):
 //   Add the administrative office hero, collage, staff and highlight images under /images/faculty/administrative/.
 //   /media/teachers/<file> -> public/images/faculty/administrative/staff/<file>   (9 photos, same file names as the live site; Meenakshi and Sunder Singh have none, so initials are shown)
 // The banner /images/pages-banner.png is the same one the About / Facilities pages use.
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { getDepartment, getDepartments, mediaUrl } from "../../services/departmentService";
 import { FaGraduationCap } from "react-icons/fa";
 import {
   FiChevronRight, FiMapPin, FiSearch, FiX, FiImage, FiInfo, FiLayers, FiBriefcase, FiMonitor, FiAward,
@@ -30,10 +30,11 @@ import "./Administrative.css";
 const IMG = "/images/faculty/administrative";
 
 // Same banner as the About / Facilities pages (a patterned navy banner shows if it is missing).
-const banner = "/images/pages-banner.png";
+const fallbackBanner = "/images/pages-banner.png";
 
-const dept = {
+const fallbackDept = {
   title: "Administrative Staff",
+  titleLine2: "",
   lead: "Meet the administrative team supporting the day-to-day work of Chhotu Ram Polytechnic, Rohtak.",
   facts: [
     { icon: FiUsers, text: "11 administrative staff members" },
@@ -46,7 +47,7 @@ const dept = {
 
 // All eight departments. Wide screens show them as a row of pills, small screens as a dropdown.
 // The same list is repeated in every department file on purpose.
-const switcher = [
+const fallbackSwitcher = [
   { label: "Civil", to: "/departments/civil" },
   { label: "Computer", to: "/departments/computer" },
   { label: "Electrical", to: "/departments/electrical" },
@@ -58,23 +59,23 @@ const switcher = [
   { label: "Administrative", to: "/departments/administrative" },
 ];
 const CURRENT = "/departments/administrative";
-const currentLabel = switcher.find((item) => item.to === CURRENT)?.label;
+const fallbackCurrentLabel = fallbackSwitcher.find((item) => item.to === CURRENT)?.label;
 
 // Two small pictures on top, one wide picture below (the layout of the About card).
-const collage = [
+const fallbackCollage = [
   { src: `${IMG}/administrative-about-1.jpg`, alt: "Administrative office - picture 1" },
   { src: `${IMG}/administrative-about-2.jpg`, alt: "Administrative office - picture 2" },
   { src: `${IMG}/administrative-about-3.jpg`, alt: "Administrative office - picture 3" },
 ];
 
-const aboutTiles = [
+const fallbackAboutTiles = [
   { icon: FiUsers, value: "11", label: "Team members" },
   { icon: FiBriefcase, value: "Office", label: "Administration" },
   { icon: FiCheckCircle, value: "Daily", label: "Campus support" },
 ];
 
 // SAMPLE ABOUT MESSAGE: replace this draft with the institute's approved administrative-office introduction.
-const about = [
+const fallbackAbout = [
   {
     id: "intro",
     title: "About the Administrative Office",
@@ -119,7 +120,7 @@ const about = [
 // Every card shows the name, the role, the qualification, and - when you add them - the interested area and the email.
 // interest is empty for everyone on the live site, so that row is hidden until you fill it in. email shows as a mailto link.
 // The date of birth is NOT shown on purpose (it is personal information).
-const staff = [
+const fallbackStaff = [
   { name: "Samsher Singh", role: "Compounder", photo: `${IMG}/staff/samsher.jpeg`, qualification: "10+2", interest: "", email: "samshermalik098@gmail.com" },
   { name: "Sumit", role: "Clerk", photo: `${IMG}/staff/sumit_exam.jpg`, qualification: "10+2", interest: "", email: "sumitsinghnagar@gmail.com" },
   { name: "Meenakshi", role: "Clerk", photo: "", qualification: "10+2", interest: "", email: "meenakshi874@gmail.com" },
@@ -134,7 +135,7 @@ const staff = [
 ];
 
 // Four visual cards, real facts from this department's page only.
-const highlights = [
+const fallbackHighlights = [
   { icon: FiUsers, value: "11", label: "Administrative staff", image: `${IMG}/highlight-team.jpg`, text: "The current administrative staff list published by the institute includes 11 team members." },
   { icon: FiBriefcase, value: "Office", label: "Coordination", image: `${IMG}/highlight-office.jpg`, text: "The administrative office supports routine institutional coordination." },
   { icon: FiFileText, value: "Records", label: "Documentation", image: `${IMG}/highlight-records.jpg`, text: "The office helps with institutional records and routine documentation." },
@@ -162,30 +163,30 @@ function Mark({ text, query }) {
 }
 
 // One picture with a placeholder when the file is missing.
-function Photo({ src, alt, className = "" }) {
+function Photo({ src, alt, className = "", placeholder = "Photo coming soon" }) {
   const [failed, setFailed] = useState(false);
   return (
     <figure className={`adm-photo ${className}`}>
-      {failed ? (
+      {failed || !src ? (
         <div className="adm-photo__empty" aria-hidden="true">
           <FiImage />
-          <span>Photo coming soon</span>
+          <span>{placeholder}</span>
         </div>
       ) : (
-        <img src={src} alt={alt} loading="lazy" decoding="async" onError={() => setFailed(true)} />
+        <img src={mediaUrl(src)} alt={alt} loading="lazy" decoding="async" onError={() => setFailed(true)} />
       )}
     </figure>
   );
 }
 
-function Avatar({ person }) {
+function Avatar({ person, placeholder = "Photo coming soon" }) {
   const [failed, setFailed] = useState(false);
   return (
     <div className="adm-avatar">
       {failed || !person.photo ? (
-        <span aria-hidden="true">{initials(person.name) || <FiUser />}</span>
+        <span aria-hidden="true">{placeholder}</span>
       ) : (
-        <img src={person.photo} alt={person.name} loading="lazy" decoding="async" onError={() => setFailed(true)} />
+        <img src={mediaUrl(person.photo)} alt={person.name} loading="lazy" decoding="async" onError={() => setFailed(true)} />
       )}
     </div>
   );
@@ -204,6 +205,29 @@ function filterSection(section, q) {
 }
 
 export default function Administrative() {
+  const [serverData, setServerData] = useState(null);
+  const [departmentOptions, setDepartmentOptions] = useState(fallbackSwitcher);
+  useEffect(() => {
+    let active = true;
+    getDepartment("administrative").then((data) => { if (active) setServerData(data); }).catch(() => {});
+    getDepartments().then((list) => {
+      if (active && Array.isArray(list) && list.length) setDepartmentOptions(list.slice().sort((a, b) => a.order - b.order).map((item) => ({ label: item.shortName, to: `/departments/${item.slug}`, slug: item.slug })));
+    }).catch(() => {});
+    return () => { active = false; };
+  }, []);
+  const fallbackLabels = {
+    eyebrow: "Faculty", bannerTagLeft: "Government Polytechnic", bannerTagRight: "Rohtak (Haryana)", breadcrumb: "Administrative Staff", switcherLabel: "Staff", aboutTab: "About", staffTab: "Staff", searchAbout: "Search administrative information", searchStaff: "Search staff by name or role", qualificationLabel: "Qualification", interestLabel: "Interested area", highlightsEyebrow: "At a glance", highlightsTitle: "Administrative", highlightsTitleHighlight: "overview", photoPlaceholder: "Photo coming soon", };
+  const pageLabels = Object.fromEntries(Object.entries({ ...fallbackLabels, ...(serverData?.labels || {}) }).map(([key, value]) => [key, value || fallbackLabels[key]]));
+  const banner = mediaUrl(serverData?.banner || fallbackBanner);
+  const dept = serverData ? { ...fallbackDept, ...serverData, facts: (serverData.facts || []).map((item, i) => ({ ...item, icon: fallbackDept.facts[i]?.icon || fallbackDept.facts[0]?.icon })), image: mediaUrl(serverData.image ?? fallbackDept.image) } : fallbackDept;
+  const collage = serverData ? (serverData.collage || []).map((item) => ({ ...item, src: mediaUrl(item.src) })) : fallbackCollage;
+  const aboutTiles = serverData ? (serverData.tiles || []).map((item, i) => ({ ...item, icon: fallbackAboutTiles[i]?.icon || fallbackAboutTiles[0]?.icon })) : fallbackAboutTiles;
+  const about = serverData ? (serverData.about || []).map((item, i) => ({ ...item, icon: fallbackAbout[i]?.icon || fallbackAbout[0]?.icon })) : fallbackAbout;
+  const staff = (serverData?.staff || fallbackStaff).filter((person) => [person.name, person.role, person.photo, person.qualification, person.interest, person.email].some(Boolean));
+  const highlights = serverData ? (serverData.highlights || []).map((item, i) => ({ ...item, image: mediaUrl(item.image), icon: fallbackHighlights[i]?.icon || fallbackHighlights[0]?.icon })) : fallbackHighlights;
+  const switcher = departmentOptions;
+  const currentLabel = switcher.find((item) => item.slug === "administrative" || item.to === CURRENT)?.label || fallbackCurrentLabel;
+
   const [tab, setTab] = useState("about");
   const [query, setQuery] = useState("");
   const tabRefs = useRef({});
@@ -260,11 +284,11 @@ export default function Administrative() {
         <div className="adm-hero__tags">
           <span className="adm-hero__tag adm-hero__tag--left">
             <span className="adm-hero__tag-icon"><FaGraduationCap aria-hidden="true" /></span>
-            Government Polytechnic
+            {pageLabels.bannerTagLeft}
           </span>
           <span className="adm-hero__tag adm-hero__tag--right">
             <span className="adm-hero__tag-icon"><FiMapPin aria-hidden="true" /></span>
-            Rohtak (Haryana)
+            {pageLabels.bannerTagRight}
           </span>
         </div>
         <nav className="adm-crumbs" aria-label="Breadcrumb">
@@ -272,7 +296,7 @@ export default function Administrative() {
           <FiChevronRight aria-hidden="true" />
           <span>Departments</span>
           <FiChevronRight aria-hidden="true" />
-          <span aria-current="page">Administrative Staff</span>
+          <span aria-current="page">{pageLabels.breadcrumb}</span>
         </nav>
       </section>
 
@@ -280,8 +304,8 @@ export default function Administrative() {
         {/* ---- title block + department picture ---- */}
         <header className="adm-top">
           <div className="adm-top__text">
-            <span className="adm-eyebrow">Faculty</span>
-            <h1>{dept.title}</h1>
+            <span className="adm-eyebrow">{pageLabels.eyebrow}</span>
+            <h1>{dept.title}{dept.titleLine2 && <span>{dept.titleLine2}</span>}</h1>
             <p>{dept.lead}</p>
             <ul className="adm-facts">
               {dept.facts.map((fact) => {
@@ -296,7 +320,7 @@ export default function Administrative() {
             </ul>
           </div>
           <div className="adm-frame">
-            <Photo src={dept.image} alt={dept.imageAlt} className="adm-frame__photo" />
+            <Photo src={dept.image} alt={dept.imageAlt} className="adm-frame__photo" placeholder={pageLabels.photoPlaceholder} />
           </div>
         </header>
 
@@ -304,7 +328,7 @@ export default function Administrative() {
         <nav className="adm-switch" aria-label="Departments">
           <ul className="adm-switch__list">
             {switcher.map((item) => {
-              const isCurrent = item.to === CURRENT;
+              const isCurrent = item.slug === "administrative" || item.to === CURRENT;
               return (
                 <li key={item.to}>
                   <Link to={item.to} className={`adm-switch__link${isCurrent ? " is-current" : ""}`} aria-current={isCurrent ? "page" : undefined}>
@@ -330,7 +354,7 @@ export default function Administrative() {
             {menuOpen && (
               <ul id="adm-switch-panel" className="adm-switch__panel">
                 {switcher.map((item) => {
-                  const isCurrent = item.to === CURRENT;
+                  const isCurrent = item.slug === "administrative" || item.to === CURRENT;
                   return (
                     <li key={item.to}>
                       <Link
@@ -374,14 +398,14 @@ export default function Administrative() {
                 type="button" role="tab" id="adm-tab-about" aria-selected={tab === "about"} aria-controls="adm-panel"
                 tabIndex={tab === "about" ? 0 : -1} className={`adm-tab${tab === "about" ? " is-active" : ""}`} onClick={() => pickTab("about")}
               >
-                <FiFileText aria-hidden="true" /> About
+                <FiFileText aria-hidden="true" /> {pageLabels.aboutTab || "About"}
               </button>
               <button
                 ref={(el) => { tabRefs.current.staff = el; }}
                 type="button" role="tab" id="adm-tab-staff" aria-selected={tab === "staff"} aria-controls="adm-panel"
                 tabIndex={tab === "staff" ? 0 : -1} className={`adm-tab${tab === "staff" ? " is-active" : ""}`} onClick={() => pickTab("staff")}
               >
-                <FiUsers aria-hidden="true" /> Staff <span className="adm-tab__n">{staff.length}</span>
+                <FiUsers aria-hidden="true" /> {pageLabels.staffTab || "Staff"} <span className="adm-tab__n">{staff.length}</span>
               </button>
             </div>
           </div>
@@ -389,12 +413,12 @@ export default function Administrative() {
           <div id="adm-panel" className="adm-panel" role="tabpanel" aria-labelledby={`adm-tab-${tab}`} tabIndex={0}>
             {tab === "about" ? (
               <>
-                {!q && (
+                {!q && feature && (
                   <article className="adm-feature">
                     <div className="adm-collage">
-                      <Photo src={collage[0].src} alt={collage[0].alt} className="adm-collage__a" />
-                      <Photo src={collage[1].src} alt={collage[1].alt} className="adm-collage__b" />
-                      <Photo src={collage[2].src} alt={collage[2].alt} className="adm-collage__c" />
+                      <Photo src={collage[0].src} alt={collage[0].alt} className="adm-collage__a" placeholder={pageLabels.photoPlaceholder} />
+                      <Photo src={collage[1].src} alt={collage[1].alt} className="adm-collage__b" placeholder={pageLabels.photoPlaceholder} />
+                      <Photo src={collage[2].src} alt={collage[2].alt} className="adm-collage__c" placeholder={pageLabels.photoPlaceholder} />
                     </div>
                     <div className="adm-feature__text">
                       <span className="adm-feature__bar" aria-hidden="true" />
@@ -447,18 +471,21 @@ export default function Administrative() {
               <ul className="adm-staff">
                 {people.map((person) => (
                   <li key={person.name} className="adm-card">
-                    <Avatar person={person} />
+                    <Avatar person={person} placeholder={pageLabels.photoPlaceholder} />
                     <div className="adm-card__body">
                       <h3><Mark text={person.name} query={q} /></h3>
-                      <span className="adm-card__role"><Mark text={person.role} query={q} /></span>
+                      {person.role && <span className="adm-card__role"><Mark text={person.role} query={q} /></span>}
                       <dl>
+                        {person.qualification && (
                         <div>
-                          <dt>Qualification</dt>
-                          <dd>{person.qualification ? <Mark text={person.qualification} query={q} /> : <span className="adm-card__none" aria-label="Not added yet">-</span>}</dd>
+                          <dt>{pageLabels.qualificationLabel || "Qualification"}</dt>
+                          <dd><Mark text={person.qualification} query={q} /></dd>
                         </div>
+                        )}
+                        {/* qualification is omitted when empty */}
                         {person.interest && (
                           <div>
-                            <dt>Interested area</dt>
+                            <dt>{pageLabels.interestLabel || "Interested area"}</dt>
                             <dd><Mark text={person.interest} query={q} /></dd>
                           </div>
                         )}
@@ -482,14 +509,14 @@ export default function Administrative() {
         {/* ---- department highlights ---- */}
         <section className="adm-highlights" aria-labelledby="adm-hl-title">
           <header className="adm-head">
-            <span className="adm-eyebrow adm-eyebrow--line">At a glance</span>
+            <span className="adm-eyebrow adm-eyebrow--line">{pageLabels.highlightsEyebrow || "At a glance"}</span>
             <h2 id="adm-hl-title">Administrative <span>overview</span></h2>
           </header>
           <ul className="adm-hl">
             {highlights.map((item) => {
               const Icon = item.icon;
               return (
-                <li key={item.label} className="adm-hl__card" style={{ "--hl-img": `url("${item.image}")` }}>
+                <li key={item.label} className="adm-hl__card" style={{ "--hl-img": `url("${mediaUrl(item.image)}")` }}>
                   <div className="adm-hl__top">
                     <span className="adm-hl__icon"><Icon aria-hidden="true" /></span>
                     <strong>{item.value}</strong>

@@ -22,12 +22,13 @@ import {
 } from "react-icons/fi";
 import { FaGraduationCap } from "react-icons/fa";
 import "./ElectricalResources.css";
+import { getStudyResources, studyResourceFileUrl } from "../../services/studyResourceService";
 
-const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
+const defaultHero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
 const PAGE_SIZE = 12;
 
-const intro = {
+const defaultIntro = {
   eyebrow: "Students",
   title: "Electrical Engineering",
   subtitle: "Study resources",
@@ -35,7 +36,7 @@ const intro = {
 };
 
 // This department's own page (About and Staff).
-const aboutLink = "/departments/electrical";
+const defaultAboutLink = "/departments/electrical";
 
 // The department row. All seven are shown directly.
 const switcher = {
@@ -51,7 +52,7 @@ const switcher = {
   current: "/students/departments/electrical",
 };
 
-const tabs = [
+const defaultTabs = [
   {
     id: "lesson-plan",
     label: "Lesson plan",
@@ -89,7 +90,7 @@ const tabs = [
 ];
 
 // Links at the bottom of the page.
-const related = [
+const defaultRelated = [
   { label: "Academic calendar", text: "Session dates and holidays (PDF).", href: "/docs/academic-calendar-2025-26.pdf", external: true },
   { label: "Online learning portals", text: "NDLI, SWAYAM and HSBTE e-learning.", to: "/students/online-learning" },
   { label: "Student helpline", text: "Ask for help with studies or the campus.", to: "/students/helpline" },
@@ -100,13 +101,18 @@ const related = [
 const typeOf = (file) => (file.split(".").pop() || "file").toUpperCase();
 // PDFs open straight in the browser. Word and PowerPoint files cannot, so "View" opens them in Microsoft's free online viewer
 // (it needs the site to be public, so it works on the live site but not on localhost).
-const viewHref = (file) =>
-  file.toLowerCase().endsWith(".pdf")
-    ? file
-    : `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(window.location.origin + file)}`;
-const semesterLabel = (n) => (n === 0 ? "All semesters" : `Semester ${n}`);
+const viewHref = (file) => {
+  const url = studyResourceFileUrl(file);
+  return url.toLowerCase().endsWith(".pdf")
+    ? url
+    : `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(url.startsWith("http") ? url : window.location.origin + url)}`;
+};
+const semesterLabel = (n, tab) => tab?.filters?.find((filter) => Number(filter.value) === Number(n))?.label || (n === 0 ? "All semesters" : `Semester ${n}`);
+const RESOURCE_ICONS = { "lesson-plan": FiCalendar, "outline-notes": FiBookOpen, "question-papers": FiClipboard, syllabus: FiLayers };
 
 export default function ElectricalResources() {
+  const [tabs, setTabs] = useState(defaultTabs);
+  const [pageData, setPageData] = useState({});
   const location = useLocation();
   const fromHash = () => {
     const id = location.hash.replace("#", "");
@@ -118,6 +124,14 @@ export default function ElectricalResources() {
   const [semester, setSemester] = useState("all");
   const [limit, setLimit] = useState(PAGE_SIZE);
 
+  useEffect(() => {
+    let active = true;
+    getStudyResources("electrical")
+      .then((data) => { if (active) { if (Array.isArray(data.tabs) && data.tabs.length) setTabs(data.tabs); setPageData(data); } })
+      .catch(() => { /* Keep the built-in page content when the API is unavailable. */ });
+    return () => { active = false; };
+  }, []);
+
   // A link such as ...#syllabus opens that tab.
   useEffect(() => {
     setTabId(fromHash());
@@ -127,16 +141,20 @@ export default function ElectricalResources() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.key, location.hash]);
 
+  const pageIntro = pageData.intro || defaultIntro;
+  const pageHeroImage = pageData.heroImage || defaultHero.image;
+  const pageAboutLink = pageData.aboutLink || defaultAboutLink;
+  const pageRelated = pageData.related?.length ? pageData.related : defaultRelated;
   const tab = tabs.find((item) => item.id === tabId) || tabs[0];
   const q = query.trim().toLowerCase();
 
   // Semester chips are made from the files in this tab, so empty semesters never appear.
-  const semesters = useMemo(() => [...new Set(tab.files.map((file) => file.semester))].sort((a, b) => a - b), [tab]);
+  const semesters = useMemo(() => tab.filters?.length ? tab.filters.map((filter) => Number(filter.value)) : [...new Set(tab.files.map((file) => file.semester))].sort((a, b) => a - b), [tab]);
 
   const results = tab.files.filter(
     (file) =>
       (semester === "all" || file.semester === semester) &&
-      (!q || file.name.toLowerCase().includes(q) || semesterLabel(file.semester).toLowerCase().includes(q)),
+      (!q || file.name.toLowerCase().includes(q) || semesterLabel(file.semester, tab).toLowerCase().includes(q)),
   );
   const shown = results.slice(0, limit);
   const remaining = results.length - shown.length;
@@ -164,7 +182,7 @@ export default function ElectricalResources() {
 
   return (
     <main id="main" className="rele-page">
-      <section className="rele-hero" aria-label="Electrical Engineering study resources" style={{ "--img": `url("${hero.image}")` }}>
+      <section className="rele-hero" aria-label="Electrical Engineering study resources" style={{ "--img": `url("${pageHeroImage}")` }}>
         <div className="rele-hero__photo" />
         <div className="rele-hero__tags">
           <span className="rele-hero__tag rele-hero__tag--left">
@@ -189,13 +207,13 @@ export default function ElectricalResources() {
         {/* ---- title + navy count card ---- */}
         <div className="rele-top">
           <header className="rele-intro">
-            <span className="rele-eyebrow">{intro.eyebrow}</span>
+            <span className="rele-eyebrow">{pageIntro.eyebrow}</span>
             <h1>
-              {intro.title}
-              <small>{intro.subtitle}</small>
+              {pageIntro.title}
+              <small>{pageIntro.subtitle}</small>
             </h1>
-            <p>{intro.lead}</p>
-            <Link className="rele-btn" to={aboutLink}>
+            <p>{pageIntro.lead}</p>
+            <Link className="rele-btn" to={pageAboutLink}>
               View department and staff
               <FiArrowRight aria-hidden="true" />
             </Link>
@@ -233,7 +251,7 @@ export default function ElectricalResources() {
           <div className="rele-toolbar">
             <div className="rele-tabs" role="tablist" aria-label="Type of resource" onKeyDown={onTabKey}>
               {tabs.map((item) => {
-                const Icon = item.icon;
+                const Icon = item.icon || RESOURCE_ICONS[item.id] || FiFileText;
                 const active = item.id === tabId;
                 return (
                   <button
@@ -286,7 +304,7 @@ export default function ElectricalResources() {
                     aria-pressed={value === semester}
                     onClick={() => { setSemester(value); setLimit(PAGE_SIZE); }}
                   >
-                    {value === "all" ? "All" : value === 0 ? "General" : `Semester ${value}`}
+                    {value === "all" ? "All" : semesterLabel(value, tab)}
                   </button>
                 ))}
               </div>
@@ -307,7 +325,7 @@ export default function ElectricalResources() {
                         </span>
                         <span className="rele-file__text">
                           <strong>{item.name}</strong>
-                          <small>{semesterLabel(item.semester)}</small>
+                          <small>{semesterLabel(item.semester, tab)}</small>
                         </span>
                         <span className="rele-file__actions">
                           <a className="rele-file__go rele-file__go--view" href={viewHref(item.file)} target="_blank" rel="noopener noreferrer">
@@ -315,7 +333,7 @@ export default function ElectricalResources() {
                             View
                             <span className="sr-only"> {item.name} (opens in a new tab)</span>
                           </a>
-                          <a className="rele-file__go" href={item.file} download>
+                          <a className="rele-file__go" href={studyResourceFileUrl(item.file)} download>
                             <FiDownload aria-hidden="true" />
                             Download
                             <span className="sr-only"> {item.name}</span>
@@ -352,7 +370,7 @@ export default function ElectricalResources() {
 
         {/* ---- related links ---- */}
         <section className="rele-related" aria-label="More for students">
-          {related.map((item) =>
+          {pageRelated.map((item) =>
             item.external ? (
               <a key={item.label} className="rele-related__item" href={item.href} target="_blank" rel="noopener noreferrer">
                 <span><strong>{item.label}</strong>{item.text}</span>

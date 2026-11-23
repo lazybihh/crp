@@ -14,13 +14,13 @@
 // The hero shows /images/pages-banner.png exactly as it is (no tint over it).
 // A missing picture shows a clean placeholder, a missing staff photo shows the person's initials.
 //
-// FILES TO COPY from the old website (old path -> new path):
 //   /media/teachers/<name>.jpeg               -> public/images/departments/workshop/staff/<name>.jpeg   (9 photos, same file names as the live site, see `staff` below)
 //   hero.jpg, about-1.jpg, about-2.jpg, about-3.jpg -> /images/faculty/workshop/ (department picture and About collage)
 //   highlight-staff.jpg, highlight-instructors.jpg, highlight-superintendent.jpg, highlight-foreman.jpg -> backgrounds of the highlight cards
 // The banner /images/pages-banner.png is the same one the About / Facilities pages use.
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { getDepartment, getDepartments, mediaUrl } from "../../services/departmentService";
 import { FaGraduationCap } from "react-icons/fa";
 import {
   FiChevronRight, FiMapPin, FiSearch, FiX, FiImage, FiInfo, FiLayers, FiCheckCircle, FiFileText, FiUsers,
@@ -32,10 +32,11 @@ const IMG = "/images/departments/workshop";
 const DEPT_IMG = "/images/faculty/workshop";
 
 // Same banner as the About / Facilities pages (a patterned navy banner shows if it is missing).
-const banner = "/images/pages-banner.png";
+const fallbackBanner = "/images/pages-banner.png";
 
-const dept = {
+const fallbackDept = {
   title: "Workshop Department",
+  titleLine2: "",
   // Taken from the Courses page of this project; check it against the live Workshop page when its text is available.
   lead: "An intensive, short-duration hands-on learning experience.",
   facts: [
@@ -48,7 +49,7 @@ const dept = {
 
 // All nine departments. Wide screens show them as a row of pills, small screens as a dropdown.
 // The same list is repeated in every department file on purpose.
-const switcher = [
+const fallbackSwitcher = [
   { label: "Civil", to: "/departments/civil" },
   { label: "Computer", to: "/departments/computer" },
   { label: "Electrical", to: "/departments/electrical" },
@@ -60,10 +61,10 @@ const switcher = [
   { label: "Administrative", to: "/departments/administrative" },
 ];
 const CURRENT = "/departments/workshop";
-const currentLabel = switcher.find((item) => item.to === CURRENT)?.label;
+const fallbackCurrentLabel = fallbackSwitcher.find((item) => item.to === CURRENT)?.label;
 
 // Two small pictures on top, one wide picture below (the layout of the About card).
-const collage = [
+const fallbackCollage = [
   { src: `${DEPT_IMG}/about-1.jpg`, alt: "Workshop Department - picture 1" },
   { src: `${DEPT_IMG}/about-2.jpg`, alt: "Workshop Department - picture 2" },
   { src: `${DEPT_IMG}/about-3.jpg`, alt: "Workshop Department - picture 3" },
@@ -71,7 +72,7 @@ const collage = [
 
 // The three small tiles in the About card.
 // PROVISIONAL: counted from the live staff page until the text of the live Workshop page is available.
-const aboutTiles = [
+const fallbackAboutTiles = [
   { icon: FiUsers, value: "10", label: "Staff members" },
   { icon: FiTool, value: "6", label: "Workshop Instructors" },
   { icon: FiUser, value: "1", label: "Workshop Superintendent" },
@@ -81,7 +82,7 @@ const aboutTiles = [
 // paragraphs come before the items, closing paragraphs after them. The FIRST section sits in the card beside the collage.
 // PLACEHOLDER: the live Workshop page (https://crprohtak.ac.in/wor) could not be read, so no department text is invented here.
 // Paste its sections into this list (introduction first) when the text is available.
-const about = [
+const fallbackAbout = [
   {
     id: "intro",
     title: "About the Department",
@@ -98,7 +99,7 @@ const about = [
 // interest is empty for everyone on the live site, so that row stays hidden until you fill it in. email shows as a mailto link.
 // Mr. Yudhvir Singh has no email here yet: his screenshot did not show it (a person with no email simply has no email row).
 // The date of birth is NOT shown on purpose (it is personal information).
-const staff = [
+const fallbackStaff = [
   { name: "Mr Sandeep Kumar", role: "Instrument Repairer", photo: `${IMG}/staff/mr-sandeep-kumar.jpeg`, qualification: "I.T.I", interest: "", email: "sandeepk.rtk.sk@gmail.com" },
   { name: "Mr. Vijay Pal", role: "Workshop Instructor", photo: `${IMG}/staff/Vjaypal_Bhanwala.jpeg`, qualification: "I.T.I", interest: "", email: "vijaypal_bhanwala@gmail.com" },
   { name: "Mr. Yudhvir Singh", role: "Workshop Instructor", photo: `${IMG}/staff/Yudhvir_Singh.jpeg`, qualification: "I.T.I", interest: "" },
@@ -112,7 +113,7 @@ const staff = [
 ];
 
 // Four visual cards. PROVISIONAL: counted from the live staff page until the text of the live Workshop page is available.
-const highlights = [
+const fallbackHighlights = [
   {
     icon: FiUsers, value: "10", label: "Staff members", image: `${IMG}/highlight-staff.jpg`,
     text: "Instrument Repairer, Workshop Instructors, Draftsman, Workshop Superintendent and Foreman Instructor.",
@@ -152,30 +153,30 @@ function Mark({ text, query }) {
 }
 
 // One picture with a placeholder when the file is missing.
-function Photo({ src, alt, className = "" }) {
+function Photo({ src, alt, className = "", placeholder = "Photo coming soon" }) {
   const [failed, setFailed] = useState(false);
   return (
     <figure className={`wor-photo ${className}`}>
-      {failed ? (
+      {failed || !src ? (
         <div className="wor-photo__empty" aria-hidden="true">
           <FiImage />
-          <span>Photo coming soon</span>
+          <span>{placeholder}</span>
         </div>
       ) : (
-        <img src={src} alt={alt} loading="lazy" decoding="async" onError={() => setFailed(true)} />
+        <img src={mediaUrl(src)} alt={alt} loading="lazy" decoding="async" onError={() => setFailed(true)} />
       )}
     </figure>
   );
 }
 
-function Avatar({ person }) {
+function Avatar({ person, placeholder = "Photo coming soon" }) {
   const [failed, setFailed] = useState(false);
   return (
     <div className="wor-avatar">
       {failed || !person.photo ? (
-        <span aria-hidden="true">{initials(person.name) || <FiUser />}</span>
+        <span aria-hidden="true">{placeholder}</span>
       ) : (
-        <img src={person.photo} alt={person.name} loading="lazy" decoding="async" onError={() => setFailed(true)} />
+        <img src={mediaUrl(person.photo)} alt={person.name} loading="lazy" decoding="async" onError={() => setFailed(true)} />
       )}
     </div>
   );
@@ -194,6 +195,29 @@ function filterSection(section, q) {
 }
 
 export default function Workshop() {
+  const [serverData, setServerData] = useState(null);
+  const [departmentOptions, setDepartmentOptions] = useState(fallbackSwitcher);
+  useEffect(() => {
+    let active = true;
+    getDepartment("workshop").then((data) => { if (active) setServerData(data); }).catch(() => {});
+    getDepartments().then((list) => {
+      if (active && Array.isArray(list) && list.length) setDepartmentOptions(list.slice().sort((a, b) => a.order - b.order).map((item) => ({ label: item.shortName, to: `/departments/${item.slug}`, slug: item.slug })));
+    }).catch(() => {});
+    return () => { active = false; };
+  }, []);
+  const fallbackLabels = {
+    eyebrow: "Department", bannerTagLeft: "Government Polytechnic", bannerTagRight: "Rohtak (Haryana)", breadcrumb: "Workshop", switcherLabel: "Department", aboutTab: "About", staffTab: "Staff", searchAbout: "Search the department information", searchStaff: "Search staff by name or role", qualificationLabel: "Qualification", interestLabel: "Interested area", highlightsEyebrow: "At a glance", highlightsTitle: "Department", highlightsTitleHighlight: "highlights", photoPlaceholder: "Photo coming soon", };
+  const pageLabels = Object.fromEntries(Object.entries({ ...fallbackLabels, ...(serverData?.labels || {}) }).map(([key, value]) => [key, value || fallbackLabels[key]]));
+  const banner = mediaUrl(serverData?.banner || fallbackBanner);
+  const dept = serverData ? { ...fallbackDept, ...serverData, facts: (serverData.facts || []).map((item, i) => ({ ...item, icon: fallbackDept.facts[i]?.icon || fallbackDept.facts[0]?.icon })), image: mediaUrl(serverData.image ?? fallbackDept.image) } : fallbackDept;
+  const collage = serverData ? (serverData.collage || []).map((item) => ({ ...item, src: mediaUrl(item.src) })) : fallbackCollage;
+  const aboutTiles = serverData ? (serverData.tiles || []).map((item, i) => ({ ...item, icon: fallbackAboutTiles[i]?.icon || fallbackAboutTiles[0]?.icon })) : fallbackAboutTiles;
+  const about = serverData ? (serverData.about || []).map((item, i) => ({ ...item, icon: fallbackAbout[i]?.icon || fallbackAbout[0]?.icon })) : fallbackAbout;
+  const staff = (serverData?.staff || fallbackStaff).filter((person) => [person.name, person.role, person.photo, person.qualification, person.interest, person.email].some(Boolean));
+  const highlights = serverData ? (serverData.highlights || []).map((item, i) => ({ ...item, image: mediaUrl(item.image), icon: fallbackHighlights[i]?.icon || fallbackHighlights[0]?.icon })) : fallbackHighlights;
+  const switcher = departmentOptions;
+  const currentLabel = switcher.find((item) => item.slug === "workshop" || item.to === CURRENT)?.label || fallbackCurrentLabel;
+
   const [tab, setTab] = useState("about");
   const [query, setQuery] = useState("");
   const tabRefs = useRef({});
@@ -250,11 +274,11 @@ export default function Workshop() {
         <div className="wor-hero__tags">
           <span className="wor-hero__tag wor-hero__tag--left">
             <span className="wor-hero__tag-icon"><FaGraduationCap aria-hidden="true" /></span>
-            Government Polytechnic
+            {pageLabels.bannerTagLeft}
           </span>
           <span className="wor-hero__tag wor-hero__tag--right">
             <span className="wor-hero__tag-icon"><FiMapPin aria-hidden="true" /></span>
-            Rohtak (Haryana)
+            {pageLabels.bannerTagRight}
           </span>
         </div>
         <nav className="wor-crumbs" aria-label="Breadcrumb">
@@ -262,7 +286,7 @@ export default function Workshop() {
           <FiChevronRight aria-hidden="true" />
           <span>Departments</span>
           <FiChevronRight aria-hidden="true" />
-          <span aria-current="page">Workshop</span>
+          <span aria-current="page">{pageLabels.breadcrumb}</span>
         </nav>
       </section>
 
@@ -270,8 +294,8 @@ export default function Workshop() {
         {/* ---- title block + department picture ---- */}
         <header className="wor-top">
           <div className="wor-top__text">
-            <span className="wor-eyebrow">Department</span>
-            <h1>{dept.title}</h1>
+            <span className="wor-eyebrow">{pageLabels.eyebrow}</span>
+            <h1>{dept.title}{dept.titleLine2 && <span>{dept.titleLine2}</span>}</h1>
             <p>{dept.lead}</p>
             <ul className="wor-facts">
               {dept.facts.map((fact) => {
@@ -286,7 +310,7 @@ export default function Workshop() {
             </ul>
           </div>
           <div className="wor-frame">
-            <Photo src={dept.image} alt={dept.imageAlt} className="wor-frame__photo" />
+            <Photo src={dept.image} alt={dept.imageAlt} className="wor-frame__photo" placeholder={pageLabels.photoPlaceholder} />
           </div>
         </header>
 
@@ -294,7 +318,7 @@ export default function Workshop() {
         <nav className="wor-switch" aria-label="Departments">
           <ul className="wor-switch__list">
             {switcher.map((item) => {
-              const isCurrent = item.to === CURRENT;
+              const isCurrent = item.slug === "workshop" || item.to === CURRENT;
               return (
                 <li key={item.to}>
                   <Link to={item.to} className={`wor-switch__link${isCurrent ? " is-current" : ""}`} aria-current={isCurrent ? "page" : undefined}>
@@ -313,14 +337,14 @@ export default function Workshop() {
               aria-controls="wor-switch-panel"
               onClick={() => setMenuOpen((open) => !open)}
             >
-              <span className="wor-switch__label">Department</span>
+              <span className="wor-switch__label">{pageLabels.switcherLabel}</span>
               <span className="wor-switch__current">{currentLabel}</span>
               <FiChevronDown aria-hidden="true" />
             </button>
             {menuOpen && (
               <ul id="wor-switch-panel" className="wor-switch__panel">
                 {switcher.map((item) => {
-                  const isCurrent = item.to === CURRENT;
+                  const isCurrent = item.slug === "workshop" || item.to === CURRENT;
                   return (
                     <li key={item.to}>
                       <Link
@@ -348,8 +372,8 @@ export default function Workshop() {
                 type="search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder={tab === "about" ? "Search the department information" : "Search staff by name or role"}
-                aria-label={tab === "about" ? "Search the department information" : "Search staff"}
+                placeholder={tab === "about" ? (pageLabels.searchAbout || "Search the department information") : (pageLabels.searchStaff || "Search staff by name or role")}
+                aria-label={tab === "about" ? (pageLabels.searchAbout || "Search the department information") : (pageLabels.searchStaff || "Search staff by name or role")}
               />
               {query && (
                 <button type="button" className="wor-search__clear" onClick={() => setQuery("")} aria-label="Clear search">
@@ -364,14 +388,14 @@ export default function Workshop() {
                 type="button" role="tab" id="wor-tab-about" aria-selected={tab === "about"} aria-controls="wor-panel"
                 tabIndex={tab === "about" ? 0 : -1} className={`wor-tab${tab === "about" ? " is-active" : ""}`} onClick={() => pickTab("about")}
               >
-                <FiFileText aria-hidden="true" /> About
+                <FiFileText aria-hidden="true" /> {pageLabels.aboutTab || "About"}
               </button>
               <button
                 ref={(el) => { tabRefs.current.staff = el; }}
                 type="button" role="tab" id="wor-tab-staff" aria-selected={tab === "staff"} aria-controls="wor-panel"
                 tabIndex={tab === "staff" ? 0 : -1} className={`wor-tab${tab === "staff" ? " is-active" : ""}`} onClick={() => pickTab("staff")}
               >
-                <FiUsers aria-hidden="true" /> Staff <span className="wor-tab__n">{staff.length}</span>
+                <FiUsers aria-hidden="true" /> {pageLabels.staffTab || "Staff"} <span className="wor-tab__n">{staff.length}</span>
               </button>
             </div>
           </div>
@@ -379,12 +403,12 @@ export default function Workshop() {
           <div id="wor-panel" className="wor-panel" role="tabpanel" aria-labelledby={`wor-tab-${tab}`} tabIndex={0}>
             {tab === "about" ? (
               <>
-                {!q && (
+                {!q && feature && (
                   <article className="wor-feature">
                     <div className="wor-collage">
-                      <Photo src={collage[0].src} alt={collage[0].alt} className="wor-collage__a" />
-                      <Photo src={collage[1].src} alt={collage[1].alt} className="wor-collage__b" />
-                      <Photo src={collage[2].src} alt={collage[2].alt} className="wor-collage__c" />
+                      <Photo src={collage[0].src} alt={collage[0].alt} className="wor-collage__a" placeholder={pageLabels.photoPlaceholder} />
+                      <Photo src={collage[1].src} alt={collage[1].alt} className="wor-collage__b" placeholder={pageLabels.photoPlaceholder} />
+                      <Photo src={collage[2].src} alt={collage[2].alt} className="wor-collage__c" placeholder={pageLabels.photoPlaceholder} />
                     </div>
                     <div className="wor-feature__text">
                       <span className="wor-feature__bar" aria-hidden="true" />
@@ -438,18 +462,21 @@ export default function Workshop() {
               <ul className="wor-staff">
                 {people.map((person) => (
                   <li key={person.name} className="wor-card">
-                    <Avatar person={person} />
+                    <Avatar person={person} placeholder={pageLabels.photoPlaceholder} />
                     <div className="wor-card__body">
                       <h3><Mark text={person.name} query={q} /></h3>
-                      <span className="wor-card__role"><Mark text={person.role} query={q} /></span>
+                      {person.role && <span className="wor-card__role"><Mark text={person.role} query={q} /></span>}
                       <dl>
+                        {person.qualification && (
                         <div>
-                          <dt>Qualification</dt>
-                          <dd>{person.qualification ? <Mark text={person.qualification} query={q} /> : <span className="wor-card__none" aria-label="Not added yet">-</span>}</dd>
+                          <dt>{pageLabels.qualificationLabel || "Qualification"}</dt>
+                          <dd><Mark text={person.qualification} query={q} /></dd>
                         </div>
+                        )}
+                        {/* qualification is omitted when empty */}
                         {person.interest && (
                           <div>
-                            <dt>Interested area</dt>
+                            <dt>{pageLabels.interestLabel || "Interested area"}</dt>
                             <dd><Mark text={person.interest} query={q} /></dd>
                           </div>
                         )}
@@ -473,14 +500,14 @@ export default function Workshop() {
         {/* ---- department highlights ---- */}
         <section className="wor-highlights" aria-labelledby="wor-hl-title">
           <header className="wor-head">
-            <span className="wor-eyebrow wor-eyebrow--line">At a glance</span>
-            <h2 id="wor-hl-title">Department <span>highlights</span></h2>
+            <span className="wor-eyebrow wor-eyebrow--line">{pageLabels.highlightsEyebrow || "At a glance"}</span>
+            <h2 id="wor-hl-title">{pageLabels.highlightsTitle || "Department"} <span>{pageLabels.highlightsTitleHighlight || "highlights"}</span></h2>
           </header>
           <ul className="wor-hl">
             {highlights.map((item) => {
               const Icon = item.icon;
               return (
-                <li key={item.label} className="wor-hl__card" style={{ "--hl-img": `url("${item.image}")` }}>
+                <li key={item.label} className="wor-hl__card" style={{ "--hl-img": `url("${mediaUrl(item.image)}")` }}>
                   <div className="wor-hl__top">
                     <span className="wor-hl__icon"><Icon aria-hidden="true" /></span>
                     <strong>{item.value}</strong>

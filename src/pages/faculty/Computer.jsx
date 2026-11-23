@@ -14,13 +14,13 @@
 // The hero shows /images/pages-banner.png exactly as it is (no tint over it).
 // A missing picture shows a clean placeholder, a missing staff photo shows the person's initials.
 //
-// FILES TO COPY from the old website (old path -> new path):
 //   /media/teachers/<name>.jpeg               -> public/images/departments/computer/staff/<name>.jpeg   (9 photos, names used below)
 //   hero.jpg, about-1.jpg, about-2.jpg, about-3.jpg -> /images/faculty/computer-engineering/ (department picture and About collage)
 //   highlight-labs.jpg, highlight-since.jpg, highlight-results.jpg, highlight-placements.jpg -> backgrounds of the highlight cards
 // The banner /images/pages-banner.png is the same one the About / Facilities pages use.
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { getDepartment, getDepartments, mediaUrl } from "../../services/departmentService";
 import { FaGraduationCap } from "react-icons/fa";
 import {
   FiChevronRight, FiMapPin, FiSearch, FiX, FiImage, FiInfo, FiLayers, FiBriefcase, FiMonitor, FiAward,
@@ -32,10 +32,11 @@ const IMG = "/images/departments/computer";
 const DEPT_IMG = "/images/faculty/computer-engineering";
 
 // Same banner as the About / Facilities pages (a patterned navy banner shows if it is missing).
-const banner = "/images/pages-banner.png";
+const fallbackBanner = "/images/pages-banner.png";
 
-const dept = {
+const fallbackDept = {
   title: "Computer Engineering",
+  titleLine2: "",
   lead: "Software, hardware, networking, robotics and artificial intelligence - hands-on training for the IT industry.",
   facts: [
     { icon: FiCalendar, text: "Established 1998" },
@@ -48,7 +49,7 @@ const dept = {
 
 // All eight departments. Wide screens show them as a row of pills, small screens as a dropdown.
 // The same list is repeated in every department file on purpose.
-const switcher = [
+const fallbackSwitcher = [
   { label: "Civil", to: "/departments/civil" },
   { label: "Computer", to: "/departments/computer" },
   { label: "Electrical", to: "/departments/electrical" },
@@ -60,17 +61,17 @@ const switcher = [
   { label: "Administrative", to: "/departments/administrative" },
 ];
 const CURRENT = "/departments/computer";
-const currentLabel = switcher.find((item) => item.to === CURRENT)?.label;
+const fallbackCurrentLabel = fallbackSwitcher.find((item) => item.to === CURRENT)?.label;
 
 // Two small pictures on top, one wide picture below (the layout of the About card).
-const collage = [
+const fallbackCollage = [
   { src: `${DEPT_IMG}/about-1.jpg`, alt: "Computer Engineering department - picture 1" },
   { src: `${DEPT_IMG}/about-2.jpg`, alt: "Computer Engineering department - picture 2" },
   { src: `${DEPT_IMG}/about-3.jpg`, alt: "Computer Engineering department - picture 3" },
 ];
 
 // The three small tiles in the About card.
-const aboutTiles = [
+const fallbackAboutTiles = [
   { icon: FiMonitor, value: "10", label: "Laboratories" },
   { icon: FiClock, value: "1998", label: "Established" },
   { icon: FiTrendingUp, value: "75%", label: "Cleared 5th semester" },
@@ -78,7 +79,7 @@ const aboutTiles = [
 
 // view: "text" = paragraphs only, "chips" = items shown as chips, "list" = items shown as a tick list.
 // paragraphs come before the items, closing paragraphs after them. The FIRST section sits in the card beside the collage.
-const about = [
+const fallbackAbout = [
   {
     id: "intro",
     title: "About the Department",
@@ -164,7 +165,7 @@ const about = [
 // Every card shows the name, the role, the qualification, and - when you add them - the interested area and the email.
 // interest is empty for everyone on the live site, so that row is hidden until you fill it in. email shows as a mailto link.
 // The date of birth is NOT shown on purpose (it is personal information).
-const staff = [
+const fallbackStaff = [
   { name: "Parveen Kohar", role: "Head of Department", photo: `${IMG}/staff/parveen-kohar.jpeg`, qualification: "B.E.", interest: "", email: "parveenkohar@crpolytechnic.org" },
   { name: "Dr. Ravinder Rathee", role: "Senior Lecturer", photo: `${IMG}/staff/ravinder-rathee.jpeg`, qualification: "ME (Software Systems), PhD", interest: "", email: "rrathee111@gmail.com" },
   { name: "Ms Priyanka", role: "Lecturer", photo: `${IMG}/staff/priyanka.jpeg`, qualification: "B.E, MCA", interest: "", email: "priya_dhawan29jan@rediffmail.com" },
@@ -177,7 +178,7 @@ const staff = [
 ];
 
 // Four visual cards, real facts from this department's page only.
-const highlights = [
+const fallbackHighlights = [
   {
     icon: FiMonitor, value: "10", label: "Laboratories", image: `${IMG}/highlight-labs.jpg`,
     text: "Operating System, Python, Cloud Computing, Hardware, Project and more - practical training for every subject.",
@@ -217,30 +218,30 @@ function Mark({ text, query }) {
 }
 
 // One picture with a placeholder when the file is missing.
-function Photo({ src, alt, className = "" }) {
+function Photo({ src, alt, className = "", placeholder = "Photo coming soon" }) {
   const [failed, setFailed] = useState(false);
   return (
     <figure className={`cse-photo ${className}`}>
-      {failed ? (
+      {failed || !src ? (
         <div className="cse-photo__empty" aria-hidden="true">
           <FiImage />
-          <span>Photo coming soon</span>
+          <span>{placeholder}</span>
         </div>
       ) : (
-        <img src={src} alt={alt} loading="lazy" decoding="async" onError={() => setFailed(true)} />
+        <img src={mediaUrl(src)} alt={alt} loading="lazy" decoding="async" onError={() => setFailed(true)} />
       )}
     </figure>
   );
 }
 
-function Avatar({ person }) {
+function Avatar({ person, placeholder = "Photo coming soon" }) {
   const [failed, setFailed] = useState(false);
   return (
     <div className="cse-avatar">
       {failed || !person.photo ? (
-        <span aria-hidden="true">{initials(person.name) || <FiUser />}</span>
+        <span aria-hidden="true">{placeholder}</span>
       ) : (
-        <img src={person.photo} alt={person.name} loading="lazy" decoding="async" onError={() => setFailed(true)} />
+        <img src={mediaUrl(person.photo)} alt={person.name} loading="lazy" decoding="async" onError={() => setFailed(true)} />
       )}
     </div>
   );
@@ -259,6 +260,29 @@ function filterSection(section, q) {
 }
 
 export default function Computer() {
+  const [serverData, setServerData] = useState(null);
+  const [departmentOptions, setDepartmentOptions] = useState(fallbackSwitcher);
+  useEffect(() => {
+    let active = true;
+    getDepartment("computer").then((data) => { if (active) setServerData(data); }).catch(() => {});
+    getDepartments().then((list) => {
+      if (active && Array.isArray(list) && list.length) setDepartmentOptions(list.slice().sort((a, b) => a.order - b.order).map((item) => ({ label: item.shortName, to: `/departments/${item.slug}`, slug: item.slug })));
+    }).catch(() => {});
+    return () => { active = false; };
+  }, []);
+  const fallbackLabels = {
+    eyebrow: "Department", bannerTagLeft: "Government Polytechnic", bannerTagRight: "Rohtak (Haryana)", breadcrumb: "Computer", switcherLabel: "Department", aboutTab: "About", staffTab: "Staff", searchAbout: "Search the department information", searchStaff: "Search staff by name or role", qualificationLabel: "Qualification", interestLabel: "Interested area", highlightsEyebrow: "At a glance", highlightsTitle: "Department", highlightsTitleHighlight: "highlights", photoPlaceholder: "Photo coming soon", };
+  const pageLabels = Object.fromEntries(Object.entries({ ...fallbackLabels, ...(serverData?.labels || {}) }).map(([key, value]) => [key, value || fallbackLabels[key]]));
+  const banner = mediaUrl(serverData?.banner || fallbackBanner);
+  const dept = serverData ? { ...fallbackDept, ...serverData, facts: (serverData.facts || []).map((item, i) => ({ ...item, icon: fallbackDept.facts[i]?.icon || fallbackDept.facts[0]?.icon })), image: mediaUrl(serverData.image ?? fallbackDept.image) } : fallbackDept;
+  const collage = serverData ? (serverData.collage || []).map((item) => ({ ...item, src: mediaUrl(item.src) })) : fallbackCollage;
+  const aboutTiles = serverData ? (serverData.tiles || []).map((item, i) => ({ ...item, icon: fallbackAboutTiles[i]?.icon || fallbackAboutTiles[0]?.icon })) : fallbackAboutTiles;
+  const about = serverData ? (serverData.about || []).map((item, i) => ({ ...item, icon: fallbackAbout[i]?.icon || fallbackAbout[0]?.icon })) : fallbackAbout;
+  const staff = (serverData?.staff || fallbackStaff).filter((person) => [person.name, person.role, person.photo, person.qualification, person.interest, person.email].some(Boolean));
+  const highlights = serverData ? (serverData.highlights || []).map((item, i) => ({ ...item, image: mediaUrl(item.image), icon: fallbackHighlights[i]?.icon || fallbackHighlights[0]?.icon })) : fallbackHighlights;
+  const switcher = departmentOptions;
+  const currentLabel = switcher.find((item) => item.slug === "computer" || item.to === CURRENT)?.label || fallbackCurrentLabel;
+
   const [tab, setTab] = useState("about");
   const [query, setQuery] = useState("");
   const tabRefs = useRef({});
@@ -315,11 +339,11 @@ export default function Computer() {
         <div className="cse-hero__tags">
           <span className="cse-hero__tag cse-hero__tag--left">
             <span className="cse-hero__tag-icon"><FaGraduationCap aria-hidden="true" /></span>
-            Government Polytechnic
+            {pageLabels.bannerTagLeft}
           </span>
           <span className="cse-hero__tag cse-hero__tag--right">
             <span className="cse-hero__tag-icon"><FiMapPin aria-hidden="true" /></span>
-            Rohtak (Haryana)
+            {pageLabels.bannerTagRight}
           </span>
         </div>
         <nav className="cse-crumbs" aria-label="Breadcrumb">
@@ -327,7 +351,7 @@ export default function Computer() {
           <FiChevronRight aria-hidden="true" />
           <span>Departments</span>
           <FiChevronRight aria-hidden="true" />
-          <span aria-current="page">Computer</span>
+          <span aria-current="page">{pageLabels.breadcrumb}</span>
         </nav>
       </section>
 
@@ -335,8 +359,8 @@ export default function Computer() {
         {/* ---- title block + department picture ---- */}
         <header className="cse-top">
           <div className="cse-top__text">
-            <span className="cse-eyebrow">Department</span>
-            <h1>{dept.title}</h1>
+            <span className="cse-eyebrow">{pageLabels.eyebrow}</span>
+            <h1>{dept.title}{dept.titleLine2 && <span>{dept.titleLine2}</span>}</h1>
             <p>{dept.lead}</p>
             <ul className="cse-facts">
               {dept.facts.map((fact) => {
@@ -351,7 +375,7 @@ export default function Computer() {
             </ul>
           </div>
           <div className="cse-frame">
-            <Photo src={dept.image} alt={dept.imageAlt} className="cse-frame__photo" />
+            <Photo src={dept.image} alt={dept.imageAlt} className="cse-frame__photo" placeholder={pageLabels.photoPlaceholder} />
           </div>
         </header>
 
@@ -359,7 +383,7 @@ export default function Computer() {
         <nav className="cse-switch" aria-label="Departments">
           <ul className="cse-switch__list">
             {switcher.map((item) => {
-              const isCurrent = item.to === CURRENT;
+              const isCurrent = item.slug === "computer" || item.to === CURRENT;
               return (
                 <li key={item.to}>
                   <Link to={item.to} className={`cse-switch__link${isCurrent ? " is-current" : ""}`} aria-current={isCurrent ? "page" : undefined}>
@@ -378,14 +402,14 @@ export default function Computer() {
               aria-controls="cse-switch-panel"
               onClick={() => setMenuOpen((open) => !open)}
             >
-              <span className="cse-switch__label">Department</span>
+              <span className="cse-switch__label">{pageLabels.switcherLabel}</span>
               <span className="cse-switch__current">{currentLabel}</span>
               <FiChevronDown aria-hidden="true" />
             </button>
             {menuOpen && (
               <ul id="cse-switch-panel" className="cse-switch__panel">
                 {switcher.map((item) => {
-                  const isCurrent = item.to === CURRENT;
+                  const isCurrent = item.slug === "computer" || item.to === CURRENT;
                   return (
                     <li key={item.to}>
                       <Link
@@ -413,8 +437,8 @@ export default function Computer() {
                 type="search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder={tab === "about" ? "Search the department information" : "Search staff by name or role"}
-                aria-label={tab === "about" ? "Search the department information" : "Search staff"}
+                placeholder={tab === "about" ? (pageLabels.searchAbout || "Search the department information") : (pageLabels.searchStaff || "Search staff by name or role")}
+                aria-label={tab === "about" ? (pageLabels.searchAbout || "Search the department information") : (pageLabels.searchStaff || "Search staff by name or role")}
               />
               {query && (
                 <button type="button" className="cse-search__clear" onClick={() => setQuery("")} aria-label="Clear search">
@@ -429,14 +453,14 @@ export default function Computer() {
                 type="button" role="tab" id="cse-tab-about" aria-selected={tab === "about"} aria-controls="cse-panel"
                 tabIndex={tab === "about" ? 0 : -1} className={`cse-tab${tab === "about" ? " is-active" : ""}`} onClick={() => pickTab("about")}
               >
-                <FiFileText aria-hidden="true" /> About
+                <FiFileText aria-hidden="true" /> {pageLabels.aboutTab || "About"}
               </button>
               <button
                 ref={(el) => { tabRefs.current.staff = el; }}
                 type="button" role="tab" id="cse-tab-staff" aria-selected={tab === "staff"} aria-controls="cse-panel"
                 tabIndex={tab === "staff" ? 0 : -1} className={`cse-tab${tab === "staff" ? " is-active" : ""}`} onClick={() => pickTab("staff")}
               >
-                <FiUsers aria-hidden="true" /> Staff <span className="cse-tab__n">{staff.length}</span>
+                <FiUsers aria-hidden="true" /> {pageLabels.staffTab || "Staff"} <span className="cse-tab__n">{staff.length}</span>
               </button>
             </div>
           </div>
@@ -444,12 +468,12 @@ export default function Computer() {
           <div id="cse-panel" className="cse-panel" role="tabpanel" aria-labelledby={`cse-tab-${tab}`} tabIndex={0}>
             {tab === "about" ? (
               <>
-                {!q && (
+                {!q && feature && (
                   <article className="cse-feature">
                     <div className="cse-collage">
-                      <Photo src={collage[0].src} alt={collage[0].alt} className="cse-collage__a" />
-                      <Photo src={collage[1].src} alt={collage[1].alt} className="cse-collage__b" />
-                      <Photo src={collage[2].src} alt={collage[2].alt} className="cse-collage__c" />
+                      <Photo src={collage[0].src} alt={collage[0].alt} className="cse-collage__a" placeholder={pageLabels.photoPlaceholder} />
+                      <Photo src={collage[1].src} alt={collage[1].alt} className="cse-collage__b" placeholder={pageLabels.photoPlaceholder} />
+                      <Photo src={collage[2].src} alt={collage[2].alt} className="cse-collage__c" placeholder={pageLabels.photoPlaceholder} />
                     </div>
                     <div className="cse-feature__text">
                       <span className="cse-feature__bar" aria-hidden="true" />
@@ -502,18 +526,21 @@ export default function Computer() {
               <ul className="cse-staff">
                 {people.map((person) => (
                   <li key={person.name} className="cse-card">
-                    <Avatar person={person} />
+                    <Avatar person={person} placeholder={pageLabels.photoPlaceholder} />
                     <div className="cse-card__body">
                       <h3><Mark text={person.name} query={q} /></h3>
-                      <span className="cse-card__role"><Mark text={person.role} query={q} /></span>
+                      {person.role && <span className="cse-card__role"><Mark text={person.role} query={q} /></span>}
                       <dl>
+                        {person.qualification && (
                         <div>
-                          <dt>Qualification</dt>
-                          <dd>{person.qualification ? <Mark text={person.qualification} query={q} /> : <span className="cse-card__none" aria-label="Not added yet">-</span>}</dd>
+                          <dt>{pageLabels.qualificationLabel || "Qualification"}</dt>
+                          <dd><Mark text={person.qualification} query={q} /></dd>
                         </div>
+                        )}
+                        {/* qualification is omitted when empty */}
                         {person.interest && (
                           <div>
-                            <dt>Interested area</dt>
+                            <dt>{pageLabels.interestLabel || "Interested area"}</dt>
                             <dd><Mark text={person.interest} query={q} /></dd>
                           </div>
                         )}
@@ -537,14 +564,14 @@ export default function Computer() {
         {/* ---- department highlights ---- */}
         <section className="cse-highlights" aria-labelledby="cse-hl-title">
           <header className="cse-head">
-            <span className="cse-eyebrow cse-eyebrow--line">At a glance</span>
-            <h2 id="cse-hl-title">Department <span>highlights</span></h2>
+            <span className="cse-eyebrow cse-eyebrow--line">{pageLabels.highlightsEyebrow || "At a glance"}</span>
+            <h2 id="cse-hl-title">{pageLabels.highlightsTitle || "Department"} <span>{pageLabels.highlightsTitleHighlight || "highlights"}</span></h2>
           </header>
           <ul className="cse-hl">
             {highlights.map((item) => {
               const Icon = item.icon;
               return (
-                <li key={item.label} className="cse-hl__card" style={{ "--hl-img": `url("${item.image}")` }}>
+                <li key={item.label} className="cse-hl__card" style={{ "--hl-img": `url("${mediaUrl(item.image)}")` }}>
                   <div className="cse-hl__top">
                     <span className="cse-hl__icon"><Icon aria-hidden="true" /></span>
                     <strong>{item.value}</strong>

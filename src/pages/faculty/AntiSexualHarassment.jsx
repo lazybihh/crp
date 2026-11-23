@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getPolicy } from "../../services/facultyContentService";
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import {
@@ -38,6 +39,9 @@ const steps = [
 ];
 
 export default function AntiSexualHarassment() {
+  const [backendContent, setBackendContent] = useState(null);
+  useEffect(() => { let active = true; getPolicy("anti-sexual-harassment").then(row => { if (active) setBackendContent(row.content || row); }).catch(error => console.error("Faculty page content load failed:", error)); return () => { active = false; }; }, []);
+
   const [formNotice, setFormNotice] = useState("");
 
   const handleSubmit = (event) => {
@@ -46,7 +50,7 @@ export default function AntiSexualHarassment() {
   };
 
   return (
-    <main id="main" className="pol-page pol-harassment">
+    <main data-faculty-content-key="anti-sexual-harassment" id="main" className="pol-page pol-harassment">
       <section className="pol-hero" aria-label="Anti Sexual Harassment" style={{ "--pol-img": 'url("/images/pages-banner.png")' }}>
         <div className="pol-hero__photo" />
         <div className="pol-hero__tags">
@@ -73,7 +77,7 @@ export default function AntiSexualHarassment() {
         <header className="pol-intro">
           <span className="pol-eyebrow">Faculty · Policies &amp; Rules</span>
           <h1>Anti Sexual <em>Harassment</em></h1>
-          <p>Promoting dignity, respect and a safe environment for everyone at the institute.</p>
+          <p>{backendContent?.description || "Promoting dignity, respect and a safe environment for everyone at the institute."}</p>
         </header>
 
         <section className="pol-feature">

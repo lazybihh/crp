@@ -89,22 +89,8 @@ import AdminFreelancing from "./pages/admin/AdminFreelancing";
 import AdminIncubator from "./pages/admin/AdminIncubator";
 import AdminApprenticeship from "./pages/admin/AdminApprenticeship";
 import AdminNccNss from "./pages/admin/AdminNccNss";
-import AdminResourcesApplied from "./pages/admin/AdminResourcesApplied";
-import AdminResourcesCivil from "./pages/admin/AdminResourcesCivil";
-import AdminResourcesComputer from "./pages/admin/AdminResourcesComputer";
-import AdminResourcesElectrical from "./pages/admin/AdminResourcesElectrical";
-import AdminResourcesElectronics from "./pages/admin/AdminResourcesElectronics";
-import AdminResourcesMechanical from "./pages/admin/AdminResourcesMechanical";
-import AdminResourcesPlastic from "./pages/admin/AdminResourcesPlastic";
-import AdminDeptCivil from "./pages/admin/AdminDeptCivil";
-import AdminDeptComputer from "./pages/admin/AdminDeptComputer";
-import AdminDeptElectrical from "./pages/admin/AdminDeptElectrical";
-import AdminDeptElectronics from "./pages/admin/AdminDeptElectronics";
-import AdminDeptMechanical from "./pages/admin/AdminDeptMechanical";
-import AdminDeptPlastic from "./pages/admin/AdminDeptPlastic";
-import AdminDeptApplied from "./pages/admin/AdminDeptApplied";
-import AdminDeptWorkshop from "./pages/admin/AdminDeptWorkshop";
-import AdminDeptAdministrative from "./pages/admin/AdminDeptAdministrative";
+import AdminDepartments from "./pages/admin/AdminDepartments";
+import AdminStudyResources from "./pages/admin/AdminStudyResources";
 import AdminTrainingPolicy from "./pages/admin/AdminTrainingPolicy";
 import AdminAntiRagging from "./pages/admin/AdminAntiRagging";
 import AdminAntiSexualHarassment from "./pages/admin/AdminAntiSexualHarassment";
@@ -161,22 +147,8 @@ export default function App() {
         <Route path="/admin/students/incubator" element={<AdminIncubator />} />
         <Route path="/admin/students/apprenticeship" element={<AdminApprenticeship />} />
         <Route path="/admin/students/ncc-nss" element={<AdminNccNss />} />
-        <Route path="/admin/students/departments/applied-science" element={<AdminResourcesApplied />} />
-        <Route path="/admin/students/departments/civil" element={<AdminResourcesCivil />} />
-        <Route path="/admin/students/departments/computer" element={<AdminResourcesComputer />} />
-        <Route path="/admin/students/departments/electrical" element={<AdminResourcesElectrical />} />
-        <Route path="/admin/students/departments/electronics" element={<AdminResourcesElectronics />} />
-        <Route path="/admin/students/departments/mechanical" element={<AdminResourcesMechanical />} />
-        <Route path="/admin/students/departments/plastic" element={<AdminResourcesPlastic />} />
-        <Route path="/admin/departments/civil" element={<AdminDeptCivil />} />
-        <Route path="/admin/departments/computer" element={<AdminDeptComputer />} />
-        <Route path="/admin/departments/electrical" element={<AdminDeptElectrical />} />
-        <Route path="/admin/departments/electronics" element={<AdminDeptElectronics />} />
-        <Route path="/admin/departments/mechanical" element={<AdminDeptMechanical />} />
-        <Route path="/admin/departments/plastic" element={<AdminDeptPlastic />} />
-        <Route path="/admin/departments/applied-science" element={<AdminDeptApplied />} />
-        <Route path="/admin/departments/workshop" element={<AdminDeptWorkshop />} />
-        <Route path="/admin/departments/administrative" element={<AdminDeptAdministrative />} />
+        <Route path="/admin/departments" element={<AdminDepartments />} />
+        <Route path="/admin/students/study-resources" element={<AdminStudyResources />} />
         <Route path="/admin/faculty/training-policy" element={<AdminTrainingPolicy />} />
         <Route path="/admin/faculty/anti-ragging" element={<AdminAntiRagging />} />
         <Route path="/admin/faculty/anti-sexual-harassment" element={<AdminAntiSexualHarassment />} />

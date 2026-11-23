@@ -13,16 +13,13 @@
 // Department and collage photos use /images/faculty/electronics-communication/; staff photos remain under /images/departments/electronics/staff/.
 // A missing picture shows a clean placeholder, a missing staff photo shows the person's initials.
 //
-// CONTENT SOURCE: live page https://crprohtak.ac.in/ece and staff list https://crprohtak.ac.in/faculty_electronics.
-// The About text follows the live page (condensed where it was long). To use the exact live wording, paste it into the lists below.
-// The live page names no laboratories and no established year, so those sections/facts are left out.
-// FILES TO COPY from the old website (old path -> new path):
 //   /media/teachers/<file>   -> public/images/departments/electronics/staff/<file>   (photo file names used in the staff list below)
 //   hero.jpg, about-1.jpg, about-2.jpg, about-3.jpg -> /images/faculty/electronics-communication/ (department picture and About collage)
 //   electronics-highlight-*.jpg (4 files named in the highlights list) -> backgrounds of the highlight cards
 // The banner /images/pages-banner.png is the same one the About / Facilities pages use.
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { getDepartment, getDepartments, mediaUrl } from "../../services/departmentService";
 import { FaGraduationCap } from "react-icons/fa";
 import {
   FiChevronRight, FiMapPin, FiSearch, FiX, FiImage, FiInfo, FiBriefcase, FiAward, FiTrendingUp, FiCheckCircle,
@@ -34,10 +31,11 @@ const IMG = "/images/departments/electronics";
 const DEPT_IMG = "/images/faculty/electronics-communication";
 
 // Same banner as the About / Facilities pages (a patterned navy banner shows if it is missing).
-const banner = "/images/pages-banner.png";
+const fallbackBanner = "/images/pages-banner.png";
 
-const dept = {
-  titleLines: ["Electronics & Communication", "Engineering"],
+const fallbackDept = {
+  title: "Electronics & Communication",
+  titleLine2: "Engineering",
   lead: "Electronics, communication and related technologies - a strong academic and practical foundation for industry.",
   facts: [
     { icon: FiBookOpen, text: "3-year diploma" },
@@ -50,7 +48,7 @@ const dept = {
 
 // All eight departments. Wide screens show them as a row of pills, small screens as a dropdown.
 // The same list is repeated in every department file on purpose.
-const switcher = [
+const fallbackSwitcher = [
   { label: "Civil", to: "/departments/civil" },
   { label: "Computer", to: "/departments/computer" },
   { label: "Electrical", to: "/departments/electrical" },
@@ -62,17 +60,17 @@ const switcher = [
   { label: "Administrative", to: "/departments/administrative" },
 ];
 const CURRENT = "/departments/electronics";
-const currentLabel = switcher.find((item) => item.to === CURRENT)?.label;
+const fallbackCurrentLabel = fallbackSwitcher.find((item) => item.to === CURRENT)?.label;
 
 // Two small pictures on top, one wide picture below (the layout of the About card).
-const collage = [
+const fallbackCollage = [
   { src: `${DEPT_IMG}/about-1.jpg`, alt: "Electronics & Communication Engineering department - picture 1" },
   { src: `${DEPT_IMG}/about-2.jpg`, alt: "Electronics & Communication Engineering department - picture 2" },
   { src: `${DEPT_IMG}/about-3.jpg`, alt: "Electronics & Communication Engineering department - picture 3" },
 ];
 
 // The three small tiles in the About card.
-const aboutTiles = [
+const fallbackAboutTiles = [
   { icon: FiBriefcase, value: "9", label: "Recruiters" },
   { icon: FiAward, value: "10", label: "Placed in 2021-22" },
   { icon: FiTrendingUp, value: "84.5%", label: "Top academic score" },
@@ -80,7 +78,7 @@ const aboutTiles = [
 
 // view: "text" = paragraphs only, "chips" = items shown as chips, "list" = items shown as a tick list.
 // paragraphs come before the items, closing paragraphs after them. The FIRST section sits in the card beside the collage.
-const about = [
+const fallbackAbout = [
   {
     id: "intro",
     title: "About the Department",
@@ -161,8 +159,7 @@ const about = [
 
 // One object per person (REAL data from each person's page on the live website).
 // interest is empty for everyone on the live site, so that row is hidden until you fill it in. email shows as a mailto link
-// (left out when the live page has none). The date of birth is NOT shown on purpose (it is personal information).
-const staff = [
+const fallbackStaff = [
   { name: "Mr. Jai Kanwar", role: "Head of Department", photo: `${IMG}/staff/jai-kanwar.jpeg`, qualification: "B.E", interest: "", email: "jaiatulantil@yahoo.co.in" },
   { name: "Dr Sukhbir Singh Kinha", role: "Senior Lecturer", photo: `${IMG}/staff/23434_s2P8s6Q.jpg`, qualification: "B.E.(Hons), M.E.,PhD", interest: "", email: "sukhbirkinha@gmail.com" },
   { name: "Dr. Sitender Kumar", role: "Lecturer", photo: `${IMG}/staff/sitender-kumar.jpeg`, qualification: "BE,MS,Phd.", interest: "", email: "dr.pawadia@gmail.com" },
@@ -170,12 +167,11 @@ const staff = [
   { name: "Mr. Alok Kumar", role: "Lecturer", photo: `${IMG}/staff/alok-kumar.jpeg`, qualification: "B.E", interest: "", email: "alok_kumar_619@yahoo.com" },
   { name: "Ms. Ashima Singh", role: "Lecturer", photo: `${IMG}/staff/ashima-singh.jpeg`, qualification: "B.Tech in E.C.E", interest: "", email: "ashima.singh.hooda9@gmail.com" },
   { name: "Mr. Manoj Takshak", role: "Lab Instructor", photo: `${IMG}/staff/manoj-takshak.jpeg`, qualification: "B.E", interest: "", email: "takshakm@gmail.com" },
-  { name: "Mr. Rajesh Hooda", role: "Lab Instructor", photo: `${IMG}/staff/rajesh-hooda.jpeg`, qualification: "Diploma", interest: "", email: "ssnandal60@gmail.com" }, // email as shown on the live page
   { name: "Sh. Suresh Nehra", role: "Workshop Instructor", photo: `${IMG}/staff/suresh-nehra_SKf7hQ9.jpeg`, qualification: "B.Tech", interest: "", email: "satyarth70@gmail.com" },
 ];
 
 // Four visual cards, real facts from this department's page only.
-const highlights = [
+const fallbackHighlights = [
   {
     icon: FiBriefcase, value: "9", label: "Recruiters", image: `${IMG}/electronics-highlight-recruiters.jpg`,
     text: "Motherson Sumi, Tech Mahindra, VVDN, Wipro, Airtel, Micron and more.",
@@ -215,30 +211,30 @@ function Mark({ text, query }) {
 }
 
 // One picture with a placeholder when the file is missing.
-function Photo({ src, alt, className = "" }) {
+function Photo({ src, alt, className = "", placeholder = "Photo coming soon" }) {
   const [failed, setFailed] = useState(false);
   return (
     <figure className={`ece-photo ${className}`}>
-      {failed ? (
+      {failed || !src ? (
         <div className="ece-photo__empty" aria-hidden="true">
           <FiImage />
-          <span>Photo coming soon</span>
+          <span>{placeholder}</span>
         </div>
       ) : (
-        <img src={src} alt={alt} loading="lazy" decoding="async" onError={() => setFailed(true)} />
+        <img src={mediaUrl(src)} alt={alt} loading="lazy" decoding="async" onError={() => setFailed(true)} />
       )}
     </figure>
   );
 }
 
-function Avatar({ person }) {
+function Avatar({ person, placeholder = "Photo coming soon" }) {
   const [failed, setFailed] = useState(false);
   return (
     <div className="ece-avatar">
       {failed || !person.photo ? (
-        <span aria-hidden="true">{initials(person.name) || <FiUser />}</span>
+        <span aria-hidden="true">{placeholder}</span>
       ) : (
-        <img src={person.photo} alt={person.name} loading="lazy" decoding="async" onError={() => setFailed(true)} />
+        <img src={mediaUrl(person.photo)} alt={person.name} loading="lazy" decoding="async" onError={() => setFailed(true)} />
       )}
     </div>
   );
@@ -257,6 +253,29 @@ function filterSection(section, q) {
 }
 
 export default function Electronics() {
+  const [serverData, setServerData] = useState(null);
+  const [departmentOptions, setDepartmentOptions] = useState(fallbackSwitcher);
+  useEffect(() => {
+    let active = true;
+    getDepartment("electronics").then((data) => { if (active) setServerData(data); }).catch(() => {});
+    getDepartments().then((list) => {
+      if (active && Array.isArray(list) && list.length) setDepartmentOptions(list.slice().sort((a, b) => a.order - b.order).map((item) => ({ label: item.shortName, to: `/departments/${item.slug}`, slug: item.slug })));
+    }).catch(() => {});
+    return () => { active = false; };
+  }, []);
+  const fallbackLabels = {
+    eyebrow: "Department", bannerTagLeft: "Government Polytechnic", bannerTagRight: "Rohtak (Haryana)", breadcrumb: "Electronics", switcherLabel: "Department", aboutTab: "About", staffTab: "Staff", searchAbout: "Search the department information", searchStaff: "Search staff by name or role", qualificationLabel: "Qualification", interestLabel: "Interested area", highlightsEyebrow: "At a glance", highlightsTitle: "Department", highlightsTitleHighlight: "highlights", photoPlaceholder: "Photo coming soon", };
+  const pageLabels = Object.fromEntries(Object.entries({ ...fallbackLabels, ...(serverData?.labels || {}) }).map(([key, value]) => [key, value || fallbackLabels[key]]));
+  const banner = mediaUrl(serverData?.banner || fallbackBanner);
+  const dept = serverData ? { ...fallbackDept, ...serverData, facts: (serverData.facts || []).map((item, i) => ({ ...item, icon: fallbackDept.facts[i]?.icon || fallbackDept.facts[0]?.icon })), image: mediaUrl(serverData.image ?? fallbackDept.image) } : fallbackDept;
+  const collage = serverData ? (serverData.collage || []).map((item) => ({ ...item, src: mediaUrl(item.src) })) : fallbackCollage;
+  const aboutTiles = serverData ? (serverData.tiles || []).map((item, i) => ({ ...item, icon: fallbackAboutTiles[i]?.icon || fallbackAboutTiles[0]?.icon })) : fallbackAboutTiles;
+  const about = serverData ? (serverData.about || []).map((item, i) => ({ ...item, icon: fallbackAbout[i]?.icon || fallbackAbout[0]?.icon })) : fallbackAbout;
+  const staff = (serverData?.staff || fallbackStaff).filter((person) => [person.name, person.role, person.photo, person.qualification, person.interest, person.email].some(Boolean));
+  const highlights = serverData ? (serverData.highlights || []).map((item, i) => ({ ...item, image: mediaUrl(item.image), icon: fallbackHighlights[i]?.icon || fallbackHighlights[0]?.icon })) : fallbackHighlights;
+  const switcher = departmentOptions;
+  const currentLabel = switcher.find((item) => item.slug === "electronics" || item.to === CURRENT)?.label || fallbackCurrentLabel;
+
   const [tab, setTab] = useState("about");
   const [query, setQuery] = useState("");
   const tabRefs = useRef({});
@@ -313,11 +332,11 @@ export default function Electronics() {
         <div className="ece-hero__tags">
           <span className="ece-hero__tag ece-hero__tag--left">
             <span className="ece-hero__tag-icon"><FaGraduationCap aria-hidden="true" /></span>
-            Government Polytechnic
+            {pageLabels.bannerTagLeft}
           </span>
           <span className="ece-hero__tag ece-hero__tag--right">
             <span className="ece-hero__tag-icon"><FiMapPin aria-hidden="true" /></span>
-            Rohtak (Haryana)
+            {pageLabels.bannerTagRight}
           </span>
         </div>
         <nav className="ece-crumbs" aria-label="Breadcrumb">
@@ -325,7 +344,7 @@ export default function Electronics() {
           <FiChevronRight aria-hidden="true" />
           <span>Departments</span>
           <FiChevronRight aria-hidden="true" />
-          <span aria-current="page">Electronics</span>
+          <span aria-current="page">{pageLabels.breadcrumb}</span>
         </nav>
       </section>
 
@@ -333,8 +352,8 @@ export default function Electronics() {
         {/* ---- title block + department picture ---- */}
         <header className="ece-top">
           <div className="ece-top__text">
-            <span className="ece-eyebrow">Department</span>
-            <h1>{dept.titleLines.map((line) => <span key={line}>{line}</span>)}</h1>
+            <span className="ece-eyebrow">{pageLabels.eyebrow}</span>
+            <h1><span>{dept.title}</span>{dept.titleLine2 && <span>{dept.titleLine2}</span>}</h1>
             <p>{dept.lead}</p>
             <ul className="ece-facts">
               {dept.facts.map((fact) => {
@@ -349,7 +368,7 @@ export default function Electronics() {
             </ul>
           </div>
           <div className="ece-frame">
-            <Photo src={dept.image} alt={dept.imageAlt} className="ece-frame__photo" />
+            <Photo src={dept.image} alt={dept.imageAlt} className="ece-frame__photo" placeholder={pageLabels.photoPlaceholder} />
           </div>
         </header>
 
@@ -357,7 +376,7 @@ export default function Electronics() {
         <nav className="ece-switch" aria-label="Departments">
           <ul className="ece-switch__list">
             {switcher.map((item) => {
-              const isCurrent = item.to === CURRENT;
+              const isCurrent = item.slug === "electronics" || item.to === CURRENT;
               return (
                 <li key={item.to}>
                   <Link to={item.to} className={`ece-switch__link${isCurrent ? " is-current" : ""}`} aria-current={isCurrent ? "page" : undefined}>
@@ -376,14 +395,14 @@ export default function Electronics() {
               aria-controls="ece-switch-panel"
               onClick={() => setMenuOpen((open) => !open)}
             >
-              <span className="ece-switch__label">Department</span>
+              <span className="ece-switch__label">{pageLabels.switcherLabel}</span>
               <span className="ece-switch__current">{currentLabel}</span>
               <FiChevronDown aria-hidden="true" />
             </button>
             {menuOpen && (
               <ul id="ece-switch-panel" className="ece-switch__panel">
                 {switcher.map((item) => {
-                  const isCurrent = item.to === CURRENT;
+                  const isCurrent = item.slug === "electronics" || item.to === CURRENT;
                   return (
                     <li key={item.to}>
                       <Link
@@ -411,8 +430,8 @@ export default function Electronics() {
                 type="search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder={tab === "about" ? "Search the department information" : "Search staff by name or role"}
-                aria-label={tab === "about" ? "Search the department information" : "Search staff"}
+                placeholder={tab === "about" ? (pageLabels.searchAbout || "Search the department information") : (pageLabels.searchStaff || "Search staff by name or role")}
+                aria-label={tab === "about" ? (pageLabels.searchAbout || "Search the department information") : (pageLabels.searchStaff || "Search staff by name or role")}
               />
               {query && (
                 <button type="button" className="ece-search__clear" onClick={() => setQuery("")} aria-label="Clear search">
@@ -427,14 +446,14 @@ export default function Electronics() {
                 type="button" role="tab" id="ece-tab-about" aria-selected={tab === "about"} aria-controls="ece-panel"
                 tabIndex={tab === "about" ? 0 : -1} className={`ece-tab${tab === "about" ? " is-active" : ""}`} onClick={() => pickTab("about")}
               >
-                <FiFileText aria-hidden="true" /> About
+                <FiFileText aria-hidden="true" /> {pageLabels.aboutTab || "About"}
               </button>
               <button
                 ref={(el) => { tabRefs.current.staff = el; }}
                 type="button" role="tab" id="ece-tab-staff" aria-selected={tab === "staff"} aria-controls="ece-panel"
                 tabIndex={tab === "staff" ? 0 : -1} className={`ece-tab${tab === "staff" ? " is-active" : ""}`} onClick={() => pickTab("staff")}
               >
-                <FiUsers aria-hidden="true" /> Staff <span className="ece-tab__n">{staff.length}</span>
+                <FiUsers aria-hidden="true" /> {pageLabels.staffTab || "Staff"} <span className="ece-tab__n">{staff.length}</span>
               </button>
             </div>
           </div>
@@ -442,12 +461,12 @@ export default function Electronics() {
           <div id="ece-panel" className="ece-panel" role="tabpanel" aria-labelledby={`ece-tab-${tab}`} tabIndex={0}>
             {tab === "about" ? (
               <>
-                {!q && (
+                {!q && feature && (
                   <article className="ece-feature">
                     <div className="ece-collage">
-                      <Photo src={collage[0].src} alt={collage[0].alt} className="ece-collage__a" />
-                      <Photo src={collage[1].src} alt={collage[1].alt} className="ece-collage__b" />
-                      <Photo src={collage[2].src} alt={collage[2].alt} className="ece-collage__c" />
+                      <Photo src={collage[0].src} alt={collage[0].alt} className="ece-collage__a" placeholder={pageLabels.photoPlaceholder} />
+                      <Photo src={collage[1].src} alt={collage[1].alt} className="ece-collage__b" placeholder={pageLabels.photoPlaceholder} />
+                      <Photo src={collage[2].src} alt={collage[2].alt} className="ece-collage__c" placeholder={pageLabels.photoPlaceholder} />
                     </div>
                     <div className="ece-feature__text">
                       <span className="ece-feature__bar" aria-hidden="true" />
@@ -500,18 +519,21 @@ export default function Electronics() {
               <ul className="ece-staff">
                 {people.map((person) => (
                   <li key={person.name} className="ece-card">
-                    <Avatar person={person} />
+                    <Avatar person={person} placeholder={pageLabels.photoPlaceholder} />
                     <div className="ece-card__body">
                       <h3><Mark text={person.name} query={q} /></h3>
-                      <span className="ece-card__role"><Mark text={person.role} query={q} /></span>
+                      {person.role && <span className="ece-card__role"><Mark text={person.role} query={q} /></span>}
                       <dl>
+                        {person.qualification && (
                         <div>
-                          <dt>Qualification</dt>
-                          <dd>{person.qualification ? <Mark text={person.qualification} query={q} /> : <span className="ece-card__none" aria-label="Not added yet">-</span>}</dd>
+                          <dt>{pageLabels.qualificationLabel || "Qualification"}</dt>
+                          <dd><Mark text={person.qualification} query={q} /></dd>
                         </div>
+                        )}
+                        {/* qualification is omitted when empty */}
                         {person.interest && (
                           <div>
-                            <dt>Interested area</dt>
+                            <dt>{pageLabels.interestLabel || "Interested area"}</dt>
                             <dd><Mark text={person.interest} query={q} /></dd>
                           </div>
                         )}
@@ -535,14 +557,14 @@ export default function Electronics() {
         {/* ---- department highlights ---- */}
         <section className="ece-highlights" aria-labelledby="ece-hl-title">
           <header className="ece-head">
-            <span className="ece-eyebrow ece-eyebrow--line">At a glance</span>
-            <h2 id="ece-hl-title">Department <span>highlights</span></h2>
+            <span className="ece-eyebrow ece-eyebrow--line">{pageLabels.highlightsEyebrow || "At a glance"}</span>
+            <h2 id="ece-hl-title">{pageLabels.highlightsTitle || "Department"} <span>{pageLabels.highlightsTitleHighlight || "highlights"}</span></h2>
           </header>
           <ul className="ece-hl">
             {highlights.map((item) => {
               const Icon = item.icon;
               return (
-                <li key={item.label} className="ece-hl__card" style={{ "--hl-img": `url("${item.image}")` }}>
+                <li key={item.label} className="ece-hl__card" style={{ "--hl-img": `url("${mediaUrl(item.image)}")` }}>
                   <div className="ece-hl__top">
                     <span className="ece-hl__icon"><Icon aria-hidden="true" /></span>
                     <strong>{item.value}</strong>

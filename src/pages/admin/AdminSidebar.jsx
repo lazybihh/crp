@@ -135,76 +135,15 @@ export const ADMIN_MENU = [
     "icon": "FiBookOpen",
     "items": [
       {
-        "label": "Applied Science study resources",
-        "path": "students/departments/applied-science"
-      },
-      {
-        "label": "Civil study resources",
-        "path": "students/departments/civil"
-      },
-      {
-        "label": "Computer study resources",
-        "path": "students/departments/computer"
-      },
-      {
-        "label": "Electrical study resources",
-        "path": "students/departments/electrical"
-      },
-      {
-        "label": "Electronics study resources",
-        "path": "students/departments/electronics"
-      },
-      {
-        "label": "Mechanical study resources",
-        "path": "students/departments/mechanical"
-      },
-      {
-        "label": "Plastic study resources",
-        "path": "students/departments/plastic"
+        "label": "Study resources",
+        "path": "students/study-resources"
       }
     ]
   },
   {
     "label": "Departments",
     "icon": "FiLayers",
-    "items": [
-      {
-        "label": "Civil Engineering",
-        "path": "departments/civil"
-      },
-      {
-        "label": "Computer Engineering",
-        "path": "departments/computer"
-      },
-      {
-        "label": "Electrical Engineering",
-        "path": "departments/electrical"
-      },
-      {
-        "label": "Electronics & Communication",
-        "path": "departments/electronics"
-      },
-      {
-        "label": "Mechanical Engineering",
-        "path": "departments/mechanical"
-      },
-      {
-        "label": "Plastic Technology",
-        "path": "departments/plastic"
-      },
-      {
-        "label": "Applied Sciences",
-        "path": "departments/applied-science"
-      },
-      {
-        "label": "Workshop",
-        "path": "departments/workshop"
-      },
-      {
-        "label": "Administrative",
-        "path": "departments/administrative"
-      }
-    ]
+    "items": [{ "label": "Departments", "path": "departments" }]
   },
   {
     "label": "Faculty",
