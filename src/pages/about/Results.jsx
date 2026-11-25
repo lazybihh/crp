@@ -1,30 +1,33 @@
 // Results.jsx - About us > Results (route: /about/results).
 // This page has its own hero, its own styles (results.css, every class starts with "res-") and its own downloads sidebar.
-// The live site only has result files, so the page lists them as session cards and adds short explanatory blocks (marked SAMPLE).
+// The page lists the result files as session cards and adds short explanatory blocks (marked SAMPLE).
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiChevronRight, FiFileText, FiDownload, FiExternalLink, FiAward, FiArrowUpRight } from "react-icons/fi";
 import "./Results.css";
 import { useSite } from "../../context/SiteSettingsContext";
+import { useAboutPage, mergeAboutContent } from "../../services/aboutUsService";
+import PageLoader from "../../components/PageLoader";
+import { mediaUrl } from "../../services/mediaService";
 
-const hero = { image: "/images/pages-banner.png" };
+const defaultHero = { image: "/images/pages-banner.png" };
 
-const intro = {
+const defaultIntro = {
   eyebrow: "About us",
   title: "Results",
   lead: "Session-wise result sheets of the institute, newest first.",
 };
 
-// Local files go in public/docs. The March 2024 sheet stays on Google Drive (as on the old site).
+// Local files go in public/docs. The March 2024 sheet stays on Google Drive.
 // If a result sheet is several files, save it as a .zip instead and change the extension below.
-const sheets = [
+const defaultSheets = [
   { month: "Mar", year: "2024", title: "Result sheet, March 2024", note: "Opens the result folder on Google Drive", href: "https://drive.google.com/drive/folders/1-B4t11czRaHKvIBCm-HfJkT6F2BmnHzJ?usp=drive_link", type: "Drive", external: true },
   { month: "Feb", year: "2023", title: "Result sheet, February 2023", note: "Session result sheet", href: "/docs/result-sheet-february-2023.pdf", type: "PDF" },
   { month: "Jul", year: "2022", title: "Result sheet, July 2022", note: "Session result sheet", href: "/docs/result-sheet-july-2022.pdf", type: "PDF" },
 ];
 
 // SAMPLE: generic steps - check them against the HSBTE website before publishing.
-const steps = [
+const defaultSteps = [
   { title: "Open the HSBTE website", text: "Results and marks are declared by the Haryana State Board of Technical Education, Panchkula." },
   { title: "Choose your examination", text: "Open the results section and select the session of your examination." },
   { title: "Enter your roll number", text: "View your result and save a copy for your records." },
@@ -36,11 +39,19 @@ const downloads = [
 ];
 
 export default function Results() {
+  const { ready, content: savedContent } = useAboutPage("results");
+  const hero = mergeAboutContent(defaultHero, savedContent?.hero);
+  const intro = mergeAboutContent(defaultIntro, savedContent?.intro);
+  const sheets = mergeAboutContent(defaultSheets, savedContent?.sheets);
+  const steps = mergeAboutContent(defaultSteps, savedContent?.steps);
+
   const { links } = useSite();
+  if (!ready) return <main id="main" className="res-page"><PageLoader /></main>;
+
   return (
     <main id="main" className="res-page">
       {/* ---- hero ---- */}
-      <section className="res-hero" aria-label="Results" style={{ "--img": `url("${hero.image}")` }}>
+      <section className="res-hero" aria-label="Results" style={{ "--img": `url("${mediaUrl(hero.image)}")` }}>
         <div className="res-hero__photo" />
         <div className="res-hero__tags">
           <span className="res-hero__tag res-hero__tag--left">

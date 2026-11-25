@@ -1,29 +1,30 @@
 // StudentHelpline.jsx - Students > Student helpline (route: /students/helpline).
 // Page order: hero -> title + navy "call the office" card -> three ways to reach us -> before you call -> other help -> notice.
 // Own hero, own styles (StudentHelpline.css, every class starts with "hlp-").
+// Content comes from the database; the lists below are the fallback and seed.
 //
 // WHAT IS REAL AND WHAT IS SAMPLE
 //   REAL     the two phone numbers, the email and the address. They match the Navbar and Footer.
-//            The live helpline page (crprohtak.ac.in/studentHelpline) is only a small contact directory: no office hours, no named staff.
 //   SAMPLE   the three "before you call" tips. They are general good practice, NOT a rule of the institute.
-//            There are no office hours on this page because the live site gives none - add them to `notice` when the college decides.
+//            There are no office hours on this page - add them to `notice` when the college decides.
 //
 // EDITING: `contact` holds the details; `reach` and `tips` are plain lists; `other` links to the other Support pages.
-//
-// FILES TO COPY: the banner /images/pages-banner.png is already in the project.
-//   Code of conduct PDF: save the old-site file /static/pdf/Code-of-Conduct-for-Student.pdf as public/docs/code-of-conduct-for-students.pdf
+//   Code of conduct PDF: public/docs/code-of-conduct-for-students.pdf
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import {
   FiMapPin, FiChevronRight as FiCrumbArrow, FiArrowRight, FiPhone, FiMail, FiHome, FiUser, FiBookOpen, FiEdit3,
   FiInfo, FiExternalLink, FiHeadphones,
 } from "react-icons/fi";
+import PageLoader from "../../components/PageLoader";
+import { useStudentPage, mergeStudentContent } from "../../services/studentPageService";
+import { mediaUrl } from "../../services/mediaService";
 import "./StudentHelpline.css";
 import { useSite } from "../../context/SiteSettingsContext";
 
-const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
+const defaultHero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
-const intro = {
+const defaultIntro = {
   eyebrow: "Students",
   title: "Student helpline",
   lead: "Need help or have a question? Call or write to the institute office. This page lists every way to reach us.",
@@ -31,37 +32,70 @@ const intro = {
 
 // REAL - same details as the Navbar and Footer.
 // Three same-size cards. `kind` decides what the card shows (phones, email or address).
-const reach = [
+const defaultReach = [
   { kind: "phone", icon: FiPhone, title: "Call the office", text: "Speak to the institute office on either number." },
   { kind: "email", icon: FiMail, title: "Write to us", text: "Send your question by email and keep a copy for yourself." },
   { kind: "address", icon: FiHome, title: "Visit the institute", text: "Come to the main office during a working day." },
 ];
 
 // SAMPLE - general tips for any call or email. Not a rule of the institute.
-const tips = [
+const defaultTips = [
   { icon: FiUser, title: "Say who you are", text: "Give your name, branch and year at the start." },
   { icon: FiBookOpen, title: "Keep details ready", text: "Have your roll number or admission details at hand." },
   { icon: FiEdit3, title: "Be clear", text: "Say in one or two lines what help you need." },
 ];
 
-const notice = {
+const defaultNotice = {
   title: "Office hours are not published yet",
   text: "The institute has not listed calling hours on its website. If nobody answers, try the other number or send an email.",
 };
 
-const other = [
+const defaultOther = [
   { label: "Grievance redressal", text: "Raise a concern with the committee.", to: "/students/grievance" },
   { label: "E-services", text: "Fees, digital library and e-contents.", to: "/students/e-services" },
   { label: "Code of conduct", text: "Read the code for students (PDF).", href: "/docs/code-of-conduct-for-students.pdf" },
 ];
 
+// Saved paths that start with /uploads/ become full backend addresses; everything else is left as it is.
+function resolveStudentMedia(value) {
+  if (Array.isArray(value)) return value.map(resolveStudentMedia);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, resolveStudentMedia(item)]));
+  }
+  if (typeof value === "string" && value.startsWith("/uploads/")) return mediaUrl(value);
+  return value;
+}
+
 export default function StudentHelpline() {
+  const { ready, content: savedContent } = useStudentPage("helpline");
+  const pageContent = resolveStudentMedia(
+    mergeStudentContent(
+      {
+      hero: defaultHero,
+      intro: defaultIntro,
+      reach: defaultReach,
+      tips: defaultTips,
+      notice: defaultNotice,
+      other: defaultOther,
+      },
+      savedContent
+    )
+  );
+  const hero = pageContent.hero ?? defaultHero;
+  const intro = pageContent.intro ?? defaultIntro;
+  const reach = pageContent.reach ?? defaultReach;
+  const tips = pageContent.tips ?? defaultTips;
+  const notice = pageContent.notice ?? defaultNotice;
+  const other = pageContent.other ?? defaultOther;
+
   const { contact: contactSettings } = useSite();
   const contact = {
     phones: contactSettings?.phones || [],
     email: contactSettings?.email || "",
     address: contactSettings?.addressLines || [],
   };
+  if (!ready) return <main id="main" className="hlp-page"><PageLoader /></main>;
+
   return (
     <main id="main" className="hlp-page">
       <section className="hlp-hero" aria-label="Student helpline" style={{ "--img": `url("${hero.image}")` }}>

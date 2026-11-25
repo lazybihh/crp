@@ -59,10 +59,6 @@ export const ADMIN_MENU = [
         "path": "about/annual-report"
       },
       {
-        "label": "Mandatory disclosure",
-        "path": "about/mandatory-disclosure"
-      },
-      {
         "label": "Luminaries",
         "path": "about/luminaries"
       },

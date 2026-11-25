@@ -67,8 +67,10 @@ export default function AdminServiceRules() {
     if (!content) return;
     setSaving(true); setMessage(""); setIsError(false);
     try {
-      await savePolicy(PAGE_KEY, content);
-      setSavedContent(clone(content));
+      const savedRow = await savePolicy(PAGE_KEY, content);
+      const confirmedContent = savedRow?.content || content;
+      setContent(clone(confirmedContent));
+      setSavedContent(clone(confirmedContent));
       setMessage("Your changes have been saved successfully.");
     } catch (error) {
       setMessage(error.message || "Unable to save changes. Please check the API connection.");

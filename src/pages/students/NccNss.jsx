@@ -1,11 +1,11 @@
 // NccNss.jsx - Students > NCC & NSS (route: /students/ncc-nss).
 // Page order: hero -> title + NCC card -> about NCC (text, facts, photo) -> who can join -> NCC documents -> scholarships -> NSS notice -> related -> help strip.
 // Own hero, own styles (NccNss.css, every class starts with "ncc-").
+// Content comes from the database; the lists below are the fallback and seed.
 //
-// WHAT THE LIVE SITE HAS: "NCC & NSS" is a menu of five files, not a page - four NCC PDFs and one scholarships Word file.
-// This page introduces them and links to local copies. Nothing is loaded from the old website.
+// This page gathers four NCC PDFs and one scholarships Word file in one place.
 //
-// REAL (from the live NCC documents)
+// REAL (from the NCC documents)
 //   About NCC PDF            NCC instituted in 1949, largest youth organisation in the world, motto "Unity & Discipline",
 //                            a Senior Division (Army Wing) platoon of 52 cadets under 8 Haryana Battalion NCC, Rewari,
 //                            training July to March each year for three years.  -> PLEASE CONFIRM these are still current
@@ -13,18 +13,14 @@
 //   How to join NCC PDF      the four eligibility lines and "age up to 26 years, enrolment of 3 years" (Senior Division/Wing).
 //   The document blurbs      one sentence each, written from the document contents.
 // SAMPLE
-//   The NSS notice. The live site lists NSS in the menu but has no NSS content, so nothing about NSS is claimed.
+//   The NSS notice. There is no NSS content yet, so nothing about NSS is claimed.
 //   The scholarships blurb ("Scholarship details, 2021-22") is taken from the file name; the file was not opened.
 //
-// FILES TO COPY from the old website into the new project (new name on the right):
-//   https://crprohtak.ac.in/uploads/2022-10-10/About-NCC.pdf                              ->  public/docs/ncc/about-ncc.pdf
-//   https://crprohtak.ac.in/uploads/2022-10-10/HowTo-Join-NCC.pdf                         ->  public/docs/ncc/how-to-join-ncc.pdf
-//   https://crprohtak.ac.in/uploads/2022-10-10/Eligibilities-for-Certificate-Examination.pdf  ->  public/docs/ncc/certificate-exam-eligibility.pdf
-//   https://crprohtak.ac.in/uploads/2022-10-10/Incentives-To-Cadets-2.pdf                 ->  public/docs/ncc/incentives-to-cadets.pdf
-//   https://crprohtak.ac.in/uploads/2022-10-10/scholarship_details_yearly_2021-22.docx    ->  public/docs/ncc/scholarship-details-2021-22.docx
-//   https://crprohtak.ac.in/media/Facility/_DSC6300.JPG (the NCC photo on the Facilities page)  ->  public/images/ncc/ncc-activity.jpg
-// A missing photo shows a clean navy tile. A missing document gives a "file not found" page, so copy all five.
+// A missing photo shows a clean navy tile. A missing document gives a "file not found" page, so make sure all five files are in public/docs/ncc/.
 import { useState } from "react";
+import PageLoader from "../../components/PageLoader";
+import { useStudentPage, mergeStudentContent } from "../../services/studentPageService";
+import { mediaUrl } from "../../services/mediaService";
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import {
@@ -34,22 +30,22 @@ import {
 import "./NccNss.css";
 import { useSite } from "../../context/SiteSettingsContext";
 
-const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
-const photo = { src: "/images/ncc/ncc-activity.jpg", alt: "NCC cadets taking part in an activity at the institute" };
+const defaultHero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
+const defaultPhoto = { src: "/images/ncc/ncc-activity.jpg", alt: "NCC cadets taking part in an activity at the institute" };
 
-const intro = {
+const defaultIntro = {
   eyebrow: "Students",
   title: "NCC & NSS",
   lead: "The National Cadet Corps builds discipline, leadership and a spirit of service. Read how it works at the institute, who can join and what cadets can earn.",
 };
 
 // From the About NCC document - confirm these are still current.
-const about = [
+const defaultAbout = [
   "The National Cadet Corps was instituted in 1949 and is the largest youth organisation in the world. Its motto is Unity & Discipline.",
   "At the institute, a Senior Division (Army Wing) platoon of 52 cadets trains under 8 Haryana Battalion NCC, Rewari. Training runs from July to March each year for three years and covers institutional and camp training, community development and social service, adventure training and sports, a youth exchange programme, career counselling and a certificate examination.",
 ];
 
-const facts = [
+const defaultFacts = [
   { label: "Instituted", value: "1949" },
   { label: "Motto", value: "Unity & Discipline" },
   { label: "Wing at the institute", value: "Senior Division (Army Wing)" },
@@ -57,7 +53,7 @@ const facts = [
 ];
 
 // From the How to join NCC document.
-const eligibility = [
+const defaultEligibility = [
   "A citizen of India or a subject of Nepal",
   "Enrolled in an educational institution",
   "Of good moral character",
@@ -67,7 +63,7 @@ const eligibility = [
 // The four NCC documents. Add a line to add a document.
 //   title / text   what the card says        href   where the file lives in public/docs
 //   type           the small label           icon   an icon from react-icons/fi
-const docs = [
+const defaultDocs = [
   {
     id: "about",
     title: "About NCC",
@@ -102,14 +98,14 @@ const docs = [
   },
 ];
 
-const scholarships = {
+const defaultScholarships = {
   title: "Awards and scholarships",
   text: "Scholarship details, 2021-22.", // taken from the file name - SAMPLE
   href: "/docs/ncc/scholarship-details-2021-22.docx",
   type: "DOCX",
 };
 
-const related = [
+const defaultRelated = [
   { label: "Extracurricular achievements", text: "Sports, cultural and other wins by our students.", to: "/about/extracurricular" },
   { label: "Facilities", text: "Hostels, labs, sports and the rest of the campus.", to: "/about/facilities" },
   { label: "Skill courses", text: "Practical programmes alongside your diploma.", to: "/students/skill-courses" },
@@ -132,8 +128,46 @@ function Photo({ src, alt }) {
   );
 }
 
+// Saved paths that start with /uploads/ become full backend addresses; everything else is left as it is.
+function resolveStudentMedia(value) {
+  if (Array.isArray(value)) return value.map(resolveStudentMedia);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, resolveStudentMedia(item)]));
+  }
+  if (typeof value === "string" && value.startsWith("/uploads/")) return mediaUrl(value);
+  return value;
+}
+
 export default function NccNss() {
+  const { ready, content: savedContent } = useStudentPage("ncc-nss");
+  const pageContent = resolveStudentMedia(
+    mergeStudentContent(
+      {
+      hero: defaultHero,
+      photo: defaultPhoto,
+      intro: defaultIntro,
+      about: defaultAbout,
+      facts: defaultFacts,
+      eligibility: defaultEligibility,
+      docs: defaultDocs,
+      scholarships: defaultScholarships,
+      related: defaultRelated,
+      },
+      savedContent
+    )
+  );
+  const hero = pageContent.hero ?? defaultHero;
+  const photo = pageContent.photo ?? defaultPhoto;
+  const intro = pageContent.intro ?? defaultIntro;
+  const about = pageContent.about ?? defaultAbout;
+  const facts = pageContent.facts ?? defaultFacts;
+  const eligibility = pageContent.eligibility ?? defaultEligibility;
+  const docs = pageContent.docs ?? defaultDocs;
+  const scholarships = pageContent.scholarships ?? defaultScholarships;
+  const related = pageContent.related ?? defaultRelated;
+
   const { contact } = useSite();
+  if (!ready) return <main id="main" className="ncc-page"><PageLoader /></main>;
   return (
     <main id="main" className="ncc-page">
       <section className="ncc-hero" aria-label="NCC and NSS" style={{ "--img": `url("${hero.image}")` }}>

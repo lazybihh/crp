@@ -27,4 +27,11 @@ router.post("/", (req, res) => {
   });
 });
 
+const documentUpload = multer({
+  storage: multer.diskStorage({ destination: folder, filename: (req, file, cb) => cb(null, `doc-${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname).toLowerCase()}`) }),
+  fileFilter: (req, file, cb) => { const ext = path.extname(file.originalname).toLowerCase(); const allowed = [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".jpg", ".jpeg", ".png", ".webp"]; if (allowed.includes(ext)) cb(null, true); else cb(new Error("Unsupported document type. Allowed: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, JPG, PNG and WEBP.")); },
+  limits: { fileSize: 20 * 1024 * 1024 },
+});
+router.post("/document", (req, res) => { documentUpload.single("document")(req, res, (error) => { if (error) return res.status(400).json({ message: error.message }); if (!req.file) return res.status(400).json({ message: "Please select a document" }); res.json({ message: "Document uploaded successfully", fileUrl: `/uploads/${req.file.filename}`, fileName: req.file.originalname }); }); });
+
 module.exports = router;

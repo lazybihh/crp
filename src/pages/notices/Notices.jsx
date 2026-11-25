@@ -32,6 +32,7 @@ import { categories, notices as starterNotices, activities, sortRows } from "../
 import { getNotices, getNoticePage, mediaUrl, noticeFileUrl } from "../../services/noticeService";
 import "./Notices.css";
 import { useSite } from "../../context/SiteSettingsContext";
+import PageLoader, { usePageReady } from "../../components/PageLoader";
 
 const defaultPage = { banner:"/images/pages-banner.png", eyebrow:"Latest updates", title:"Notices", lead:"Admission lists, exam datesheets, scholarships, holidays and other announcements from the institute.", leftTag:"Government Polytechnic", rightTag:"Rohtak (Haryana)", glanceTitle:"At a glance", noticesLabel:"Notices", activitiesLabel:"Activities", latestLabel:"Latest notice", browseEyebrow:"Browse", listTitle:"All announcements", searchPlaceholder:"Search by title", helpTitle:"Can't find a notice?", helpText:"Ask the institute office. Some older notices may not be on this page.", homeBreadcrumb:"Home", noticesBreadcrumb:"Notices", allLabel:"All", chooseCategoryLabel:"Choose a category", fileMissingLabel:"File coming soon", openFileLabel:"Open", emptyMessage:"No notices match your search. Try a different word or choose All.", showMoreLabel:"Show more", showingLabel:"Showing", categoryAdmissions:"Admissions", categoryExams:"Exams", categoryScholarships:"Scholarships", categoryEvents:"Holidays & events", categoryTenders:"Tenders", categoryOther:"Other" };
 
@@ -56,17 +57,16 @@ const formatDate = (date) =>
 
 export default function Notices() {
   const { contact } = useSite();
-  const [noticeRows, setNoticeRows] = useState(starterNotices);
-  const [page, setPage] = useState(defaultPage);
-  useEffect(() => {
-    let active = true;
-    Promise.all([getNotices(), getNoticePage()]).then(([noticeData, pageData]) => {
-      if (!active) return;
-      setNoticeRows(noticeData.notices || []);
-      setPage({ ...defaultPage, ...(pageData.page || {}) });
-    }).catch(() => {});
-    return () => { active = false; };
-  }, []);
+  const { ready, data: results } = usePageReady(() => Promise.allSettled([getNotices(), getNoticePage()]));
+  const noticesResult = results?.[0];
+  const pageResult = results?.[1];
+  const noticeRows = noticesResult?.status === "fulfilled" && Array.isArray(noticesResult.value.notices)
+    ? noticesResult.value.notices
+    : starterNotices;
+  const page = {
+    ...defaultPage,
+    ...(pageResult?.status === "fulfilled" ? pageResult.value.page || {} : {}),
+  };
   const [tab, setTab] = useState("notices"); // "notices" or "activities"
   const [category, setCategory] = useState("all");
   const [query, setQuery] = useState("");
@@ -101,6 +101,8 @@ export default function Notices() {
   const changeTab = (next) => { setTab(next); setCategory("all"); setShown(PAGE_SIZE); };
   const changeCategory = (next) => { setCategory(next); setShown(PAGE_SIZE); setPickOpen(false); };
   const changeQuery = (value) => { setQuery(value); setShown(PAGE_SIZE); };
+
+  if (!ready) return <main id="main" className="ntc-page"><PageLoader /></main>;
 
   return (
     <main id="main" className="ntc-page">
@@ -227,7 +229,7 @@ export default function Notices() {
           {visible.length > 0 ? (
             <ul className="ntc-list">
               {visible.map((row) => {
-                const type = row.file ? fileType(row.file) : null;
+                const type = row.file ? fileType(row.file) : row.link ? { label: "Link", icon: FiExternalLink } : null;
                 const Icon = type ? type.icon : FiClock;
                 return (
                   <li key={`${tab}-${row.id}`} className="ntc-row">
@@ -241,8 +243,8 @@ export default function Notices() {
                       </p>
                       {row.note && <p className="ntc-row__note">{row.note}</p>}
                     </div>
-                    {row.file ? (
-                      <a className="ntc-open" href={noticeFileUrl(row.file)} target="_blank" rel="noopener noreferrer">
+                    {row.file || row.link ? (
+                      <a className="ntc-open" href={row.link || noticeFileUrl(row.file)} target="_blank" rel="noopener noreferrer">
                         {page.openFileLabel}
                         <FiExternalLink aria-hidden="true" />
                         <span className="sr-only"> {row.title} (opens in a new tab)</span>

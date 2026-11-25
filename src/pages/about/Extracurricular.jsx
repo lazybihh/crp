@@ -1,42 +1,45 @@
 // Extracurricular.jsx - About us > Extracurricular achievements (route: /about/extracurricular).
 // This page has its own hero, its own styles (Extracurricular.css, every class starts with "ext-") and its own downloads sidebar.
-// The live site's page is only a link to one PDF (EXTRACURRICULARACTIVITIES.pdf), so the content below comes from the Home page
+// The content below comes from the Home page
 // (NCC since 1949, the sports list, achievements and upcoming events). Add the PDF's details here when you have them.
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiChevronRight, FiFileText, FiDownload, FiFlag, FiActivity, FiMusic, FiAward, FiCalendar } from "react-icons/fi";
 import "./Extracurricular.css";
+import { useAboutPage, mergeAboutContent } from "../../services/aboutUsService";
+import PageLoader from "../../components/PageLoader";
+import { mediaUrl } from "../../services/mediaService";
 
-const hero = { image: "/images/pages-banner.png" };
+const defaultHero = { image: "/images/pages-banner.png" };
 
-const intro = {
+const defaultIntro = {
   eyebrow: "About us",
   title: "Extracurricular achievements",
   lead: "NCC, sports and culture - the activities that build confidence, teamwork and character alongside the diploma.",
 };
 
-const ncc = {
+const defaultNcc = {
   since: "1949",
   title: "National Cadet Corps",
   text: "The institute's NCC unit was instituted in 1949. Cadets take part in camps, parades and service activities that build discipline and leadership.",
 };
 
-const sports = ["Volleyball", "Football", "Basketball", "Badminton", "Kho kho"];
+const defaultSports = ["Volleyball", "Football", "Basketball", "Badminton", "Kho kho"];
 
-const culture = {
+const defaultCulture = {
   title: "Culture and campus life",
   text: "Cultural events run through the year, and the annual cultural fest brings every department on stage together.", // SAMPLE wording around the real Home items
 };
 
 // From the Home page "Achievements" panel.
-const achievements = [
+const defaultAchievements = [
   { date: "2026", text: "NCC cadets selected for state camp" },
   { date: "2026", text: "Students win inter-polytechnic sports meet" },
   { date: "2025", text: "Project showcase recognised by industry guests" },
 ];
 
 // From the Home page "Upcoming events" panel.
-const upcoming = [
+const defaultUpcoming = [
   { date: "Dec 2026", text: "Annual technical exhibition" },
   { date: "Jan 2027", text: "Republic Day parade and NCC display" },
   { date: "Feb 2027", text: "Cultural fest" },
@@ -52,10 +55,21 @@ const downloads = [
 ];
 
 export default function Extracurricular() {
+  const { ready, content: savedContent } = useAboutPage("extracurricular");
+  const hero = mergeAboutContent(defaultHero, savedContent?.hero);
+  const intro = mergeAboutContent(defaultIntro, savedContent?.intro);
+  const ncc = mergeAboutContent(defaultNcc, savedContent?.ncc);
+  const sports = mergeAboutContent(defaultSports, savedContent?.sports);
+  const culture = mergeAboutContent(defaultCulture, savedContent?.culture);
+  const achievements = mergeAboutContent(defaultAchievements, savedContent?.achievements);
+  const upcoming = mergeAboutContent(defaultUpcoming, savedContent?.upcoming);
+
+  if (!ready) return <main id="main" className="ext-page"><PageLoader /></main>;
+
   return (
     <main id="main" className="ext-page">
       {/* ---- hero ---- */}
-      <section className="ext-hero" aria-label="Extracurricular achievements" style={{ "--img": `url("${hero.image}")` }}>
+      <section className="ext-hero" aria-label="Extracurricular achievements" style={{ "--img": `url("${mediaUrl(hero.image)}")` }}>
         <div className="ext-hero__photo" />
         <div className="ext-hero__tags">
           <span className="ext-hero__tag ext-hero__tag--left">

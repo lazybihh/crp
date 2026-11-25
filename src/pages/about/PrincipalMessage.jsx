@@ -1,22 +1,25 @@
 // PrincipalMessage.jsx - About us > Principal's desk (route: /about/principal-message).
 // This page has its own hero, its own styles (principal-message.css, every class starts with "pm-") and its own downloads sidebar.
-// Everything in the message is SAMPLE text (the live site's page could not be read) - replace it with the Principal's real message.
+// Everything in the message is SAMPLE text - replace it with the Principal's real message from the admin.
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiChevronRight, FiFileText, FiDownload, FiTool, FiBriefcase, FiUsers } from "react-icons/fi";
 import "./Principal-message.css";
+import { useAboutPage, mergeAboutContent } from "../../services/aboutUsService";
+import PageLoader from "../../components/PageLoader";
+import { mediaUrl } from "../../services/mediaService";
 
 const img = (file) => `/images/${file}`;
 
-const hero = { image: "/images/pages-banner.png" };
+const defaultHero = { image: "/images/pages-banner.png" };
 
-const intro = {
+const defaultIntro = {
   eyebrow: "About us",
   title: "Principal's desk",
   lead: "A few words to students, parents and everyone who believes in technical education.",
 };
 
-const principal = {
+const defaultPrincipal = {
   name: "Dr. Sitender Kumar",
   role: "Principal, Chhotu Ram Polytechnic",
   photo: img("principal.png"),
@@ -28,7 +31,7 @@ const principal = {
   ],
 };
 
-const pillars = [
+const defaultPillars = [
   { icon: FiTool, title: "Practical training", text: "Workshops and laboratories make every concept something students can build and test." },
   { icon: FiBriefcase, title: "Industry exposure", text: "Industrial visits, training and a placement cell connect the classroom to real work." },
   { icon: FiUsers, title: "Care for every student", text: "Guidance, activities and facilities that help each student grow with confidence." },
@@ -40,12 +43,20 @@ const downloads = [
 ];
 
 export default function PrincipalMessage() {
+  const { ready, content: savedContent } = useAboutPage("principal-message");
+  const hero = mergeAboutContent(defaultHero, savedContent?.hero);
+  const intro = mergeAboutContent(defaultIntro, savedContent?.intro);
+  const principal = mergeAboutContent(defaultPrincipal, savedContent?.principal);
+  const pillars = mergeAboutContent(defaultPillars, savedContent?.pillars);
+
   const initials = principal.name.replace(/^(Dr|Mr|Mrs|Sh)\.?\s+/i, "").split(" ").map((w) => w[0]).join("").slice(0, 2);
+
+  if (!ready) return <main id="main" className="pm-page"><PageLoader /></main>;
 
   return (
     <main id="main" className="pm-page">
       {/* ---- hero ---- */}
-      <section className="pm-hero" aria-label="Principal's desk" style={{ "--img": `url("${hero.image}")` }}>
+      <section className="pm-hero" aria-label="Principal's desk" style={{ "--img": `url("${mediaUrl(hero.image)}")` }}>
         <div className="pm-hero__photo" />
         <div className="pm-hero__tags">
           <span className="pm-hero__tag pm-hero__tag--left">
@@ -78,7 +89,7 @@ export default function PrincipalMessage() {
             <figure className="pm-portrait">
               <div className="pm-portrait__frame">
                 <span aria-hidden="true">{initials}</span>
-                <img src={principal.photo} alt={principal.name} loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />
+                <img src={mediaUrl(principal.photo)} alt={principal.name} loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />
               </div>
               <figcaption>
                 <strong>{principal.name}</strong>

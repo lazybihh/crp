@@ -27,6 +27,7 @@ import {
   FiMic, FiWifi, FiUsers, FiTruck, FiCoffee, FiBriefcase, FiAward, FiFlag, FiCpu, FiNavigation, FiMusic,
 } from "react-icons/fi";
 import { getFacilities, mediaUrl } from "../../services/facilityService";
+import PageLoader, { usePageReady } from "../../components/PageLoader";
 import "./Facilities.css";
 
 const hero = { image: "/images/pages-banner.png" }; // if it is missing a patterned navy banner shows instead
@@ -390,32 +391,20 @@ function Photo({ src, alt, Icon, className, placeholder }) {
 export default function Facilities() {
   // /about/facilities?facility=hostels opens that tab (the Home page facility cards link here)
   const [params] = useSearchParams();
-  const [content, setContent] = useState({ page: fallbackPage, facilities: fallbackFacilities });
-  const { page, facilities } = content;
+  const { ready, data: saved } = usePageReady(() => getFacilities());
+  const page = saved ? {
+    intro: { ...fallbackPage.intro, ...saved.page?.intro },
+    stats: saved.page?.stats ?? fallbackPage.stats,
+    explore: { ...fallbackPage.explore, ...saved.page?.explore },
+    panel: { ...fallbackPage.panel, ...saved.page?.panel },
+    closingStats: saved.page?.closingStats ?? fallbackPage.closingStats,
+  } : fallbackPage;
+  const facilities = Array.isArray(saved?.facilities) ? saved.facilities.map(fromDatabase) : fallbackFacilities;
   const total = facilities.length;
   const wantedId = params.get("facility");
   const wanted = facilities.findIndex((item) => item.id === wantedId);
   const [active, setActive] = useState(wanted >= 0 ? wanted : 0);
-  const [heroImage, setHeroImage] = useState(hero.image);
-
-  // the text and photos come from the database; until they arrive (or if the server is down) the copy in this file is shown
-  useEffect(() => {
-    getFacilities()
-      .then(({ page: saved, facilities: rows }) => {
-        if (saved.bannerImage) setHeroImage(mediaUrl(saved.bannerImage) || hero.image);
-        setContent({
-          page: {
-            intro: { ...fallbackPage.intro, ...saved.intro },
-            stats: saved.stats ?? fallbackPage.stats,
-            explore: { ...fallbackPage.explore, ...saved.explore },
-            panel: { ...fallbackPage.panel, ...saved.panel },
-            closingStats: saved.closingStats ?? fallbackPage.closingStats,
-          },
-          facilities: rows.map(fromDatabase),
-        });
-      })
-      .catch(() => {});
-  }, []);
+  const heroImage = mediaUrl(saved?.page?.bannerImage) || hero.image;
 
   // when the list arrives or changes, keep the open tab valid (and open the facility named in the link, if any)
   useEffect(() => {
@@ -466,6 +455,8 @@ export default function Facilities() {
     event.preventDefault();
     select(next, true);
   };
+
+  if (!ready) return <main id="main" className="fac-page"><PageLoader /></main>;
 
   return (
     <main id="main" className="fac-page">

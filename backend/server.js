@@ -1,4 +1,3 @@
-
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
@@ -16,6 +15,15 @@ const SiteSettings = require("./models/SiteSettings");
 const Media = require("./models/Media");
 const Department = require("./models/Department");
 const StudyResource = require("./models/StudyResource");
+
+// About Us backend models
+const AboutUsInstitute = require("./models/AboutUsInstitute");
+const AboutUsAcademics = require("./models/AboutUsAcademics");
+const AboutUsAchievements = require("./models/AboutUsAchievements");
+
+// Students backend models
+const StudentSupport = require("./models/StudentSupport");
+const StudentCareers = require("./models/StudentCareers");
 
 // Faculty backend models
 const FacultyPolicy = require("./models/FacultyPolicy");
@@ -43,6 +51,15 @@ app.use("/api/media", require("./routes/MediaRoutes"));
 app.use("/api/enquiries", require("./routes/EnquiryRoutes"));
 app.use("/api/contact-page", require("./routes/ContactPageRoutes"));
 
+// About Us API routes
+app.use("/api/about-us/institute", require("./routes/AboutUsInstituteRoutes"));
+app.use("/api/about-us/academics", require("./routes/AboutUsAcademicsRoutes"));
+app.use("/api/about-us/achievements", require("./routes/AboutUsAchievementsRoutes"));
+
+// Students API routes
+app.use("/api/students/support", require("./routes/StudentSupportRoutes"));
+app.use("/api/students/careers", require("./routes/StudentCareersRoutes"));
+
 // Faculty API routes
 app.use("/api/faculty/policies", require("./routes/FacultyPolicyRoutes"));
 app.use("/api/faculty/services", require("./routes/FacultyServiceRoutes"));
@@ -65,6 +82,15 @@ if (process.env.MONGO_URI) {
       await EventsPage.seed();
       await SiteSettings.seed();
       await ContactPage.seed();
+
+      // Seed About Us content (only inserts missing records)
+      await AboutUsInstitute.seed();
+      await AboutUsAcademics.seed();
+      await AboutUsAchievements.seed();
+
+      // Seed students content
+      await StudentSupport.seed();
+      await StudentCareers.seed();
 
       // Seed faculty content (only inserts missing records)
       await FacultyPolicy.seed();

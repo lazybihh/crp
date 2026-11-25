@@ -1,24 +1,27 @@
 // Luminaries.jsx - About us > Luminaries (route: /about/luminaries).
 // This page has its own hero, its own styles (Luminaries.css, every class starts with "lum-") and its own downloads sidebar.
-// The live site says "Data Under Process" for this page. The three leaders below come from the Home page leadership cards;
+// The three leaders below come from the Home page leadership cards;
 // the "distinguished alumni and guests" cards are SAMPLE placeholders - replace them with real names.
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiChevronRight, FiFileText, FiDownload, FiStar } from "react-icons/fi";
 import "./Luminaries.css";
+import { useAboutPage, mergeAboutContent } from "../../services/aboutUsService";
+import PageLoader from "../../components/PageLoader";
+import { mediaUrl } from "../../services/mediaService";
 
 const img = (file) => `/images/${file}`;
 
-const hero = { image: "/images/pages-banner.png" };
+const defaultHero = { image: "/images/pages-banner.png" };
 
-const intro = {
+const defaultIntro = {
   eyebrow: "About us",
   title: "Luminaries",
   lead: "The people whose vision, leadership and work shaped the institute and keep it moving forward.",
 };
 
 // Same people and text as the Home page leadership section.
-const founder = {
+const defaultFounder = {
   name: "Deenbandhu Sir Chhotu Ram",
   role: "The Messiah of Farmers",
   text: "A great statesman, social reformer and the voice of the farmers. His vision for rural upliftment and education continues to inspire us.",
@@ -26,7 +29,7 @@ const founder = {
   initials: "CR",
 };
 
-const leaders = [
+const defaultLeaders = [
   {
     name: "Sh. Gulab Singh",
     role: "President, JES Society (Regd.)",
@@ -44,7 +47,7 @@ const leaders = [
 ];
 
 // SAMPLE: replace with real alumni, guests or award winners (name, role / batch, one line).
-const distinguished = [
+const defaultDistinguished = [
   { name: "Distinguished alumnus", role: "Batch year, Civil Engineering", text: "A short line about the career or contribution that makes this person a luminary of the institute." },
   { name: "Distinguished alumnus", role: "Batch year, Electrical Engineering", text: "A short line about the career or contribution that makes this person a luminary of the institute." },
   { name: "Distinguished guest", role: "Designation, organisation", text: "A short line about the visit, lecture or support this guest gave to the institute." },
@@ -64,10 +67,19 @@ function Portrait({ person }) {
 }
 
 export default function Luminaries() {
+  const { ready, content: savedContent } = useAboutPage("luminaries");
+  const hero = mergeAboutContent(defaultHero, savedContent?.hero);
+  const intro = mergeAboutContent(defaultIntro, savedContent?.intro);
+  const founder = mergeAboutContent(defaultFounder, savedContent?.founder);
+  const leaders = mergeAboutContent(defaultLeaders, savedContent?.leaders);
+  const distinguished = mergeAboutContent(defaultDistinguished, savedContent?.distinguished);
+
+  if (!ready) return <main id="main" className="lum-page"><PageLoader /></main>;
+
   return (
     <main id="main" className="lum-page">
       {/* ---- hero ---- */}
-      <section className="lum-hero" aria-label="Luminaries" style={{ "--img": `url("${hero.image}")` }}>
+      <section className="lum-hero" aria-label="Luminaries" style={{ "--img": `url("${mediaUrl(hero.image)}")` }}>
         <div className="lum-hero__photo" />
         <div className="lum-hero__tags">
           <span className="lum-hero__tag lum-hero__tag--left">

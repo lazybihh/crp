@@ -1,38 +1,40 @@
 // Apprenticeship.jsx - Students > Apprenticeship (route: /students/apprenticeship).
 // Page order: hero -> title + "this session" card -> who can train -> training trades -> questions -> related -> help strip.
 // Own hero, own styles (Apprenticeship.css, every class starts with "app-").
+// Content comes from the database; the lists below are the fallback and seed.
 //
 // WHAT IS REAL AND WHAT IS SAMPLE
-//   REAL      everything about interns, ITI certificate holders and the trades comes from the live page
-//             (crprohtak.ac.in/Apprenticeship): two interns this session (computer operation and programme application,
-//             and electrical installation and management), both ITI certificate holders; training offered every year
-//             in instrument repair, electrical installation and management, computer operation, plumbing, welding
-//             and other skill-based technical work.
-//   SAMPLE    only the last FAQ answer ("How do I ask about a place?") - the live page gives no application steps,
-//             so it just points to the office. Replace it when the college has an application process.
+//   REAL      the two interns this session (computer operation and programme application, and electrical installation
+//             and management), both ITI certificate holders; training offered every year in instrument repair,
+//             electrical installation and management, computer operation, plumbing, welding and other skill-based
+//             technical work.
+//   SAMPLE    only the last FAQ answer ("How do I ask about a place?"). No application steps are given, so it just
+//             points to the office. Replace it when the college has an application process.
 //
 // EACH YEAR: update `session` (the number and the interns' trades) at the top. Add or remove trades in the `trades` list.
 //
-// NO FILES TO COPY: this page uses no pictures except the shared banner (public/images/pages-banner.png).
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import {
   FiMapPin, FiChevronRight as FiCrumbArrow, FiArrowRight, FiAward, FiMonitor, FiZap, FiSettings, FiDroplet, FiTool,
   FiLayers, FiHelpCircle, FiPlus, FiPhone, FiMail,
 } from "react-icons/fi";
+import PageLoader from "../../components/PageLoader";
+import { useStudentPage, mergeStudentContent } from "../../services/studentPageService";
+import { mediaUrl } from "../../services/mediaService";
 import "./Apprenticeship.css";
 import { useSite } from "../../context/SiteSettingsContext";
 
-const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
+const defaultHero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
-const intro = {
+const defaultIntro = {
   eyebrow: "Students",
   title: "Apprenticeship",
   lead: "Every year the institute offers hands-on training to ITI certificate holders in technical trades. Here is who it is for and what it covers.",
 };
 
 // The interns training this session (trade only - no names on a public page).
-const session = {
+const defaultSession = {
   count: 2,
   interns: [
     { trade: "Computer operation and programme application", icon: FiMonitor },
@@ -40,8 +42,8 @@ const session = {
   ],
 };
 
-// The trades the institute names on its live page. Add a line to add a trade.
-const trades = [
+// The trades the institute offers training in. Add a line to add a trade.
+const defaultTrades = [
   { name: "Instrument repair", icon: FiSettings },
   { name: "Electrical installation and management", icon: FiZap },
   { name: "Computer operation", icon: FiMonitor },
@@ -50,21 +52,54 @@ const trades = [
   { name: "Other skill-based technical work", icon: FiLayers },
 ];
 
-const faqs = [
+const defaultFaqs = [
   { q: "Who can do an apprenticeship at the institute?", a: "ITI certificate holders. The institute offers training places to them every year." },
   { q: "Which trades are covered?", a: "Instrument repair, electrical installation and management, computer operation, plumbing, welding and other skill-based technical work." },
   { q: "How many interns are training now?", a: "Two this session: one in computer operation and programme application, and one in electrical installation and management. Both are ITI certificate holders." },
   { q: "How do I ask about a place?", a: "Call or write to the institute office. The contact details are at the bottom of this page." }, // SAMPLE
 ];
 
-const related = [
+const defaultRelated = [
   { label: "Skill courses", text: "Other practical programmes at the institute.", to: "/students/skill-courses" },
   { label: "Admissions", text: "Diploma programmes, seats and how to apply.", to: "/students/admissions" },
   { label: "Placements", text: "Where our students go after training.", to: "/about/placements" },
 ];
 
+// Saved paths that start with /uploads/ become full backend addresses; everything else is left as it is.
+function resolveStudentMedia(value) {
+  if (Array.isArray(value)) return value.map(resolveStudentMedia);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, resolveStudentMedia(item)]));
+  }
+  if (typeof value === "string" && value.startsWith("/uploads/")) return mediaUrl(value);
+  return value;
+}
+
 export default function Apprenticeship() {
+  const { ready, content: savedContent } = useStudentPage("apprenticeship");
+  const pageContent = resolveStudentMedia(
+    mergeStudentContent(
+      {
+      hero: defaultHero,
+      intro: defaultIntro,
+      session: defaultSession,
+      trades: defaultTrades,
+      faqs: defaultFaqs,
+      related: defaultRelated,
+      },
+      savedContent
+    )
+  );
+  const hero = pageContent.hero ?? defaultHero;
+  const intro = pageContent.intro ?? defaultIntro;
+  const session = pageContent.session ?? defaultSession;
+  const trades = pageContent.trades ?? defaultTrades;
+  const faqs = pageContent.faqs ?? defaultFaqs;
+  const related = pageContent.related ?? defaultRelated;
+
   const { contact } = useSite();
+  if (!ready) return <main id="main" className="app-page"><PageLoader /></main>;
+
   return (
     <main id="main" className="app-page">
       <section className="app-hero" aria-label="Apprenticeship" style={{ "--img": `url("${hero.image}")` }}>

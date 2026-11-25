@@ -1,6 +1,6 @@
 // Entrepreneurship.jsx - About us > Entrepreneurship (route: /about/entrepreneurship).
 // This page has its own hero, its own styles (entrepreneurship.css, every class starts with "ent-") and its own downloads sidebar.
-// The live site says "Data Under Process" for this page, so almost everything here is SAMPLE text - replace it with real content.
+// Almost everything here is SAMPLE text - replace it with real content from the admin.
 // The four programme cards link to the Students menu pages that already exist in the navbar.
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
@@ -8,25 +8,28 @@ import {
   FiMapPin, FiChevronRight, FiFileText, FiDownload, FiZap, FiLayers, FiCode, FiUserCheck, FiArrowRight, FiStar,
 } from "react-icons/fi";
 import "./Entrepreneurship.css";
+import { useAboutPage, mergeAboutContent } from "../../services/aboutUsService";
+import PageLoader from "../../components/PageLoader";
+import { mediaUrl } from "../../services/mediaService";
 
-const hero = { image: "/images/pages-banner.png" };
+const defaultHero = { image: "/images/pages-banner.png" };
 
-const intro = {
+const defaultIntro = {
   eyebrow: "About us",
   title: "Entrepreneurship",
   lead: "Turning ideas from the classroom and workshop into skills, small ventures and real work.", // SAMPLE
 };
 
-const welcome = "Our students learn to make things - and some go on to build their own work. The institute backs that spirit with an incubator, freelancing practice, skill courses and apprenticeships."; // SAMPLE
+const defaultWelcome = "Our students learn to make things - and some go on to build their own work. The institute backs that spirit with an incubator, freelancing practice, skill courses and apprenticeships."; // SAMPLE
 
-const programmes = [
+const defaultProgrammes = [
   { icon: FiZap, title: "Incubator", text: "A space for students to turn project ideas into working prototypes.", to: "/students/incubator" },
   { icon: FiCode, title: "Freelancing", text: "Learn to find and complete paid project work while still studying.", to: "/students/freelancing" },
   { icon: FiLayers, title: "Skill courses", text: "Short courses that add job-ready and business-ready skills.", to: "/students/skill-courses" },
   { icon: FiUserCheck, title: "Apprenticeship", text: "Learn on the job with industry partners.", to: "/students/apprenticeship" },
 ];
 
-const journey = [
+const defaultJourney = [
   { title: "Spark an idea", text: "Start with a problem you see in class, workshop or village." },
   { title: "Build a prototype", text: "Use the labs and workshop to make a first working version." },
   { title: "Get feedback", text: "Show it to teachers and industry guests and improve it." },
@@ -39,10 +42,19 @@ const downloads = [
 ];
 
 export default function Entrepreneurship() {
+  const { ready, content: savedContent } = useAboutPage("entrepreneurship");
+  const hero = mergeAboutContent(defaultHero, savedContent?.hero);
+  const intro = mergeAboutContent(defaultIntro, savedContent?.intro);
+  const welcome = mergeAboutContent(defaultWelcome, savedContent?.welcome);
+  const programmes = mergeAboutContent(defaultProgrammes, savedContent?.programmes);
+  const journey = mergeAboutContent(defaultJourney, savedContent?.journey);
+
+  if (!ready) return <main id="main" className="ent-page"><PageLoader /></main>;
+
   return (
     <main id="main" className="ent-page">
       {/* ---- hero ---- */}
-      <section className="ent-hero" aria-label="Entrepreneurship" style={{ "--img": `url("${hero.image}")` }}>
+      <section className="ent-hero" aria-label="Entrepreneurship" style={{ "--img": `url("${mediaUrl(hero.image)}")` }}>
         <div className="ent-hero__photo" />
         <div className="ent-hero__tags">
           <span className="ent-hero__tag ent-hero__tag--left">

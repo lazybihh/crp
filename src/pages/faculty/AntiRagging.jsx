@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { mediaUrl } from "../../services/homeService";
 import { getPolicy } from "../../services/facultyContentService";
+import PageLoader, { usePageReady } from "../../components/PageLoader";
 
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
@@ -23,9 +25,7 @@ const commitments = [
 ];
 
 export default function AntiRagging() {
-  const [backendContent, setBackendContent] = useState(null);
-  useEffect(() => { let active = true; getPolicy("anti-ragging").then(row => { if (active) setBackendContent(row.content || row); }).catch(error => console.error("Faculty page content load failed:", error)); return () => { active = false; }; }, []);
-
+  const { ready, data: backendContent } = usePageReady(() => getPolicy("anti-ragging").then((row) => row.content || row));
   const [formNotice, setFormNotice] = useState("");
 
   const handleSubmit = (event) => {
@@ -33,18 +33,20 @@ export default function AntiRagging() {
     setFormNotice("This is a front-end form preview. No information has been sent or stored. The institute must connect an approved, secure submission system before this form is used.");
   };
 
+  if (!ready) return <main data-faculty-content-key="anti-ragging" id="main" className="pol-page pol-ragging"><PageLoader /></main>;
+
   return (
     <main data-faculty-content-key="anti-ragging" id="main" className="pol-page pol-ragging">
-      <section className="pol-hero" aria-label="Anti Ragging" style={{ "--pol-img": 'url("/images/pages-banner.png")' }}>
+      <section className="pol-hero" aria-label="Anti Ragging" style={{ "--pol-img": `url("${mediaUrl(backendContent?.heroImage || '/images/pages-banner.png')}")` }}>
         <div className="pol-hero__photo" />
         <div className="pol-hero__tags">
           <span className="pol-hero__tag pol-hero__tag--left">
             <span className="pol-hero__tag-icon"><FaGraduationCap aria-hidden="true" /></span>
-            Government Polytechnic
+            {backendContent?.heroLeft || "Government Polytechnic"}
           </span>
           <span className="pol-hero__tag pol-hero__tag--right">
             <span className="pol-hero__tag-icon"><FiMapPin aria-hidden="true" /></span>
-            Rohtak (Haryana)
+            {backendContent?.heroRight || "Rohtak (Haryana)"}
           </span>
         </div>
         <nav className="pol-crumbs" aria-label="Breadcrumb">
@@ -57,33 +59,33 @@ export default function AntiRagging() {
       <div className="container pol-wrap">
         <header className="pol-intro">
           <span className="pol-eyebrow">Faculty · Policies &amp; Rules</span>
-          <h1>Anti <em>Ragging</em></h1>
+          <h1>{backendContent?.title || "Anti"} <em>{backendContent?.accent || "Ragging"}</em></h1>
           <p>{backendContent?.description || "A respectful campus begins with the safety, dignity and wellbeing of every student."}</p>
         </header>
 
         <section className="pol-feature">
           <div className="pol-feature__mark"><FiShield /></div>
           <div>
-            <span className="pol-kicker">Zero tolerance for ragging</span>
-            <h2>Every student deserves to feel safe</h2>
-            <p>Ragging has no place in an educational institution. Students are expected to treat one another with respect and help maintain a supportive environment for learning.</p>
+            <span className="pol-kicker">{backendContent?.featureKicker || "Zero tolerance for ragging"}</span>
+            <h2>{backendContent?.featureTitle || "Every student deserves to feel safe"}</h2>
+            <p>{backendContent?.featureText || "Ragging has no place in an educational institution. Students are expected to treat one another with respect and help maintain a supportive environment for learning."}</p>
           </div>
-          <span className="pol-feature__number">02</span>
+          <span className="pol-feature__number">{backendContent?.featureNumber || "02"}</span>
         </section>
 
         <section className="pol-section">
           <div className="pol-section__head">
-            <span className="pol-eyebrow">Our campus principles</span>
-            <h2>Safety, respect and support</h2>
-            <p>The official page is currently not fully accessible for verification. This section is sample awareness content and should be checked against the institute's approved anti-ragging policy before publication.</p>
+            <span className="pol-eyebrow">{backendContent?.sectionEyebrow || "Our campus principles"}</span>
+            <h2>{backendContent?.sectionTitle || "Safety, respect and support"}</h2>
+            <p>{backendContent?.sectionText || "The official page is currently not fully accessible for verification. This section is sample awareness content and should be checked against the institute's approved anti-ragging policy before publication."}</p>
           </div>
           <div className="pol-card-grid">
-            {principles.map(({ icon: Icon, title, text }, i) => (
-              <article className="pol-card" key={title}>
-                <span className="pol-card__icon"><Icon /></span>
+            {(backendContent?.cards?.length ? backendContent.cards : principles).map((item, i) => (
+              <article className="pol-card" key={item.title}>
+                <span className="pol-card__icon">{(() => { const Icon = principles[i % principles.length].icon; return <Icon />; })()}</span>
                 <span className="pol-card__no">0{i + 1}</span>
-                <h3>{title}</h3>
-                <p>{text}</p>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
               </article>
             ))}
           </div>
@@ -91,11 +93,11 @@ export default function AntiRagging() {
 
         <section className="pol-section pol-process">
           <div className="pol-section__head">
-            <span className="pol-eyebrow">Student responsibilities</span>
-            <h2>Help keep the campus welcoming</h2>
+            <span className="pol-eyebrow">{backendContent?.processEyebrow || "Student responsibilities"}</span>
+            <h2>{backendContent?.processTitle || "Help keep the campus welcoming"}</h2>
           </div>
           <ol>
-            {commitments.map((item, i) => (
+            {(backendContent?.steps?.length ? backendContent.steps : commitments).map((item, i) => (
               <li key={item}>
                 <span>{String(i + 1).padStart(2, "0")}</span>
                 <p>{item}</p>
@@ -175,13 +177,13 @@ export default function AntiRagging() {
         <aside className="pol-note">
           <FiAlertCircle />
           <div>
-            <strong>Important before publication</strong>
-            <p>This form is currently a visual front-end preview only. It does not send, save or email submissions. The institute should connect it to an approved secure complaint-handling system and publish verified contact details before accepting real reports.</p>
+            <strong>{backendContent?.noteTitle || "Important before publication"}</strong>
+            <p>{backendContent?.noteText || "This form is currently a visual front-end preview only. It does not send, save or email submissions. The institute should connect it to an approved secure complaint-handling system and publish verified contact details before accepting real reports."}</p>
           </div>
         </aside>
 
         <footer className="pol-bottom">
-          <span>Explore another policy</span>
+          <span>{backendContent?.relatedTitle || "Explore another policy"}</span>
           <Link to="/faculty/training-policy">Training Policy <FiChevronRight /></Link>
           <Link to="/faculty/anti-sexual-harassment">Anti Sexual Harassment <FiChevronRight /></Link>
           <Link to="/faculty/service-rules">Service Rules <FiChevronRight /></Link>

@@ -1,10 +1,10 @@
 // Freelancing.jsx - Students > Freelancing (route: /students/freelancing).
 // Page order: hero -> title + "where do I start" card -> what freelancing means -> get ready in 3 steps -> notice -> related -> help strip.
 // Own hero, own styles (Freelancing.css, every class starts with "frl-").
+// Content comes from the database; the lists below are the fallback and seed.
 //
 // WHAT IS REAL AND WHAT IS SAMPLE
-//   The live page (crprohtak.ac.in/Freelancing) only says "Data Under Process". There are no institute facts to show yet,
-//   so this page stays honest: it explains freelancing in general and points students to pages that already exist.
+//   This page stays honest: it explains freelancing in general and points students to pages that already exist.
 //   REAL      the links, the contact details, and the fact that details are still being prepared.
 //   SAMPLE    every sentence about what freelancing is and the 3 "get ready" steps. They are general guidance, not
 //             institute claims. When the college has a freelancing programme, replace the `meaning` and `steps` lists
@@ -12,52 +12,87 @@
 //
 // EDITING: `meaning` and `steps` are plain lists - each object has an icon, a title and a text.
 //
-// NO FILES TO COPY: this page uses no pictures except the shared banner (public/images/pages-banner.png).
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import {
   FiMapPin, FiChevronRight as FiCrumbArrow, FiArrowRight, FiHelpCircle, FiZap, FiMonitor, FiMessageCircle, FiClock,
   FiBriefcase, FiAward, FiTarget, FiFolder, FiSend, FiPhone, FiMail, FiInfo,
 } from "react-icons/fi";
+import PageLoader from "../../components/PageLoader";
+import { useStudentPage, mergeStudentContent } from "../../services/studentPageService";
+import { mediaUrl } from "../../services/mediaService";
 import "./Freelancing.css";
 import { useSite } from "../../context/SiteSettingsContext";
 
-const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
+const defaultHero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
-const intro = {
+const defaultIntro = {
   eyebrow: "Students",
   title: "Freelancing",
 };
 
 // The navy "where do I start" card. Each line opens a page that already exists on this site.
-const guide = [
+const defaultGuide = [
   { goal: "Learn a practical skill", name: "Skill courses", to: "/students/skill-courses", icon: FiZap },
   { goal: "Study online, free of cost", name: "Online learning portals", to: "/students/online-learning", icon: FiMonitor },
   { goal: "Ask a question", name: "Student helpline", to: "/students/helpline", icon: FiMessageCircle },
 ];
 
 // SAMPLE - what freelancing means, in general.
-const meaning = [
+const defaultMeaning = [
   { icon: FiClock, title: "Work on your own terms", text: "A freelancer is not tied to one employer. You choose when and how you work." },
   { icon: FiBriefcase, title: "Take on projects", text: "You do a piece of work for a client, deliver it, and then move to the next one." },
   { icon: FiAward, title: "Earn from your skills", text: "The better your skill, the more work you can offer, so a diploma skill can become a source of income." },
 ];
 
 // SAMPLE - three simple steps for a student who wants to try.
-const steps = [
+const defaultSteps = [
   { icon: FiTarget, title: "Pick one skill", text: "Choose a single skill you enjoy, such as drafting, programming, electrical work or repair, and get good at it." },
   { icon: FiFolder, title: "Build a small portfolio", text: "Keep photos, files or links of your best work in one place, so a client can see what you can do." },
   { icon: FiSend, title: "Start with a small project", text: "Offer your skill to someone you know. A small first job teaches more than any plan." },
 ];
 
-const related = [
+const defaultRelated = [
   { label: "Skill courses", text: "Practical programmes to build your skills.", to: "/students/skill-courses" },
   { label: "Incubator", text: "Taking an idea further than a single project.", to: "/students/incubator" },
   { label: "Entrepreneurship", text: "Stories and support for student entrepreneurs.", to: "/about/entrepreneurship" },
 ];
 
+// Saved paths that start with /uploads/ become full backend addresses; everything else is left as it is.
+function resolveStudentMedia(value) {
+  if (Array.isArray(value)) return value.map(resolveStudentMedia);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, resolveStudentMedia(item)]));
+  }
+  if (typeof value === "string" && value.startsWith("/uploads/")) return mediaUrl(value);
+  return value;
+}
+
 export default function Freelancing() {
+  const { ready, content: savedContent } = useStudentPage("freelancing");
+  const pageContent = resolveStudentMedia(
+    mergeStudentContent(
+      {
+      hero: defaultHero,
+      intro: defaultIntro,
+      guide: defaultGuide,
+      meaning: defaultMeaning,
+      steps: defaultSteps,
+      related: defaultRelated,
+      },
+      savedContent
+    )
+  );
+  const hero = pageContent.hero ?? defaultHero;
+  const intro = pageContent.intro ?? defaultIntro;
+  const guide = pageContent.guide ?? defaultGuide;
+  const meaning = pageContent.meaning ?? defaultMeaning;
+  const steps = pageContent.steps ?? defaultSteps;
+  const related = pageContent.related ?? defaultRelated;
+
   const { contact } = useSite();
+  if (!ready) return <main id="main" className="frl-page"><PageLoader /></main>;
+
   return (
     <main id="main" className="frl-page">
       <section className="frl-hero" aria-label="Freelancing" style={{ "--img": `url("${hero.image}")` }}>

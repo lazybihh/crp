@@ -66,21 +66,6 @@ const HomeContentSchema = new mongoose.Schema(
       { title: "A proud legacy", text: "Be part of an institute with a long-standing contribution to technical education." }
     ]) },
 
-    principal: {
-      eyebrow: { type: String, default: "From the Principal's desk" },
-      quote: { type: String, default: "We do not only teach a trade - we help young people become confident, employable engineers." },
-      paragraphs: { type: [String], default: () => ([
-        "Chhotu Ram Polytechnic began with two-year draftsman courses and has grown into one of the leading technical institutes in the region. Our strength is the link between classroom, workshop and industry.",
-        "Every student here gets practical training, industrial exposure and a placement cell that works all year. I invite you to visit the campus and see it for yourself."
-      ]) },
-      name: { type: String, default: "Dr. Sitender Kumar" },
-      role: { type: String, default: "Principal, Chhotu Ram Polytechnic" },
-      photo: { type: String, default: "/images/principal.png" },
-      link: {
-        label: { type: String, default: "Read the full message" },
-        to: { type: String, default: "/about/principal-message" },
-      },
-    },
 
     news: {
       tag: { type: String, default: "Latest news" },
@@ -101,6 +86,8 @@ const HomeContentSchema = new mongoose.Schema(
     // notices shown on the Home board: only rows that already exist on the Notices page, in this order
     // (empty = the newest notices are shown automatically)
     noticeIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Notice" }],
+
+    eventIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
 
     // facility tiles: a facility of the Facilities page + which of its 3 photos (0, 1 or 2) + the tile's own text
     // (npm run seed fills the first five; empty = Home.jsx shows its own five)

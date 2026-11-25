@@ -1,26 +1,29 @@
 // RankAccreditation.jsx - About us > Rank & accreditation (route: /about/rank-accreditation).
 // This page has its own hero, its own styles (rank-accreditation.css, every class starts with "rk-") and its own downloads sidebar.
-// The live site only says "Data Under Process" for rank and accreditation, so the status card below is a SAMPLE placeholder.
+// The status card below is a SAMPLE placeholder - replace it with the real rank and accreditation details.
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiChevronRight, FiFileText, FiDownload, FiAward, FiShield, FiCheckCircle, FiClock } from "react-icons/fi";
 import "./Rank-accreditation.css";
+import { useAboutPage, mergeAboutContent } from "../../services/aboutUsService";
+import PageLoader from "../../components/PageLoader";
+import { mediaUrl } from "../../services/mediaService";
 
-const hero = { image: "/images/pages-banner.png" };
+const defaultHero = { image: "/images/pages-banner.png" };
 
-const intro = {
+const defaultIntro = {
   eyebrow: "About us",
   title: "Rank & accreditation",
   lead: "The approvals and affiliation that stand behind every diploma awarded here.",
 };
 
-const approvals = [
+const defaultApprovals = [
   { icon: FiAward, by: "AICTE, New Delhi", role: "Approved by", text: "The All India Council for Technical Education approves the diploma programmes and their intake." },
   { icon: FiShield, by: "HSBTE, Panchkula", role: "Affiliated to", text: "The Haryana State Board of Technical Education conducts the examinations and awards the diplomas." },
   { icon: FiCheckCircle, by: "DTE Haryana", role: "Recognised by", text: "The Directorate of Technical Education, Haryana, approves the courses and supports the institute with grant-in-aid." },
 ];
 
-const glance = [
+const defaultGlance = [
   { authority: "AICTE", purpose: "Approval of programmes and intake", document: "Extension of Approval, 2025-26" },
   { authority: "HSBTE", purpose: "Affiliation and examinations", document: "Affiliation, 2024-25" },
   { authority: "Institute", purpose: "Public information under RTI", document: "Mandatory Disclosure, 2025" },
@@ -33,10 +36,18 @@ const downloads = [
 ];
 
 export default function RankAccreditation() {
+  const { ready, content: savedContent } = useAboutPage("rank-accreditation");
+  const hero = mergeAboutContent(defaultHero, savedContent?.hero);
+  const intro = mergeAboutContent(defaultIntro, savedContent?.intro);
+  const approvals = mergeAboutContent(defaultApprovals, savedContent?.approvals);
+  const glance = mergeAboutContent(defaultGlance, savedContent?.glance);
+
+  if (!ready) return <main id="main" className="rk-page"><PageLoader /></main>;
+
   return (
     <main id="main" className="rk-page">
       {/* ---- hero ---- */}
-      <section className="rk-hero" aria-label="Rank and accreditation" style={{ "--img": `url("${hero.image}")` }}>
+      <section className="rk-hero" aria-label="Rank and accreditation" style={{ "--img": `url("${mediaUrl(hero.image)}")` }}>
         <div className="rk-hero__photo" />
         <div className="rk-hero__tags">
           <span className="rk-hero__tag rk-hero__tag--left">

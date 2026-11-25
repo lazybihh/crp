@@ -1,6 +1,7 @@
 // OnlineLearning.jsx - Students > Online learning portals (route: /students/online-learning).
 // Page order: hero -> title + "where do I start" card -> portal cards -> related student links.
 // Own hero, own styles (OnlineLearning.css, every class starts with "onl-").
+// Content comes from the database; the lists below are the fallback and seed.
 //
 // ADDING A PORTAL: add ONE object to the `portals` list below.
 //   id       any unique word (the "where do I start" card scrolls to it)
@@ -17,18 +18,21 @@ import { FiBookOpen, FiMonitor, FiAward, FiArrowUpRight, FiArrowRight, FiHelpCir
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiChevronRight as FiCrumbArrow } from "react-icons/fi";
+import PageLoader from "../../components/PageLoader";
+import { useStudentPage, mergeStudentContent } from "../../services/studentPageService";
+import { mediaUrl } from "../../services/mediaService";
 import "./OnlineLearning.css";
 import { useSite } from "../../context/SiteSettingsContext";
 
-const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
+const defaultHero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
-const intro = {
+const defaultIntro = {
   eyebrow: "Students",
   title: "Online learning portals",
   lead: "National and board portals with books, lectures and courses you can use alongside your classes. Each one opens in a new tab.",
 };
 
-const portals = [
+const defaultPortals = [
   {
     id: "ndli",
     name: "NDLI",
@@ -65,24 +69,55 @@ const portals = [
 ];
 
 // The "where do I start" card - each line points at one portal above.
-const guide = [
+const defaultGuide = [
   { goal: "Prepare for your diploma exams", to: "hsbte", name: "HSBTE e-learning", icon: FiTarget },
   { goal: "Learn a new subject or skill", to: "swayam", name: "SWAYAM", icon: FiZap },
   { goal: "Read books, articles and lectures", to: "ndli", name: "NDLI", icon: FiBookOpen },
 ];
 
-const related = [
+const defaultRelated = [
   { label: "Skill courses", text: "Short courses to build job-ready skills.", to: "/students/skill-courses" },
   { label: "Student helpline", text: "Stuck with a login or a course? Ask for help.", to: "/students/helpline" },
 ];
 
+// Saved paths that start with /uploads/ become full backend addresses; everything else is left as it is.
+function resolveStudentMedia(value) {
+  if (Array.isArray(value)) return value.map(resolveStudentMedia);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, resolveStudentMedia(item)]));
+  }
+  if (typeof value === "string" && value.startsWith("/uploads/")) return mediaUrl(value);
+  return value;
+}
+
 export default function OnlineLearning() {
+  const { ready, content: savedContent } = useStudentPage("online-learning");
+  const pageContent = resolveStudentMedia(
+    mergeStudentContent(
+      {
+      hero: defaultHero,
+      intro: defaultIntro,
+      portals: defaultPortals,
+      guide: defaultGuide,
+      related: defaultRelated,
+      },
+      savedContent
+    )
+  );
+  const hero = pageContent.hero ?? defaultHero;
+  const intro = pageContent.intro ?? defaultIntro;
+  const portals = pageContent.portals ?? defaultPortals;
+  const guide = pageContent.guide ?? defaultGuide;
+  const related = pageContent.related ?? defaultRelated;
+
   const { links } = useSite();
   const hsbte = portals.find((portal) => portal.id === "hsbte");
   if (hsbte) {
     hsbte.href = links?.hsbte ? `${links.hsbte.replace(/\/$/, "")}/digital-elearning` : "";
     hsbte.host = hsbte.href ? hsbte.href.replace(/^https?:\/\//, "") : "";
   }
+  if (!ready) return <main id="main" className="onl-page"><PageLoader /></main>;
+
   return (
     <main id="main" className="onl-page">
       <section className="onl-hero" aria-label="Online learning portals" style={{ "--img": `url("${hero.image}")` }}>

@@ -2,7 +2,7 @@
 // Not editable here: icons and the two banner tags (they stay in Home.jsx).
 // Styles are in AdminHome.css (every class starts with "ahm-").
 import { createContext, useContext, useEffect, useState } from "react";
-import { FiArrowDown, FiArrowUp, FiChevronRight, FiPlus, FiTrash2, FiUpload } from "react-icons/fi";
+import { FiChevronRight, FiPlus, FiTrash2, FiUpload } from "react-icons/fi";
 import AdminSidebar from "./AdminSidebar";
 import { getHomeContent, getHomeOptions, saveHomeContent, uploadHomeImage, mediaUrl } from "../../services/homeService";
 import "./AdminHome.css";
@@ -89,33 +89,28 @@ function Image({ label, path }) {
   );
 }
 
-// a list of rows with move up / down / remove and an add button
-function Rows({ path, blank, noun, adder, children }) {
+// Existing rows stay fixed unless this section is explicitly allowed to add/remove items.
+function Rows({ path, blank, noun, adder, editable = false, children }) {
   const { draft, set } = useContext(Editor);
   const list = getIn(draft, path) || [];
-  const swap = (a, b) => {
-    const next = [...list];
-    [next[a], next[b]] = [next[b], next[a]];
-    set(path, next);
-  };
   return (
     <div className="ahm-rows">
       {list.map((item, index) => (
         <div className="ahm-row" key={index}>
           <div className="ahm-row__bar">
             <b>{noun} {index + 1}</b>
-            <button type="button" onClick={() => swap(index, index - 1)} disabled={index === 0} aria-label="Move up"><FiArrowUp /></button>
-            <button type="button" onClick={() => swap(index, index + 1)} disabled={index === list.length - 1} aria-label="Move down"><FiArrowDown /></button>
-            <button type="button" onClick={() => set(path, list.filter((_, i) => i !== index))} aria-label={`Remove ${noun.toLowerCase()} ${index + 1}`}><FiTrash2 /></button>
+            {editable && <>
+              <button type="button" onClick={() => set(path, list.filter((_, i) => i !== index))} aria-label={`Remove ${noun.toLowerCase()} ${index + 1}`}><FiTrash2 /></button>
+            </>}
           </div>
           {children(index, [...path, index], item)}
         </div>
       ))}
-      {adder || (
+      {adder || (editable && (
         <button type="button" className="ahm-btn ahm-btn--add" onClick={() => set(path, [...list, structuredClone(blank)])}>
           <FiPlus aria-hidden="true" /> Add {noun.toLowerCase()}
         </button>
-      )}
+      ))}
     </div>
   );
 }
@@ -127,7 +122,7 @@ export default function AdminHome() {
   const [saved, setSaved] = useState(""); // the page as last loaded / saved, to know what changed
   const [openCard, setOpenCard] = useState("");
   const [failed, setFailed] = useState(false);
-  const [options, setOptions] = useState({ notices: [], facilities: [] });
+  const [options, setOptions] = useState({ notices: [], facilities: [], events: [] });
   const [message, setMessage] = useState({ text: "", error: false });
   const [saving, setSaving] = useState(false);
 
@@ -145,6 +140,7 @@ export default function AdminHome() {
         return;
       }
       const start = structuredClone(content);
+      start.eventIds = start.eventIds || [];
       setDraft(start);
       setSaved(JSON.stringify(start));
       setOptions(choices);
@@ -161,7 +157,7 @@ export default function AdminHome() {
   const save = async () => {
     setSaving(true);
     try {
-      const { notices, facilityTiles, ...fields } = draft; // the two ready-made lists are not saved
+      const { notices, facilityTiles, principal, ...fields } = draft; // linked content is supplied by its own page
       fields.facilities = fields.facilities.filter((tile) => tile.facility); // a tile with no facility chosen is skipped
       await saveHomeContent(fields);
       setSaved(JSON.stringify(draft));
@@ -188,6 +184,7 @@ export default function AdminHome() {
   }
 
   const noticeById = (id) => options.notices.find((notice) => notice._id === id);
+  const eventById = (id) => options.events.find((event) => event._id === id);
   const facilityById = (id) => options.facilities.find((facility) => facility._id === id);
   const unpickedNotices = options.notices.filter((notice) => !draft.noticeIds.includes(notice._id));
 
@@ -201,7 +198,7 @@ export default function AdminHome() {
           </header>
 
           <Card title="Banner images" parts={[["banners"]]} hint="The photos that slide at the top of the Home page. Wide (landscape) photos look best.">
-            <Rows path={["banners"]} noun="Banner" blank={{ image: "", alt: "" }}>
+            <Rows path={["banners"]} noun="Banner" editable blank={{ image: "", alt: "" }}>
               {(i, base) => (
                 <>
                   <Image label="Photo" path={[...base, "image"]} />
@@ -250,22 +247,6 @@ export default function AdminHome() {
             </Rows>
           </Card>
 
-          <Card title="Principal's message" parts={[["principal"]]}>
-            <Text label="Small heading" path={["principal", "eyebrow"]} />
-            <Text label="Quote" path={["principal", "quote"]} area />
-            <Rows path={["principal", "paragraphs"]} noun="Paragraph" blank="">
-              {(i, base) => <Text label="Text" path={base} area />}
-            </Rows>
-            <div className="ahm-two">
-              <Text label="Name" path={["principal", "name"]} />
-              <Text label="Role" path={["principal", "role"]} />
-            </div>
-            <Image label="Photo" path={["principal", "photo"]} />
-            <div className="ahm-two">
-              <Text label="Button text" path={["principal", "link", "label"]} />
-              <Text label="Button link" path={["principal", "link", "to"]} />
-            </div>
-          </Card>
 
           <Card title="Leadership" parts={[["sectionContent", "leadership"], ["dignitaries"]]}>
             <Text label="Small heading" path={["sectionContent", "leadership", "eyebrow"]} />
@@ -298,6 +279,7 @@ export default function AdminHome() {
             <Rows
               path={["noticeIds"]}
               noun="Notice"
+              editable
               adder={
                 <select className="ahm-select" value="" onChange={(event) => event.target.value && set(["noticeIds"], [...draft.noticeIds, event.target.value])}>
                   <option value="">+ Add a notice from the Notices page...</option>
@@ -312,29 +294,43 @@ export default function AdminHome() {
           <Card title="Events, achievements & placements" parts={[["sectionContent", "highlights"], ["highlights"]]}>
             <Text label="Small heading" path={["sectionContent", "highlights", "eyebrow"]} />
             <Text label="Title" path={["sectionContent", "highlights", "title"]} />
-            <Rows path={["highlights"]} noun="Panel" blank={{ id: "", title: "", image: "", items: [] }}>
-              {(i, base) => (
-                <>
-                  <Text label="Panel title" path={[...base, "title"]} />
-                  <Image label="Background photo" path={[...base, "image"]} />
-                  <Rows path={[...base, "items"]} noun="Line" blank={{ date: "", text: "" }}>
-                    {(j, line) => (
-                      <div className="ahm-two">
-                        <Text label="Date" path={[...line, "date"]} />
-                        <Text label="Text" path={[...line, "text"]} />
+            {draft.highlights.map((panel, index) => (
+              <div className="ahm-row" key={panel.id || index}>
+                <Text label="Section title" path={["highlights", index, "title"]} />
+                {panel.id === "events" ? (
+                  <>
+                    <p className="ahm-hint">Choose events already published on the Events page. Event names, dates and photos come directly from that page.</p>
+                    {(draft.eventIds || []).map((id, itemIndex) => (
+                      <div className="ahm-pick" key={id}>
+                        {eventById(id)?.title || "This event is no longer available"}
+                        <button type="button" onClick={() => set(["eventIds"], draft.eventIds.filter((value) => value !== id))}>Remove</button>
                       </div>
-                    )}
-                  </Rows>
-                </>
-              )}
-            </Rows>
+                    ))}
+                    <select className="ahm-select" value="" onChange={(event) => event.target.value && set(["eventIds"], [...(draft.eventIds || []), event.target.value])}>
+                      <option value="">+ Select an event from Events page...</option>
+                      {options.events.filter((event) => !(draft.eventIds || []).includes(event._id)).map((event) => <option key={event._id} value={event._id}>{event.title}</option>)}
+                    </select>
+                  </>
+                ) : (
+                  <>
+                    <Image label="Section image" path={["highlights", index, "image"]} />
+                    {(panel.items || []).map((item, itemIndex) => (
+                      <div className="ahm-two" key={itemIndex}>
+                        <Text label="Date" path={["highlights", index, "items", itemIndex, "date"]} />
+                        <Text label="Text" path={["highlights", index, "items", itemIndex, "text"]} />
+                      </div>
+                    ))}
+                  </>
+                )}
+              </div>
+            ))}
           </Card>
 
-          <Card title="Facilities" parts={[["sectionContent", "facilities"], ["facilities"]]} hint="Pick a facility from the Facilities page and one of its 3 photos. The first tile is shown large.">
+          <Card title="Facilities" parts={[["sectionContent", "facilities"], ["facilities"]]} hint="Choose facilities that already exist on the Facilities page. Their names and first photos are displayed automatically; only the Home description is editable here.">
             <Text label="Small heading" path={["sectionContent", "facilities", "eyebrow"]} />
             <Text label="Title" path={["sectionContent", "facilities", "title"]} />
             <Text label="Description" path={["sectionContent", "facilities", "description"]} area />
-            <Rows path={["facilities"]} noun="Tile" blank={{ facility: "", photo: 0, name: "", text: "" }}>
+            <Rows path={["facilities"]} noun="Facility" editable blank={{ facility: "", photo: 0, name: "", text: "" }}>
               {(i, base, tile) => {
                 const facility = facilityById(tile.facility);
                 return (
@@ -345,7 +341,7 @@ export default function AdminHome() {
                         value={tile.facility}
                         onChange={(event) => {
                           const chosen = facilityById(event.target.value);
-                          set(base, { ...tile, facility: event.target.value, photo: 0, name: tile.name || chosen?.label || "" });
+                          set(base, { ...tile, facility: event.target.value, photo: 0, name: chosen?.label || "" });
                         }}
                       >
                         <option value="">Choose a facility...</option>
@@ -354,17 +350,11 @@ export default function AdminHome() {
                     </label>
                     {facility && (
                       <div className="ahm-field">
-                        <span>Photo (from the Facilities page)</span>
-                        <div className="ahm-photos">
-                          {facility.photos.map((photo, number) => (
-                            <button key={number} type="button" className={tile.photo === number ? "is-picked" : ""} aria-pressed={tile.photo === number} aria-label={`Photo ${number + 1}`} onClick={() => set([...base, "photo"], number)}>
-                              <img src={mediaUrl(photo)} alt="" onError={(event) => { event.currentTarget.style.visibility = "hidden"; }} />
-                            </button>
-                          ))}
-                        </div>
+                        <span>Facility preview (image from Facilities page)</span>
+                        <div className="ahm-image__box">{facility.photos?.[0] ? <img src={mediaUrl(facility.photos[0])} alt={facility.label} /> : <em>No facility image available</em>}</div>
                       </div>
                     )}
-                    <Text label="Tile name" path={[...base, "name"]} />
+                    <div className="ahm-field"><span>Facility name (from Facilities page)</span><input value={facility?.label || ""} readOnly /></div>
                     <Text label="Tile text" path={[...base, "text"]} area />
                   </>
                 );
@@ -396,7 +386,7 @@ export default function AdminHome() {
           <Card title="Recruiters" parts={[["sectionContent", "recruiters"], ["recruiters"]]}>
             <Text label="Small heading" path={["sectionContent", "recruiters", "eyebrow"]} />
             <Text label="Title" path={["sectionContent", "recruiters", "title"]} />
-            <Rows path={["recruiters"]} noun="Company" blank={{ name: "", logo: "" }}>
+            <Rows path={["recruiters"]} noun="Company" editable blank={{ name: "", logo: "" }}>
               {(i, base) => (
                 <>
                   <Text label="Company name" path={[...base, "name"]} />

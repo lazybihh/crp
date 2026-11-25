@@ -17,6 +17,7 @@ import { FiMapPin } from "react-icons/fi";
 import "./SocialLinks.css";
 import { useSite, socialIcon } from "../../context/SiteSettingsContext";
 import { getMedia, mediaUrl } from "../../services/mediaService";
+import PageLoader, { usePageReady } from "../../components/PageLoader";
 
 const intro = {
   eyebrow: "Media",
@@ -68,37 +69,15 @@ function formatChannels(items) {
 
 export default function SocialLinks() {
   const { contact: contactSettings } = useSite();
-
-  const [channels, setChannels] = useState(
-    formatChannels(FALLBACK_SOCIAL_LINKS)
-  );
-
-  const [banner, setBanner] = useState("");
+  const { ready, data } = usePageReady(() => getMedia());
+  const media = data?.media;
+  const channels = media
+    ? formatChannels(media.socialLinks || [])
+    : formatChannels(FALLBACK_SOCIAL_LINKS);
+  const banner = media?.banners?.socialLinks || "";
   const [copied, setCopied] = useState(null);
 
   const timer = useRef(null);
-
-  useEffect(() => {
-    let active = true;
-
-    getMedia()
-      .then(({ media }) => {
-        if (!active) return;
-
-        setBanner(media?.banners?.socialLinks || "");
-        setChannels(formatChannels(media?.socialLinks || []));
-      })
-      .catch((loadError) => {
-        console.warn(
-          "Media API unavailable; showing local social links.",
-          loadError
-        );
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
 
   const phones = (contactSettings?.phones || []).filter(Boolean);
 
@@ -184,6 +163,8 @@ export default function SocialLinks() {
 
     copy("page", url);
   };
+
+  if (!ready) return <main id="main" className="soc-page"><PageLoader /></main>;
 
   return (
     <main id="main" className="soc-page">

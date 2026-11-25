@@ -1,11 +1,11 @@
 // SkillCourses.jsx - Students > Skill courses (route: /students/skill-courses).
 // Page order: hero -> title + "at a glance" card -> programmes -> why skill courses -> "details coming" notice -> related links -> help strip.
 // Own hero, own styles (SkillCourses.css, every class starts with "skl-").
+// Content comes from the database; the lists below are the fallback and seed.
 //
 // WHAT IS REAL AND WHAT IS SAMPLE
-//   The live page (crprohtak.ac.in/skillcources) is only a two-row table: "CDTP" and "Apprenticeship", with no text,
-//   dates or links. So the page shows those two programmes and nothing more about them.
-//   REAL      the two programme names; the Apprenticeship text (it comes from the live Apprenticeship page).
+//   There are no dates or links, so the page shows those two programmes and nothing more about them.
+//   REAL      the two programme names; the Apprenticeship text.
 //   SAMPLE    the full name "Community Development through Polytechnics" (please confirm it), the CDTP text,
 //             the intro sentence, and the whole "Why skill courses" block. Replace them when the college has final wording.
 //
@@ -18,25 +18,27 @@
 //   text     one or two sentences
 //   to       (optional) an internal page to open - the card button then becomes a link to that page
 //
-// NO FILES TO COPY: this page uses no pictures except the shared banner (public/images/pages-banner.png).
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import {
   FiMapPin, FiChevronRight as FiCrumbArrow, FiArrowRight, FiUsers, FiTool, FiBriefcase, FiTrendingUp, FiPhone, FiMail,
   FiInfo,
 } from "react-icons/fi";
+import PageLoader from "../../components/PageLoader";
+import { useStudentPage, mergeStudentContent } from "../../services/studentPageService";
+import { mediaUrl } from "../../services/mediaService";
 import "./SkillCourses.css";
 import { useSite } from "../../context/SiteSettingsContext";
 
-const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
+const defaultHero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
-const intro = {
+const defaultIntro = {
   eyebrow: "Students",
   title: "Skill courses",
   lead: "Practical programmes that add skills to your diploma. The institute currently lists two of them: CDTP and Apprenticeship.", // SAMPLE wording
 };
 
-const programmes = [
+const defaultProgrammes = [
   {
     id: "cdtp",
     name: "CDTP",
@@ -57,21 +59,52 @@ const programmes = [
 ];
 
 // SAMPLE block - general reasons to take a skill programme. Edit freely.
-const why = [
+const defaultWhy = [
   { icon: FiTool, title: "Learn by doing", text: "Skill programmes focus on practical work, so you practise what you learn." },
   { icon: FiBriefcase, title: "Build job-ready skills", text: "Add skills that employers look for next to your diploma." },
   { icon: FiTrendingUp, title: "Grow beyond the syllabus", text: "Explore a trade or topic that your regular classes do not cover." },
 ];
 
-const related = [
+const defaultRelated = [
   { label: "Apprenticeship", text: "Training places for ITI certificate holders.", to: "/students/apprenticeship" },
   { label: "Online learning portals", text: "Free national and board courses to study alongside.", to: "/students/online-learning" },
   { label: "Freelancing", text: "Turn a skill into projects of your own.", to: "/students/freelancing" },
 ];
 
+// Saved paths that start with /uploads/ become full backend addresses; everything else is left as it is.
+function resolveStudentMedia(value) {
+  if (Array.isArray(value)) return value.map(resolveStudentMedia);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, resolveStudentMedia(item)]));
+  }
+  if (typeof value === "string" && value.startsWith("/uploads/")) return mediaUrl(value);
+  return value;
+}
+
 export default function SkillCourses() {
+  const { ready, content: savedContent } = useStudentPage("skill-courses");
+  const pageContent = resolveStudentMedia(
+    mergeStudentContent(
+      {
+      hero: defaultHero,
+      intro: defaultIntro,
+      programmes: defaultProgrammes,
+      why: defaultWhy,
+      related: defaultRelated,
+      },
+      savedContent
+    )
+  );
+  const hero = pageContent.hero ?? defaultHero;
+  const intro = pageContent.intro ?? defaultIntro;
+  const programmes = pageContent.programmes ?? defaultProgrammes;
+  const why = pageContent.why ?? defaultWhy;
+  const related = pageContent.related ?? defaultRelated;
+
   const { contact } = useSite();
-  const ready = programmes.filter((item) => item.to).length;
+  const programmesReady = programmes.filter((item) => item.to).length;
+
+  if (!ready) return <main id="main" className="skl-page"><PageLoader /></main>;
 
   return (
     <main id="main" className="skl-page">
@@ -121,8 +154,8 @@ export default function SkillCourses() {
               programmes listed by the institute
             </p>
             <dl>
-              <div><dt>{ready}</dt><dd>Page ready</dd></div>
-              <div><dt>{programmes.length - ready}</dt><dd>Details coming</dd></div>
+              <div><dt>{programmesReady}</dt><dd>Page ready</dd></div>
+              <div><dt>{programmes.length - programmesReady}</dt><dd>Details coming</dd></div>
             </dl>
           </aside>
         </div>

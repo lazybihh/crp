@@ -1,0 +1,235 @@
+/* annual-report.css - styles for this page only. Every class starts with "ann-" so nothing here can change another page.
+   Colours, fonts and shadows are the same theme variables as Home (cog blue = sky, deep navy = ink, ribbon orange). */
+
+main#main.ann-page {
+  background: var(--paper, #fff);
+  overflow-x: clip;
+}
+
+/* the site has a global nowrap rule on headings, so headings here may wrap */
+main#main.ann-page h1,
+main#main.ann-page h2,
+main#main.ann-page h3 {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* ============ HERO (shorter than the Home banner on purpose) ============ */
+
+.ann-hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  height: clamp(320px, 27vw, 364px);
+  background: linear-gradient(135deg, var(--ink-700), var(--ink-950));
+}
+
+.ann-hero__photo {
+  position: absolute;
+  inset: 0;
+  background-image: var(--img), linear-gradient(135deg, var(--ink-700), var(--ink-950));
+  background-size: cover, auto;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+}
+
+.ann-hero__tags {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.ann-hero__tag {
+  position: absolute;
+  top: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 18px 6px 6px;
+  border: 1px solid color-mix(in srgb, var(--surface-blue-light) 70%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-blue-light) 92%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--ink-950) 28%, transparent);
+  color: var(--ink-900);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ann-hero__tag--left { left: 16px; }
+.ann-hero__tag--right { right: 16px; }
+
+.ann-hero__tag-icon {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--surface-blue-light);
+}
+
+.ann-hero__tag-icon svg { width: 15px; height: 15px; }
+.ann-hero__tag--left .ann-hero__tag-icon { background: var(--orange-500); }
+.ann-hero__tag--right .ann-hero__tag-icon { background: var(--sky-500); }
+
+.ann-crumbs {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 32px);
+  padding: 9px 16px;
+  border-left: 3px solid var(--orange-500);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--ink-950) 84%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--ink-950) 35%, transparent);
+  color: color-mix(in srgb, var(--surface-blue-light) 82%, transparent);
+  font-size: 0.95rem;
+
+/* ============ TITLE BLOCK (level with the downloads card) ============ */
+.ann-intro {
+  padding-top: 0;
+}
+
+.ann-eyebrow {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--orange-700);
+}
+
+main#main.ann-page .ann-intro h1 {
+  margin: 8px 0 0;
+  color: var(--ink-900);
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4.6vw, 3.2rem);
+  line-height: 1.08;
+  max-width: none;
+}
+
+main#main.ann-page .ann-intro h1::after {
+  content: "";
+  display: block;
+  width: 72px;
+  height: 4px;
+  margin-top: 16px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--sky-500) 0 60%, var(--orange-500) 60%);
+}
+
+.ann-intro p {
+  max-width: 62ch;
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  line-height: 1.6;
+}
+
+/* ============ LAYOUT: content + downloads sidebar ============ */
+.ann-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: clamp(24px, 4vw, 56px);
+  align-items: start;
+  padding-top: clamp(28px, 4vw, 48px);
+  padding-bottom: clamp(44px, 6vw, 88px);
+}
+
+.ann-content {
+  display: grid;
+  gap: clamp(32px, 5vw, 56px);
+  min-width: 0;
+}
+
+/* ============ SIDEBAR: DOWNLOADS ONLY ============ */
+.ann-side {
+  position: sticky;
+  top: 96px;
+  margin-top: 5px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--orange-500);
+  border-radius: 18px;
+  background: var(--white);
+  box-shadow: var(--shadow-soft);
+}
+
+main#main.ann-page .ann-side h2 {
+  margin: 0 0 14px;
+  color: var(--ink-900);
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+}
+
+.ann-side ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ann-side a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "icon label go" "icon type go";
+  column-gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--ink-900);
+  transition: background 0.25s, border-color 0.25s, transform 0.3s var(--ease);
+}
+
+.ann-side a:hover,
+.ann-side a:focus-visible {
+  background: var(--sky-100);
+  border-color: color-mix(in srgb, var(--sky-500) 45%, transparent);
+  transform: translateX(4px);
+  outline: none;
+}
+
+.ann-side__icon {
+  grid-area: icon;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--sky-100);
+  color: var(--ink-900);
+}
+
+.ann-side__label {
+  grid-area: label;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.ann-side__type {
+  grid-area: type;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.ann-side__go {
+  grid-area: go;
+  color: var(--orange-700);
+}

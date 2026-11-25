@@ -23,6 +23,7 @@ import {
 import { FaGraduationCap } from "react-icons/fa";
 import "./ComputerResources.css";
 import { getStudyResources, studyResourceFileUrl } from "../../services/studyResourceService";
+import PageLoader, { usePageReady } from "../../components/PageLoader";
 
 const defaultHero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
@@ -128,8 +129,8 @@ const semesterLabel = (n, tab) => tab?.filters?.find((filter) => Number(filter.v
 const RESOURCE_ICONS = { "lesson-plan": FiCalendar, "outline-notes": FiBookOpen, "question-papers": FiClipboard, syllabus: FiLayers };
 
 export default function ComputerResources() {
-  const [tabs, setTabs] = useState(defaultTabs);
-  const [pageData, setPageData] = useState({});
+  const { ready, data: pageData } = usePageReady(() => getStudyResources("computer"));
+  const tabs = Array.isArray(pageData?.tabs) && pageData.tabs.length ? pageData.tabs : defaultTabs;
   const location = useLocation();
   const fromHash = () => {
     const id = location.hash.replace("#", "");
@@ -141,27 +142,18 @@ export default function ComputerResources() {
   const [semester, setSemester] = useState("all");
   const [limit, setLimit] = useState(PAGE_SIZE);
 
-  useEffect(() => {
-    let active = true;
-    getStudyResources("computer")
-      .then((data) => { if (active) { if (Array.isArray(data.tabs) && data.tabs.length) setTabs(data.tabs); setPageData(data); } })
-      .catch(() => { /* Keep the built-in page content when the API is unavailable. */ });
-    return () => { active = false; };
-  }, []);
-
   // A link such as ...#syllabus opens that tab.
   useEffect(() => {
     setTabId(fromHash());
     setQuery("");
     setSemester("all");
     setLimit(PAGE_SIZE);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.key, location.hash]);
+  }, [location.key, location.hash, tabs]);
 
-  const pageIntro = pageData.intro || defaultIntro;
-  const pageHeroImage = pageData.heroImage || defaultHero.image;
-  const pageAboutLink = pageData.aboutLink || defaultAboutLink;
-  const pageRelated = pageData.related?.length ? pageData.related : defaultRelated;
+  const pageIntro = pageData?.intro || defaultIntro;
+  const pageHeroImage = pageData?.heroImage || defaultHero.image;
+  const pageAboutLink = pageData?.aboutLink || defaultAboutLink;
+  const pageRelated = pageData?.related?.length ? pageData.related : defaultRelated;
   const tab = tabs.find((item) => item.id === tabId) || tabs[0];
   const q = query.trim().toLowerCase();
 
@@ -196,6 +188,8 @@ export default function ComputerResources() {
     pickTab(tabs[next].id);
     document.getElementById(`rcse-tab-${tabs[next].id}`)?.focus();
   };
+
+  if (!ready) return <main id="main" className="rcse-page"><PageLoader /></main>;
 
   return (
     <main id="main" className="rcse-page">

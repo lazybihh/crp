@@ -602,9 +602,7 @@ main#main.ads-page .ads-step h3 {
   aspect-ratio: 4 / 3;
   overflow: hidden;
   border-radius: 18px;
-  background:
-    radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--sky-500) 30%, transparent), transparent 55%),
-    linear-gradient(135deg, var(--ink-700), var(--ink-950));
+  background: var(--white);
 }
 
 /* the whole notice stays visible - nothing is cropped */

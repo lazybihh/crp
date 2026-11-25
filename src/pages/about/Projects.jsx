@@ -1,21 +1,24 @@
 // Projects.jsx - About us > Projects (route: /about/projects).
 // This page has its own hero, its own styles (Projects.css, every class starts with "prj-") and its own downloads sidebar.
-// The live site's Projects page only contains the word "CDTP". Everything marked SAMPLE is placeholder text - confirm or replace it.
+// Everything marked SAMPLE is placeholder text - confirm or replace it from the admin.
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiChevronRight, FiFileText, FiDownload, FiUsers, FiCpu, FiTool, FiBox, FiAward, FiCalendar } from "react-icons/fi";
 import "./Projects.css";
+import { useAboutPage, mergeAboutContent } from "../../services/aboutUsService";
+import PageLoader from "../../components/PageLoader";
+import { mediaUrl } from "../../services/mediaService";
 
-const hero = { image: "/images/pages-banner.png" };
+const defaultHero = { image: "/images/pages-banner.png" };
 
-const intro = {
+const defaultIntro = {
   eyebrow: "About us",
   title: "Projects",
   lead: "Where classroom learning turns into things that work - for the campus and for the community.",
 };
 
-// SAMPLE: the live site only says "CDTP". Confirm the full name and the work done under it, then edit this block.
-const cdtp = {
+// SAMPLE: confirm the full name of CDTP and the work done under it, then edit this block.
+const defaultCdtp = {
   short: "CDTP",
   name: "Community Development through Polytechnics",
   text: "Under CDTP the institute takes its skills to the people around it, with training and technology support for the local community.",
@@ -23,14 +26,14 @@ const cdtp = {
 };
 
 // SAMPLE: replace with real student projects (title, department, one line).
-const projects = [
+const defaultProjects = [
   { icon: FiBox, tag: "Civil Engineering", title: "Sample project title", text: "A short line about what the students built or studied and what it achieved." },
   { icon: FiCpu, tag: "Computer Engineering", title: "Sample project title", text: "A short line about what the students built or studied and what it achieved." },
   { icon: FiTool, tag: "Mechanical Engineering", title: "Sample project title", text: "A short line about what the students built or studied and what it achieved." },
 ];
 
 // Same items as on the Home page.
-const showcase = [
+const defaultShowcase = [
   { icon: FiAward, date: "2025", text: "Project showcase recognised by industry guests" },
   { icon: FiCalendar, date: "Dec 2026", text: "Annual technical exhibition" },
 ];
@@ -40,10 +43,19 @@ const downloads = [
 ];
 
 export default function Projects() {
+  const { ready, content: savedContent } = useAboutPage("projects");
+  const hero = mergeAboutContent(defaultHero, savedContent?.hero);
+  const intro = mergeAboutContent(defaultIntro, savedContent?.intro);
+  const cdtp = mergeAboutContent(defaultCdtp, savedContent?.cdtp);
+  const projects = mergeAboutContent(defaultProjects, savedContent?.projects);
+  const showcase = mergeAboutContent(defaultShowcase, savedContent?.showcase);
+
+  if (!ready) return <main id="main" className="prj-page"><PageLoader /></main>;
+
   return (
     <main id="main" className="prj-page">
       {/* ---- hero ---- */}
-      <section className="prj-hero" aria-label="Projects" style={{ "--img": `url("${hero.image}")` }}>
+      <section className="prj-hero" aria-label="Projects" style={{ "--img": `url("${mediaUrl(hero.image)}")` }}>
         <div className="prj-hero__photo" />
         <div className="prj-hero__tags">
           <span className="prj-hero__tag prj-hero__tag--left">

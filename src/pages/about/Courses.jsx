@@ -1,6 +1,6 @@
 // Courses.jsx - About us > Courses offered (route: /about/courses).
 // This page has its own hero, its own styles (courses.css, every class starts with "crs-") and its own downloads sidebar.
-// Course names, seats and descriptions are the same as on the Home page. Admission and exam facts come from the live site.
+// Course names, seats and descriptions are the same as on the Home page.
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import {
@@ -9,16 +9,19 @@ import {
 } from "react-icons/fi";
 import "./Courses.css";
 import { useSite } from "../../context/SiteSettingsContext";
+import { useAboutPage, mergeAboutContent } from "../../services/aboutUsService";
+import PageLoader from "../../components/PageLoader";
+import { mediaUrl } from "../../services/mediaService";
 
-const hero = { image: "/images/pages-banner.png" };
+const defaultHero = { image: "/images/pages-banner.png" };
 
-const intro = {
+const defaultIntro = {
   eyebrow: "About us",
   title: "Courses offered",
   lead: "Six three-year diplomas approved by DTE Haryana and AICTE, supported by two foundation departments.",
 };
 
-const courses = [
+const defaultCourses = [
   { id: "civil", name: "Civil Engineering", icon: FiBox, seats: 60, text: "One of the broadest engineering fields - buildings, roads, water and the structures around us." },
   { id: "computer", name: "Computer Engineering", icon: FiCpu, seats: 54, text: "Software development and testing, networking and hardware." },
   { id: "electrical", name: "Electrical Engineering", icon: FiZap, seats: 60, text: "Power, machines and control, taught with a mission of high-quality education." },
@@ -27,7 +30,7 @@ const courses = [
   { id: "plastic", name: "Plastic Technology", icon: FiDroplet, seats: 54, text: "How plastics replace everyday and engineering items - materials, moulding and processing." },
 ];
 
-const foundation = [
+const defaultFoundation = [
   { id: "applied-science", name: "Applied Sciences", icon: FiBookOpen, text: "Communication skills, physics, chemistry and mathematics in the first two semesters." },
   { id: "workshop", name: "Workshop Department", icon: FiTool, text: "An intensive, short-duration hands-on learning experience." },
 ];
@@ -39,6 +42,12 @@ const downloads = [
 ];
 
 export default function Courses() {
+  const { ready, content: savedContent } = useAboutPage("courses");
+  const hero = mergeAboutContent(defaultHero, savedContent?.hero);
+  const intro = mergeAboutContent(defaultIntro, savedContent?.intro);
+  const courses = mergeAboutContent(defaultCourses, savedContent?.courses);
+  const foundation = mergeAboutContent(defaultFoundation, savedContent?.foundation);
+
   const { links } = useSite();
   const admission = [
     { title: "Admissions", text: "Admissions to the diploma programmes run through the state technical admissions portal.", label: "Admissions portal", href: links?.admissionPortal || "" },
@@ -46,10 +55,12 @@ export default function Courses() {
   ].filter((item) => item.href);
   const totalSeats = courses.reduce((sum, course) => sum + course.seats, 0);
 
+  if (!ready) return <main id="main" className="crs-page"><PageLoader /></main>;
+
   return (
     <main id="main" className="crs-page">
       {/* ---- hero ---- */}
-      <section className="crs-hero" aria-label="Courses offered" style={{ "--img": `url("${hero.image}")` }}>
+      <section className="crs-hero" aria-label="Courses offered" style={{ "--img": `url("${mediaUrl(hero.image)}")` }}>
         <div className="crs-hero__photo" />
         <div className="crs-hero__tags">
           <span className="crs-hero__tag crs-hero__tag--left">

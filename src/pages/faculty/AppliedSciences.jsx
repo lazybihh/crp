@@ -21,6 +21,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { getDepartment, getDepartments, mediaUrl } from "../../services/departmentService";
+import PageLoader, { usePageReady } from "../../components/PageLoader";
 import { FaGraduationCap } from "react-icons/fa";
 import {
   FiChevronRight, FiMapPin, FiSearch, FiX, FiImage, FiInfo, FiLayers, FiBriefcase, FiMonitor, FiAward,
@@ -218,16 +219,12 @@ function filterSection(section, q) {
 }
 
 export default function AppliedSciences() {
-  const [serverData, setServerData] = useState(null);
-  const [departmentOptions, setDepartmentOptions] = useState(fallbackSwitcher);
-  useEffect(() => {
-    let active = true;
-    getDepartment("applied-science").then((data) => { if (active) setServerData(data); }).catch(() => {});
-    getDepartments().then((list) => {
-      if (active && Array.isArray(list) && list.length) setDepartmentOptions(list.slice().sort((a, b) => a.order - b.order).map((item) => ({ label: item.shortName, to: `/departments/${item.slug}`, slug: item.slug })));
-    }).catch(() => {});
-    return () => { active = false; };
-  }, []);
+  const { ready, data: results } = usePageReady(() => Promise.allSettled([getDepartment("applied-science"), getDepartments()]));
+  const serverData = results?.[0]?.status === "fulfilled" ? results[0].value : null;
+  const departmentList = results?.[1]?.status === "fulfilled" ? results[1].value : null;
+  const departmentOptions = Array.isArray(departmentList) && departmentList.length
+    ? departmentList.slice().sort((a, b) => a.order - b.order).map((item) => ({ label: item.shortName, to: `/departments/${item.slug}`, slug: item.slug }))
+    : fallbackSwitcher;
   const fallbackLabels = {
     eyebrow: "Department", bannerTagLeft: "Government Polytechnic", bannerTagRight: "Rohtak (Haryana)", breadcrumb: "Applied Sciences", switcherLabel: "Department", aboutTab: "About", staffTab: "Staff", searchAbout: "Search the department information", searchStaff: "Search staff by name or role", qualificationLabel: "Qualification", interestLabel: "Interested area", highlightsEyebrow: "At a glance", highlightsTitle: "Department", highlightsTitleHighlight: "highlights", photoPlaceholder: "Photo coming soon", };
   const pageLabels = Object.fromEntries(Object.entries({ ...fallbackLabels, ...(serverData?.labels || {}) }).map(([key, value]) => [key, value || fallbackLabels[key]]));
@@ -275,6 +272,8 @@ export default function AppliedSciences() {
   const people = staff.filter((person) =>
     !q || [person.name, person.role, person.qualification, person.interest].filter(Boolean).join(" ").toLowerCase().includes(q),
   );
+
+  if (!ready) return <main id="main" className="apl-page"><PageLoader /></main>;
 
   return (
     <main id="main" className="apl-page">

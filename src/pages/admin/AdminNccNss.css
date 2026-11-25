@@ -1,62 +1,195 @@
+/* AdminNccNss.css - styles of the "NCC & NSS" admin page (AdminNccNss.jsx). Every class starts with "abd-". */
+
 .abd-page {
   display: grid;
-  gap: 18px;
+  gap: 16px;
   min-width: 0;
 }
 
-.abd-page h2 {
+.abd-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.abd-top h2 {
   margin: 0;
   color: var(--ink-900);
-  font-family: var(--font-display);
-  font-size: clamp(1.45rem, 2.5vw, 2rem);
-  line-height: 1.2;
-  white-space: normal;
+}
+
+.abd-hint,
+.abd-loading {
+  color: var(--muted);
 }
 
 .abd-card {
-  display: grid;
-  justify-items: start;
-  gap: 14px;
-  max-width: 720px;
-  padding: clamp(22px, 3vw, 34px);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
   background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 18px;
   box-shadow: var(--shadow-soft);
+  display: grid;
+  gap: 14px;
 }
 
-.abd-card p {
+.abd-card h3 {
   margin: 0;
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.6;
+  color: var(--ink-900);
+  text-transform: capitalize;
 }
 
-.abd-link {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 10px 18px;
-  border-radius: 999px;
-  background: var(--ink-900);
-  color: var(--white);
-  font-size: 1rem;
+/* groups of fields */
+.abd-group {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.abd-cell {
+  min-width: 0;
+}
+
+.abd-wide {
+  grid-column: 1 / -1;
+}
+
+.abd-field {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.abd-field > span {
   font-weight: 700;
-  text-decoration: none;
-  transition: background 0.2s ease, transform 0.2s ease;
+  color: var(--ink-900);
+  text-transform: capitalize;
 }
 
-.abd-link:hover {
-  background: var(--sky-700);
-  transform: translateY(-2px);
+.abd-field input:not([type=file]):not([type=checkbox]),
+.abd-field select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font: inherit;
 }
 
-.abd-link:focus-visible {
-  outline: 3px solid var(--sky-700);
-  outline-offset: 3px;
+.abd-field input[type=checkbox] {
+  width: 20px;
+  height: 20px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .abd-link { transition: none; }
-  .abd-link:hover { transform: none; }
+/* lists and their items */
+.abd-list {
+  display: grid;
+  gap: 12px;
+}
+
+.abd-list h4 {
+  margin: 0;
+  color: var(--ink-900);
+  text-transform: capitalize;
+}
+
+.abd-item {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.abd-itemhead {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+.abd-itemhead div,
+.abd-upload {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* buttons and the file chooser */
+.abd-page button,
+.abd-choose {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: var(--white);
+  cursor: pointer;
+  font: inherit;
+}
+
+.abd-page button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.abd-choose {
+  position: relative;
+}
+
+.abd-choose input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.abd-choose:focus-within {
+  outline: 2px solid var(--orange-500);
+}
+
+.abd-preview {
+  max-width: 240px;
+  max-height: 160px;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+/* the sticky Save / Discard bar */
+.abd-save {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  background: var(--white);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-soft);
+  padding: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  border-radius: var(--radius-md);
+}
+
+.abd-save span {
+  margin-right: auto;
+  color: var(--ink-800);
+}
+
+.abd-save .abd-error {
+  color: var(--danger);
+}
+
+.abd-save button:last-child {
+  background: var(--orange-500);
+  border-color: var(--orange-500);
+  font-weight: 800;
+}
+
+@media (max-width: 700px) {
+  .abd-group {
+    grid-template-columns: 1fr;
+  }
 }

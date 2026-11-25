@@ -4,6 +4,7 @@ const NoticeSchema = new mongoose.Schema({
   title: { type: String, required: true, trim: true },
   category: { type: String, default: "other" },
   file: { type: String, default: "" },
+  link: { type: String, default: "" },
   date: { type: String, default: "" },
   note: { type: String, default: "" },
   order: { type: Number, default: 0 },

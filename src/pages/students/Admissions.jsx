@@ -1,6 +1,7 @@
 // Admissions.jsx - Students > Admissions (routes: /students/admissions and /admissions).
 // Page order: hero -> title + "apply" card -> 4 admission steps -> programmes and seats -> notices, downloads and merit lists -> FAQ -> help strip.
 // Own hero, own styles (Admissions.css, every class starts with "ads-").
+// Content comes from the database; the lists below are the fallback and seed.
 //
 // HOW THE COLLEGE UPDATES THIS PAGE EACH YEAR - everything is a list at the top of this file:
 //   session     the admission year shown in the title and the apply card
@@ -9,19 +10,22 @@
 //   documents   the files students download (public/docs/)
 //   notices     latest merit lists and notices, newest first - each has a date and a file
 //   courses     the six diplomas and their seats (same numbers as the Courses page)
-// Nothing is loaded from the old website. A missing picture shows a clean placeholder tile.
 //
-// FILES TO COPY INTO THE PROJECT (they are on the old website under /media/page_files/ and /media/Notice/):
-//   public/images/admission/admission-2026.jpeg           <- Admission_2026.jpeg
-//   public/images/admission/admission-notice-2026.jpeg    <- the 22 May 2026 admission notice picture
-//   public/docs/admission-key-dates.jpeg                  <- Admission_Dates.jpeg
-//   public/docs/admission-counselling-dates.pdf           <- admission_CsweCeS.pdf
-//   public/docs/admission-documents-list.docx             <- document_list_1.docx
-//   public/docs/manual-admission-form.pdf                 <- Manual_Form.pdf
-//   public/docs/notices/det-merit-list-2026.pdf           <- DET_MERIT_LIST_26.pdf
-//   public/docs/notices/det-l-merit-list-2026.pdf         <- Det-L_merit_list_26.pdf
-//   public/docs/notices/admission-notice-2026.jpeg        <- the 3 July 2026 admission notice picture
+// Files this page links to (they live in public/):
+//   public/images/admission/admission-2026.jpeg
+//   public/images/admission/admission-notice-2026.jpeg
+//   public/docs/admission-key-dates.jpeg
+//   public/docs/admission-counselling-dates.pdf
+//   public/docs/admission-documents-list.docx
+//   public/docs/manual-admission-form.pdf
+//   public/docs/notices/det-merit-list-2026.pdf
+//   public/docs/notices/det-l-merit-list-2026.pdf
+//   public/docs/notices/admission-notice-2026.jpeg
 import { useState } from "react";
+import PageLoader from "../../components/PageLoader";
+import { useStudentPage, mergeStudentContent } from "../../services/studentPageService";
+import { mediaUrl } from "../../services/mediaService";
+import { getNotices, noticeFileUrl } from "../../services/noticeService";
 import {
   FiArrowUpRight, FiArrowRight, FiFileText, FiDownload, FiCalendar, FiEdit3, FiUsers, FiCheckCircle, FiPhone, FiMail,
   FiBox, FiCpu, FiZap, FiRadio, FiSettings, FiDroplet, FiImage, FiPlus, FiHelpCircle,
@@ -32,18 +36,18 @@ import { FiMapPin, FiChevronRight as FiCrumbArrow } from "react-icons/fi";
 import "./Admissions.css";
 import { useSite } from "../../context/SiteSettingsContext";
 
-const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
+const defaultHero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
-const session = "2026-27";
+const defaultSession = "2026-27";
 
-const intro = {
+const defaultIntro = {
   eyebrow: "Students",
-  title: `Admissions ${session}`,
+  title: `Admissions ${defaultSession}`,
   lead: "Admissions are open for the three-year diploma programmes. Follow the four steps below, keep the key dates handy and apply on the state admissions portal.",
 };
 
 // Same six programmes and seats as the Courses page.
-const courses = [
+const defaultCourses = [
   { id: "civil", name: "Civil Engineering", icon: FiBox, seats: 60 },
   { id: "computer", name: "Computer Engineering", icon: FiCpu, seats: 54 },
   { id: "electrical", name: "Electrical Engineering", icon: FiZap, seats: 60 },
@@ -52,19 +56,19 @@ const courses = [
   { id: "plastic", name: "Plastic Technology", icon: FiDroplet, seats: 54 },
 ];
 
-const steps = [
+const defaultSteps = [
   { icon: FiCalendar, title: "Note the key dates", text: "Check the online admission dates and the counselling dates first. Both are in the downloads on this page." },
   { icon: FiEdit3, title: "Apply on the state portal", text: "Online admissions to the diploma programmes run through the Haryana technical admissions portal. Register and complete your application there." },
   { icon: FiUsers, title: "Attend counselling", text: "Seats are allotted through counselling, based on the merit lists. Merit lists and counselling details are posted on this page and on the Notices page." },
   { icon: FiCheckCircle, title: "Verify and join", text: "Bring the documents listed for physical verification to the institute to confirm your seat." },
 ];
 
-const posters = [
-  { src: "/images/admission/admission-2026.jpeg", label: `Admissions open ${session.replace("-", "\u2011")}` },
+const defaultPosters = [
+  { src: "/images/admission/admission-2026.jpeg", label: `Admissions open ${defaultSession.replace("-", "\u2011")}` },
   { src: "/images/admission/admission-notice-2026.jpeg", label: "Official admission notice" },
 ];
 
-const documents = [
+const defaultDocuments = [
   { label: "Key dates for online admissions", href: "/docs/admission-key-dates.jpeg", type: "JPEG" },
   { label: "Counselling dates", href: "/docs/admission-counselling-dates.pdf", type: "PDF" },
   { label: "Documents required for physical verification", href: "/docs/admission-documents-list.docx", type: "DOCX" },
@@ -72,13 +76,13 @@ const documents = [
 ];
 
 // Newest first. Add a line here whenever a new merit list or admission notice is published.
-const notices = [
+const defaultNotices = [
   { title: "DET merit list 2026", date: "8 July 2026", href: "/docs/notices/det-merit-list-2026.pdf", type: "PDF" },
   { title: "DET-L merit list 2026", date: "8 July 2026", href: "/docs/notices/det-l-merit-list-2026.pdf", type: "PDF" },
   { title: "Admission notice 2026", date: "3 July 2026", href: "/docs/notices/admission-notice-2026.jpeg", type: "JPEG" },
 ];
 
-const faqs = [
+const defaultFaqs = [
   { q: "Where do I apply?", a: "Online admissions run through the state technical admissions portal. Use the Apply button at the top of this page to open it." },
   { q: "Which programmes can I choose?", a: "Six three-year diplomas: Civil, Computer, Electrical, Electronics & Communication, Mechanical and Plastic Technology, approved by DTE Haryana and AICTE." },
   { q: "Where are the merit lists and counselling dates?", a: "Both are on this page under Notices and downloads. New lists are also posted on the Notices page." },
@@ -86,8 +90,8 @@ const faqs = [
   { q: "Who can I ask for help?", a: "Call the institute office or send an email - the details are at the bottom of this page." },
 ];
 
-const totalSeats = courses.reduce((sum, course) => sum + course.seats, 0);
-const topSeats = Math.max(...courses.map((course) => course.seats));
+
+
 
 // A notice picture. If the file is missing, a clean placeholder tile is shown instead.
 function Poster({ src, label }) {
@@ -115,9 +119,76 @@ function Poster({ src, label }) {
   );
 }
 
+// Saved paths that start with /uploads/ become full backend addresses; everything else is left as it is.
+function resolveStudentMedia(value) {
+  if (Array.isArray(value)) return value.map(resolveStudentMedia);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, resolveStudentMedia(item)]));
+  }
+  if (typeof value === "string" && value.startsWith("/uploads/")) return mediaUrl(value);
+  return value;
+}
+
+// One notice as the page shows it: title, date and the file to open.
+function noticeRow(notice) {
+  return {
+    title: notice.title,
+    date: notice.date,
+    href: noticeFileUrl(notice.file),
+    type: String(notice.file || "").split(".").pop().toUpperCase(),
+  };
+}
+
+// The notices picked in the admin, in the order chosen. With no pick, the latest 4 admissions notices.
+function pickNotices(allNotices, pickedIds) {
+  if (Array.isArray(pickedIds) && pickedIds.length) {
+    return pickedIds
+      .map((id) => allNotices.find((n) => String(n._id) === String(id) && n.published !== false))
+      .filter(Boolean)
+      .map(noticeRow);
+  }
+  return allNotices.filter((n) => n.category === "admissions").slice(0, 4).map(noticeRow);
+}
+
 export default function Admissions() {
+  const { ready, content: savedContent, extra: noticeResponse } = useStudentPage("admissions", getNotices);
+  const pageContent = resolveStudentMedia(
+    mergeStudentContent(
+      {
+      hero: defaultHero,
+      session: defaultSession,
+      intro: defaultIntro,
+      courses: defaultCourses,
+      steps: defaultSteps,
+      posters: defaultPosters,
+      documents: defaultDocuments,
+      notices: defaultNotices,
+      faqs: defaultFaqs,
+      },
+      savedContent
+    )
+  );
+  const hero = pageContent.hero ?? defaultHero;
+  const session = pageContent.session ?? defaultSession;
+  const intro = pageContent.intro ?? defaultIntro;
+  const courses = pageContent.courses ?? defaultCourses;
+  const steps = pageContent.steps ?? defaultSteps;
+  const posters = pageContent.posters ?? defaultPosters;
+  const documents = pageContent.documents ?? defaultDocuments;
+  const notices = pageContent.notices ?? defaultNotices;
+  const allNotices = noticeResponse?.notices || [];
+  const pickedIds = pageContent.noticeIds;
+  const hasPickedNotices = Boolean(pickedIds?.length);
+  const selectedNotices = pickNotices(allNotices, pickedIds);
+  let displayNotices = notices;
+  if (noticeResponse) displayNotices = selectedNotices.length ? selectedNotices : (hasPickedNotices ? [] : notices);
+  const faqs = pageContent.faqs ?? defaultFaqs;
+  const totalSeats = courses.reduce((sum, course) => sum + course.seats, 0);
+  const topSeats = Math.max(...courses.map((course) => course.seats));
+
   const { contact, links } = useSite();
   const portalUrl = links?.admissionPortal || "";
+  if (!ready) return <main id="main" className="ads-page"><PageLoader /></main>;
   return (
     <main id="main" className="ads-page">
       <section className="ads-hero" aria-label="Admissions" style={{ "--img": `url("${hero.image}")` }}>
@@ -252,7 +323,7 @@ export default function Admissions() {
             <div className="ads-list">
               <h3>Merit lists and latest notices</h3>
               <ul>
-                {notices.map((item) => (
+                {displayNotices.map((item) => (
                   <li key={item.title}>
                     <a href={item.href} target="_blank" rel="noopener noreferrer">
                       <span className="ads-list__icon"><FiFileText aria-hidden="true" /></span>

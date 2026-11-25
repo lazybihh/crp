@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { mediaUrl } from "../../services/homeService";
 import { getPolicy } from "../../services/facultyContentService";
+import PageLoader, { usePageReady } from "../../components/PageLoader";
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import {
@@ -39,9 +41,7 @@ const steps = [
 ];
 
 export default function AntiSexualHarassment() {
-  const [backendContent, setBackendContent] = useState(null);
-  useEffect(() => { let active = true; getPolicy("anti-sexual-harassment").then(row => { if (active) setBackendContent(row.content || row); }).catch(error => console.error("Faculty page content load failed:", error)); return () => { active = false; }; }, []);
-
+  const { ready, data: backendContent } = usePageReady(() => getPolicy("anti-sexual-harassment").then((row) => row.content || row));
   const [formNotice, setFormNotice] = useState("");
 
   const handleSubmit = (event) => {
@@ -49,18 +49,20 @@ export default function AntiSexualHarassment() {
     setFormNotice("This is a front-end form preview. No information has been sent or stored. The institute must connect an approved, secure submission system before this form is used.");
   };
 
+  if (!ready) return <main data-faculty-content-key="anti-sexual-harassment" id="main" className="pol-page pol-harassment"><PageLoader /></main>;
+
   return (
     <main data-faculty-content-key="anti-sexual-harassment" id="main" className="pol-page pol-harassment">
-      <section className="pol-hero" aria-label="Anti Sexual Harassment" style={{ "--pol-img": 'url("/images/pages-banner.png")' }}>
+      <section className="pol-hero" aria-label="Anti Sexual Harassment" style={{ "--pol-img": `url("${mediaUrl(backendContent?.heroImage || '/images/pages-banner.png')}")` }}>
         <div className="pol-hero__photo" />
         <div className="pol-hero__tags">
           <span className="pol-hero__tag pol-hero__tag--left">
             <span className="pol-hero__tag-icon"><FaGraduationCap aria-hidden="true" /></span>
-            Government Polytechnic
+            {backendContent?.heroLeft || "Government Polytechnic"}
           </span>
           <span className="pol-hero__tag pol-hero__tag--right">
             <span className="pol-hero__tag-icon"><FiMapPin aria-hidden="true" /></span>
-            Rohtak (Haryana)
+            {backendContent?.heroRight || "Rohtak (Haryana)"}
           </span>
         </div>
 
@@ -76,34 +78,34 @@ export default function AntiSexualHarassment() {
       <div className="container pol-wrap">
         <header className="pol-intro">
           <span className="pol-eyebrow">Faculty · Policies &amp; Rules</span>
-          <h1>Anti Sexual <em>Harassment</em></h1>
+          <h1>{backendContent?.title || "Anti Sexual"} <em>{backendContent?.accent || "Harassment"}</em></h1>
           <p>{backendContent?.description || "Promoting dignity, respect and a safe environment for everyone at the institute."}</p>
         </header>
 
         <section className="pol-feature">
           <div className="pol-feature__mark"><FiShield /></div>
           <div>
-            <span className="pol-kicker">Respect and dignity</span>
-            <h2>A campus where everyone is treated with respect</h2>
-            <p>The institute's published information says employees and students have the right to be treated with dignity, and that concerns should receive prompt attention.</p>
+            <span className="pol-kicker">{backendContent?.featureKicker || "Respect and dignity"}</span>
+            <h2>{backendContent?.featureTitle || "A campus where everyone is treated with respect"}</h2>
+            <p>{backendContent?.featureText || "The institute's published information says employees and students have the right to be treated with dignity, and that concerns should receive prompt attention."}</p>
           </div>
-          <span className="pol-feature__number">03</span>
+          <span className="pol-feature__number">{backendContent?.featureNumber || "03"}</span>
         </section>
 
         <section className="pol-section">
           <div className="pol-section__head">
-            <span className="pol-eyebrow">Policy commitments</span>
-            <h2>What the published policy highlights</h2>
-            <p>These points summarise the information available on the institute's official page.</p>
+            <span className="pol-eyebrow">{backendContent?.sectionEyebrow || "Policy commitments"}</span>
+            <h2>{backendContent?.sectionTitle || "What the published policy highlights"}</h2>
+            <p>{backendContent?.sectionText || "These points summarise the information available on the institute's official page."}</p>
           </div>
 
           <div className="pol-card-grid">
-            {safeguards.map(({ icon: Icon, title, text }, i) => (
-              <article className="pol-card" key={title}>
-                <span className="pol-card__icon"><Icon /></span>
+            {(backendContent?.cards?.length ? backendContent.cards : safeguards).map((item, i) => (
+              <article className="pol-card" key={item.title}>
+                <span className="pol-card__icon">{(() => { const Icon = safeguards[i % safeguards.length].icon; return <Icon />; })()}</span>
                 <span className="pol-card__no">0{i + 1}</span>
-                <h3>{title}</h3>
-                <p>{text}</p>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
               </article>
             ))}
           </div>
@@ -111,13 +113,13 @@ export default function AntiSexualHarassment() {
 
         <section className="pol-section pol-process">
           <div className="pol-section__head">
-            <span className="pol-eyebrow">Seeking assistance</span>
-            <h2>How to raise a concern</h2>
+            <span className="pol-eyebrow">{backendContent?.processEyebrow || "Seeking assistance"}</span>
+            <h2>{backendContent?.processTitle || "How to raise a concern"}</h2>
             <p>This is general page guidance, not a substitute for the institute's formal complaint procedure.</p>
           </div>
 
           <ol>
-            {steps.map((item, i) => (
+            {(backendContent?.steps?.length ? backendContent.steps : steps).map((item, i) => (
               <li key={item}>
                 <span>{String(i + 1).padStart(2, "0")}</span>
                 <p>{item}</p>
@@ -210,13 +212,13 @@ export default function AntiSexualHarassment() {
         <aside className="pol-note">
           <FiInfo />
           <div>
-            <strong>Important before publication</strong>
-            <p>The official page refers to a committee, but its current membership and contact details must be verified by the institute. This form is a front-end preview only; it does not send, save or email submissions. Connect an approved secure complaint-handling system before collecting real complaints.</p>
+            <strong>{backendContent?.noteTitle || "Important before publication"}</strong>
+            <p>{backendContent?.noteText || "The official page refers to a committee, but its current membership and contact details must be verified by the institute. This form is a front-end preview only; it does not send, save or email submissions. Connect an approved secure complaint-handling system before collecting real complaints."}</p>
           </div>
         </aside>
 
         <footer className="pol-bottom">
-          <span>Explore another policy</span>
+          <span>{backendContent?.relatedTitle || "Explore another policy"}</span>
           <Link to="/faculty/training-policy">Training Policy <FiChevronRight /></Link>
           <Link to="/faculty/anti-ragging">Anti Ragging <FiChevronRight /></Link>
           <Link to="/faculty/service-rules">Service Rules <FiChevronRight /></Link>

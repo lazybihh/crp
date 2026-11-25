@@ -14,6 +14,7 @@ import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiChevronRight as FiCrumbArrow } from "react-icons/fi";
 import "./Gallery.css";
 import { getMedia, mediaUrl } from "../../services/mediaService";
+import PageLoader, { usePageReady } from "../../components/PageLoader";
 
 const PAGE_SIZE = 12;
 
@@ -104,9 +105,15 @@ function Picture({ src, alt }) {
 }
 
 export default function Gallery() {
-  const [photos, setPhotos] = useState(FALLBACK_PHOTOS);
-  const [photoCategories, setPhotoCategories] = useState(FALLBACK_CATEGORIES);
-  const [banner, setBanner] = useState("");
+  const { ready, data } = usePageReady(() => getMedia());
+  const media = data?.media;
+  const photos = media
+    ? (media.photos || []).filter((photo) => photo.src)
+    : FALLBACK_PHOTOS;
+  const photoCategories = media
+    ? (media.photoCategories?.length ? media.photoCategories : FALLBACK_CATEGORIES)
+    : FALLBACK_CATEGORIES;
+  const banner = media?.banners?.gallery || "";
   const [category, setCategory] = useState("All");
   const [query, setQuery] = useState("");
   const [limit, setLimit] = useState(PAGE_SIZE);
@@ -115,35 +122,6 @@ export default function Gallery() {
   const closeRef = useRef(null);
   const returnRef = useRef(null);
   const touchX = useRef(null);
-
-  useEffect(() => {
-    let active = true;
-
-    getMedia()
-      .then(({ media }) => {
-        if (!active) return;
-
-        setPhotos((media?.photos || []).filter((photo) => photo.src));
-
-        setPhotoCategories(
-          media?.photoCategories?.length
-            ? media.photoCategories
-            : FALLBACK_CATEGORIES
-        );
-
-        setBanner(media?.banners?.gallery || "");
-      })
-      .catch((error) => {
-        console.warn(
-          "Media API unavailable; showing local photo gallery.",
-          error
-        );
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
 
   const categories = useMemo(
     () =>
@@ -243,6 +221,8 @@ export default function Gallery() {
       : Math.max(0, Math.min(openAt - 4, results.length - 9));
 
   const thumbs = results.slice(thumbFrom, thumbFrom + 9);
+
+  if (!ready) return <main id="main" className="gal-page"><PageLoader /></main>;
 
   return (
     <main id="main" className="gal-page">

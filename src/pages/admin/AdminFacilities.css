@@ -95,7 +95,7 @@
 
 .afc-banner { max-width: 860px; }
 .afc-banner__title { margin: 0; color: var(--ink-900); font-size: 1.1rem; }
-.afc-banner__preview { width: 100%; max-width: 760px; aspect-ratio: 16 / 9; }
+.afc-banner__preview { width: 100%; max-width: 480px; aspect-ratio: 16 / 9; }
 .afc-banner__hint { font-size: 1rem; }
 .afc-banner__message { min-height: 24px; margin: 0; color: var(--muted); font-size: 1rem; }
 .afc-banner__message.is-error { color: var(--danger); }

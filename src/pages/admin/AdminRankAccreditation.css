@@ -1,62 +1,93 @@
-.aaf-page {
-  display: grid;
-  gap: 18px;
-  min-width: 0;
-}
+/* AdminRankAccreditation.css - styles for this admin page only (the About us editor). Every class starts with "arank-" so nothing here can change another page. */
 
-.aaf-page h2 {
-  margin: 0;
-  color: var(--ink-900);
-  font-family: var(--font-display);
-  font-size: clamp(1.45rem, 2.5vw, 2rem);
-  line-height: 1.2;
-  white-space: normal;
-}
+.arank-page { display: grid; gap: 18px; min-width: 0; }
+.arank-loading { color: var(--muted); }
+.arank-loading.is-error { color: var(--danger); font-weight: 600; }
 
-.aaf-card {
-  display: grid;
-  justify-items: start;
-  gap: 14px;
-  max-width: 720px;
-  padding: clamp(22px, 3vw, 34px);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--white);
-  box-shadow: var(--shadow-soft);
-}
+.arank-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.arank-top h2 { margin: 0; color: var(--ink-900); font-family: var(--font-display); font-size: clamp(1.45rem, 2.5vw, 2rem); }
+.arank-top a { color: var(--link-on-light); font-weight: 700; }
 
-.aaf-card p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.6;
+/* one collapsible section */
+.arank-card { max-width: 860px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--white); box-shadow: var(--shadow-soft); }
+.arank-card__head {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 16px clamp(16px, 3vw, 24px); border: 0; border-radius: inherit; background: transparent;
+  color: var(--ink-900); font: inherit; text-align: left; cursor: pointer;
 }
+.arank-card__head:hover { background: var(--surface-blue-light); }
+.arank-card__head:focus-visible { outline: 3px solid var(--focus-on-light); outline-offset: -3px; }
+.arank-card__head h3 { margin: 0; color: var(--ink-900); font-family: var(--font-body); font-size: 1rem; font-weight: 800; }
+.arank-card__head span { display: inline-flex; align-items: center; gap: 4px; flex: none; color: var(--ink-800); font-size: 0.78rem; font-weight: 700; }
+.arank-card__head svg { transition: transform 0.2s ease; }
+.arank-card.is-open .arank-card__head svg { transform: rotate(90deg); }
+.arank-card.is-open .arank-card__head { border-bottom: 1px solid var(--line); border-radius: var(--radius-md) var(--radius-md) 0 0; }
+.arank-card__body { display: grid; gap: 14px; padding: clamp(16px, 3vw, 24px); }
+.arank-hint { margin: 0; color: var(--muted); font-size: 0.9rem; }
 
-.aaf-link {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 10px 18px;
-  border-radius: 999px;
-  background: var(--ink-900);
-  color: var(--white);
-  font-size: 1rem;
-  font-weight: 700;
-  text-decoration: none;
-  transition: background 0.2s ease, transform 0.2s ease;
+/* fields */
+.arank-field { display: grid; gap: 6px; min-width: 0; }
+.arank-field > span { color: var(--ink-900); font-size: 0.84rem; font-weight: 700; }
+.arank-field input, .arank-field textarea {
+  width: 100%; box-sizing: border-box; padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--ink-900) 25%, transparent); border-radius: var(--radius-sm);
+  background: var(--white); color: var(--text); font: inherit; font-size: 0.95rem;
 }
+.arank-field textarea { resize: vertical; }
+.arank-field input:focus-visible, .arank-field textarea:focus-visible, .arank-btn:focus-within { outline: 3px solid var(--focus-on-light); outline-offset: 2px; }
 
-.aaf-link:hover {
-  background: var(--sky-700);
-  transform: translateY(-2px);
+/* fields of one group: short ones side by side, long ones full width */
+.arank-group { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.arank-cell { min-width: 0; }
+.arank-cell--wide { grid-column: 1 / -1; }
+
+/* lists */
+.arank-list { display: grid; gap: 12px; }
+.arank-item { display: grid; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface-blue-light); }
+.arank-item__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.arank-item__head b { min-width: 0; color: var(--ink-900); overflow-wrap: anywhere; }
+.arank-muted { color: var(--muted); }
+
+/* buttons */
+.arank-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 16px;
+  border: 1px solid var(--ink-900); border-radius: 999px; background: var(--white); color: var(--ink-900);
+  font: inherit; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-decoration: none;
 }
+.arank-btn:hover { background: var(--sky-100); }
+.arank-btn--save { border-color: var(--orange-500); background: var(--orange-500); color: var(--ink-950); }
+.arank-btn--save:hover { background: var(--orange-400); }
+.arank-btn:disabled { opacity: 0.5; cursor: default; }
+.arank-btn:disabled:hover { background: var(--white); }
+.arank-btn--save:disabled:hover { background: var(--orange-500); }
 
-.aaf-link:focus-visible {
-  outline: 3px solid var(--sky-700);
-  outline-offset: 3px;
+/* a picture: the whole picture is shown, never cropped */
+.arank-photo { display: grid; align-content: start; gap: 8px; min-width: 0; }
+.arank-photo > b { color: var(--ink-900); font-size: 0.9rem; }
+.arank-image__box {
+  display: grid; place-items: center; width: 100%; max-width: 260px; min-height: 150px; max-height: 280px;
+  padding: 6px; box-sizing: border-box; overflow: hidden; border: 1px dashed color-mix(in srgb, var(--ink-900) 30%, transparent);
+  border-radius: var(--radius-sm); background: var(--white);
 }
+.arank-image__box img { display: block; width: auto; height: auto; max-width: 100%; max-height: 260px; object-fit: contain; }
+.arank-image__box small { color: var(--muted); }
+.arank-photo__buttons { display: flex; flex-wrap: wrap; gap: 8px; }
 
-@media (prefers-reduced-motion: reduce) {
-  .aaf-link { transition: none; }
-  .aaf-link:hover { transform: none; }
+/* a file link: address + upload + open */
+
+.arank-check { display: flex; align-items: center; gap: 8px; min-height: 44px; color: var(--ink-900); font-weight: 600; }
+.arank-check input { width: 18px; height: 18px; }
+
+/* sticky save bar */
+.arank-save {
+  position: sticky; bottom: 0; z-index: 50; max-width: 860px; box-sizing: border-box; flex-wrap: wrap;
+  border-radius: var(--radius-md) var(--radius-md) 0 0; display: flex; align-items: center; justify-content: flex-end;
+  gap: 16px; padding: 12px 18px; border-top: 1px solid var(--line); background: var(--white);
+  box-shadow: 0 -8px 24px color-mix(in srgb, var(--ink-900) 10%, transparent);
+}
+.arank-save span { margin-right: auto; color: var(--ink-800); font-size: 0.92rem; font-weight: 600; }
+.arank-save span.is-error { color: var(--danger); }
+
+@media (max-width: 720px) {
+  .arank-group { grid-template-columns: 1fr; }
 }

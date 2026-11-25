@@ -1,39 +1,41 @@
 // EServices.jsx - Students > E-services (route: /students/e-services).
 // Page order: hero -> title + navy "at a glance" card -> three service cards -> good to know -> related -> help strip.
 // Own hero, own styles (EServices.css, every class starts with "esv-").
+// Content comes from the database; the lists below are the fallback and seed.
 //
 // WHAT IS REAL AND WHAT IS ASSUMED
-//   REAL     the three service names: Online Fees Facility, Digital library, E-Contents (the live page,
-//            crprohtak.ac.in/e-services-for-Student, is a table of three names with no links and no text).
-//   ASSUMED  every link below - the live page gives none. They are the most likely destinations; the college must confirm them:
+//   REAL     the three service names: Online Fees Facility, Digital library, E-Contents.
+//   ASSUMED  every link below. They are the most likely destinations; the college must confirm them:
 //              Online Fees Facility -> SBI Collect (the site header's "online payment" button goes there)
 //              Digital library      -> National Digital Library of India (also on /students/online-learning)
 //              E-Contents           -> HSBTE digital e-learning (also on /students/online-learning)
 //   SAMPLE   the one-line description under each service, and the "good to know" tips. They are general, not institute rules.
-//            No fee amounts, dates or steps are shown, because the live site gives none.
+//            No fee amounts, dates or steps are shown.
 //
 // EDITING: `services` is the list to edit. A service with `href: ""` shows a "Link coming soon" label instead of a dead link.
 //
-// NO FILES TO COPY: this page uses no pictures except the shared banner (public/images/pages-banner.png).
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import {
   FiMapPin, FiChevronRight as FiCrumbArrow, FiArrowRight, FiPhone, FiMail, FiCreditCard, FiBook, FiLayers,
   FiExternalLink, FiClock, FiCheck, FiShield,
 } from "react-icons/fi";
+import PageLoader from "../../components/PageLoader";
+import { useStudentPage, mergeStudentContent } from "../../services/studentPageService";
+import { mediaUrl } from "../../services/mediaService";
 import "./EServices.css";
 import { useSite } from "../../context/SiteSettingsContext";
 
-const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
+const defaultHero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
-const intro = {
+const defaultIntro = {
   eyebrow: "Students",
   title: "E-services",
   lead: "The institute's online services for students, all in one place. Pick a service and it opens in a new tab.",
 };
 
 // The three REAL services. Links are ASSUMED (see the top of this file). `site` is the short name shown on the card.
-const services = [
+const defaultServices = [
   {
     icon: FiCreditCard,
     title: "Online Fees Facility",
@@ -61,23 +63,54 @@ const services = [
 ];
 
 // SAMPLE - general advice for any online service.
-const goodToKnow = [
+const defaultGoodToKnow = [
   { icon: FiShield, text: "Check the web address before you enter any payment or login details." },
   { icon: FiClock, text: "Keep a copy of every receipt or confirmation you get." },
   { icon: FiCheck, text: "If a link does not work, ask the institute office." },
 ];
 
-const related = [
+const defaultRelated = [
   { label: "Online learning", text: "More free portals and courses.", to: "/students/online-learning" },
   { label: "Student helpline", text: "Call or write to the office.", to: "/students/helpline" },
   { label: "Grievance redressal", text: "Raise a concern with the committee.", to: "/students/grievance" },
 ];
 
+// Saved paths that start with /uploads/ become full backend addresses; everything else is left as it is.
+function resolveStudentMedia(value) {
+  if (Array.isArray(value)) return value.map(resolveStudentMedia);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, resolveStudentMedia(item)]));
+  }
+  if (typeof value === "string" && value.startsWith("/uploads/")) return mediaUrl(value);
+  return value;
+}
+
 export default function EServices() {
+  const { ready, content: savedContent } = useStudentPage("e-services");
+  const pageContent = resolveStudentMedia(
+    mergeStudentContent(
+      {
+      hero: defaultHero,
+      intro: defaultIntro,
+      services: defaultServices,
+      goodToKnow: defaultGoodToKnow,
+      related: defaultRelated,
+      },
+      savedContent
+    )
+  );
+  const hero = pageContent.hero ?? defaultHero;
+  const intro = pageContent.intro ?? defaultIntro;
+  const services = pageContent.services ?? defaultServices;
+  const goodToKnow = pageContent.goodToKnow ?? defaultGoodToKnow;
+  const related = pageContent.related ?? defaultRelated;
+
   const { contact, links } = useSite();
   services.find((service) => service.title === "Online Fees Facility").href = links?.payFee || "";
   services.find((service) => service.title === "E-Contents").href = links?.hsbte ? `${links.hsbte.replace(/\/$/, "")}/digital-elearning` : "";
-  const ready = services.filter((service) => service.href).length;
+  const linksReady = services.filter((service) => service.href).length;
+
+  if (!ready) return <main id="main" className="esv-page"><PageLoader /></main>;
 
   return (
     <main id="main" className="esv-page">
@@ -131,7 +164,7 @@ export default function EServices() {
                 );
               })}
             </ul>
-            <p className="esv-glance__note">{ready} of {services.length} links ready</p>
+            <p className="esv-glance__note">{linksReady} of {services.length} links ready</p>
           </aside>
         </div>
 

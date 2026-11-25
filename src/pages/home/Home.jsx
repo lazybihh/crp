@@ -7,7 +7,8 @@ import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiArrowRight, FiBell, FiArrowUpRight, FiBookOpen, FiBriefcase, FiUsers, FiAward } from "react-icons/fi";
 import { categories, isNew } from "../../data/notices";
 import { getHomeContent, mediaUrl } from "../../services/homeService";
-import { getNotices, noticeFileUrl } from "../../services/noticeService";
+import { noticeFileUrl } from "../../services/noticeService";
+import PageLoader, { usePageReady } from "../../components/PageLoader";
 import "./Home.css";
 
 // Starting content. It is shown while the page loads, and whenever the server cannot be reached.
@@ -696,42 +697,7 @@ function Recruiters() {
 }
 
 export default function Home() {
-  const [saved, setSaved] = useState(null);
-  const [notices, setNotices] = useState([]);
-  const [noticesLoading, setNoticesLoading] = useState(true);
-  const [noticesError, setNoticesError] = useState("");
-
-  useEffect(() => {
-    let active = true;
-    getHomeContent()
-      .then((data) => { if (active) setSaved(data); })
-      .catch((error) => console.warn("Home content is using its starting content:", error.message));
-    return () => { active = false; };
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-    const loadNotices = () => {
-      getNotices()
-        .then((data) => {
-          if (!active) return;
-          setNotices(Array.isArray(data.notices) ? data.notices : []);
-          setNoticesError("");
-        })
-        .catch((error) => {
-          if (active) setNoticesError(error.message || "Could not load notices.");
-        })
-        .finally(() => {
-          if (active) setNoticesLoading(false);
-        });
-    };
-    loadNotices();
-    window.addEventListener("focus", loadNotices);
-    return () => {
-      active = false;
-      window.removeEventListener("focus", loadNotices);
-    };
-  }, []);
+  const { ready, data: saved } = usePageReady(() => getHomeContent());
 
   // the database content (the starting content above while loading or when the server is down), with every image address ready to use
   const c = { ...homeDefaults, ...saved };
@@ -744,10 +710,10 @@ export default function Home() {
     principalInitials: (c.principal.name || "").replace(/^(Dr|Mr|Mrs|Sh)\.?\s+/i, "").split(" ").map((word) => word[0]).join("").slice(0, 2),
     news: { ...c.news, image: mediaUrl(c.news.image) },
     dignitaries: c.dignitaries.map((person) => ({ ...person, image: mediaUrl(person.image) })),
-    notices,
-    noticesLoading,
-    noticesError,
-    highlights: c.highlights.map((panel) => ({ ...panel, image: mediaUrl(panel.image) })),
+    notices: Array.isArray(c.notices) ? c.notices : [],
+    noticesLoading: false,
+    noticesError: "",
+    highlights: c.highlights.map((panel) => ({ ...panel, image: mediaUrl(panel.image), items: (panel.items || []).map((item) => ({ ...item, image: mediaUrl(item.photo || "") })) })),
     facilityTiles: (c.facilityTiles?.length ? c.facilityTiles : homeDefaults.facilityTiles).map((tile) => ({ ...tile, image: mediaUrl(tile.image) })),
     courses: c.courses,
     recruiters: c.recruiters.map((company) => ({ ...company, logo: mediaUrl(company.logo) })),
@@ -771,7 +737,9 @@ export default function Home() {
     }, { threshold: 0.12 });
     sections.forEach((section) => observer.observe(section));
     return () => observer.disconnect();
-  }, []);
+  }, [ready]);
+
+  if (!ready) return <main id="main"><PageLoader /></main>;
 
   return (
     <HomeContentContext.Provider value={content}>

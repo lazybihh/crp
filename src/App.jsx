@@ -7,6 +7,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import Home from "./pages/home/Home";
 import Placeholder from "./pages/placeholder/Placeholder";
 import History from "./pages/about/History";
+import AnnualReport from "./pages/about/AnnualReport";
 import PrincipalMessage from "./pages/about/PrincipalMessage";
 import RankAccreditation from "./pages/about/RankAccreditation";
 import Alumni from "./pages/about/Alumni";
@@ -104,7 +105,6 @@ import AdminSiteSettings from "./pages/admin/AdminSiteSettings";
 
 const routeLabels = {
   "/about/mandatory-disclosure": "Mandatory disclosure",
-  "/about/annual-report": "Annual report",
   "/students/academic-calendar": "Academic calendar",
 };
 const placeholderPaths = Object.keys(routeLabels);
@@ -172,6 +172,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about/history" element={<History />} />
+        <Route path="/about/annual-report" element={<AnnualReport />} />
         <Route path="/about/principal-message" element={<PrincipalMessage />} />
         <Route path="/about/rank-accreditation" element={<RankAccreditation />} />
         <Route path="/about/alumni" element={<Alumni />} />

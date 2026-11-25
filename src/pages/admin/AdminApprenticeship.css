@@ -1,62 +1,195 @@
+/* AdminApprenticeship.css - styles of the "Apprenticeship" admin page (AdminApprenticeship.jsx). Every class starts with "abc-". */
+
 .abc-page {
   display: grid;
-  gap: 18px;
+  gap: 16px;
   min-width: 0;
 }
 
-.abc-page h2 {
+.abc-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.abc-top h2 {
   margin: 0;
   color: var(--ink-900);
-  font-family: var(--font-display);
-  font-size: clamp(1.45rem, 2.5vw, 2rem);
-  line-height: 1.2;
-  white-space: normal;
+}
+
+.abc-hint,
+.abc-loading {
+  color: var(--muted);
 }
 
 .abc-card {
-  display: grid;
-  justify-items: start;
-  gap: 14px;
-  max-width: 720px;
-  padding: clamp(22px, 3vw, 34px);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
   background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 18px;
   box-shadow: var(--shadow-soft);
+  display: grid;
+  gap: 14px;
 }
 
-.abc-card p {
+.abc-card h3 {
   margin: 0;
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.6;
+  color: var(--ink-900);
+  text-transform: capitalize;
 }
 
-.abc-link {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 10px 18px;
-  border-radius: 999px;
-  background: var(--ink-900);
-  color: var(--white);
-  font-size: 1rem;
+/* groups of fields */
+.abc-group {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.abc-cell {
+  min-width: 0;
+}
+
+.abc-wide {
+  grid-column: 1 / -1;
+}
+
+.abc-field {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.abc-field > span {
   font-weight: 700;
-  text-decoration: none;
-  transition: background 0.2s ease, transform 0.2s ease;
+  color: var(--ink-900);
+  text-transform: capitalize;
 }
 
-.abc-link:hover {
-  background: var(--sky-700);
-  transform: translateY(-2px);
+.abc-field input:not([type=file]):not([type=checkbox]),
+.abc-field select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font: inherit;
 }
 
-.abc-link:focus-visible {
-  outline: 3px solid var(--sky-700);
-  outline-offset: 3px;
+.abc-field input[type=checkbox] {
+  width: 20px;
+  height: 20px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .abc-link { transition: none; }
-  .abc-link:hover { transform: none; }
+/* lists and their items */
+.abc-list {
+  display: grid;
+  gap: 12px;
+}
+
+.abc-list h4 {
+  margin: 0;
+  color: var(--ink-900);
+  text-transform: capitalize;
+}
+
+.abc-item {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.abc-itemhead {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+.abc-itemhead div,
+.abc-upload {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* buttons and the file chooser */
+.abc-page button,
+.abc-choose {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: var(--white);
+  cursor: pointer;
+  font: inherit;
+}
+
+.abc-page button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.abc-choose {
+  position: relative;
+}
+
+.abc-choose input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.abc-choose:focus-within {
+  outline: 2px solid var(--orange-500);
+}
+
+.abc-preview {
+  max-width: 240px;
+  max-height: 160px;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+/* the sticky Save / Discard bar */
+.abc-save {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  background: var(--white);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-soft);
+  padding: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  border-radius: var(--radius-md);
+}
+
+.abc-save span {
+  margin-right: auto;
+  color: var(--ink-800);
+}
+
+.abc-save .abc-error {
+  color: var(--danger);
+}
+
+.abc-save button:last-child {
+  background: var(--orange-500);
+  border-color: var(--orange-500);
+  font-weight: 800;
+}
+
+@media (max-width: 700px) {
+  .abc-group {
+    grid-template-columns: 1fr;
+  }
 }

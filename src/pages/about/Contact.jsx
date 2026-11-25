@@ -25,6 +25,7 @@ import { socialIcon, useSite } from "../../context/SiteSettingsContext";
 import { sendEnquiry } from "../../services/enquiryService";
 import { getContactPage } from "../../services/contactPageService";
 import { mediaUrl } from "../../services/homeService";
+import PageLoader, { usePageReady } from "../../components/PageLoader";
 
 const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
@@ -259,25 +260,14 @@ function InlineMessageForm({ topics, contact }) {
 
 export default function Contact() {
   const { institute, contact: contactSettings, links, socialLinks } = useSite();
-  const [pageText, setPageText] = useState(intro);
-  const [pageTopics, setPageTopics] = useState(formConfig.topics);
-  const [heroImage, setHeroImage] = useState(hero.image);
-  useEffect(() => {
-    let active = true;
-    getContactPage()
-      .then((page) => {
-        if (!active) return;
-        if (page.bannerImage) setHeroImage(mediaUrl(page.bannerImage) || hero.image);
-        setPageText({
-          eyebrow: page.intro?.eyebrow || intro.eyebrow,
-          title: page.intro?.title || intro.title,
-          lead: page.intro?.lead || intro.lead,
-        });
-        if (Array.isArray(page.topics) && page.topics.length) setPageTopics(page.topics);
-      })
-      .catch(() => {});
-    return () => { active = false; };
-  }, []);
+  const { ready, data: savedPage } = usePageReady(() => getContactPage());
+  const pageText = {
+    eyebrow: savedPage?.intro?.eyebrow || intro.eyebrow,
+    title: savedPage?.intro?.title || intro.title,
+    lead: savedPage?.intro?.lead || intro.lead,
+  };
+  const pageTopics = Array.isArray(savedPage?.topics) && savedPage.topics.length ? savedPage.topics : formConfig.topics;
+  const heroImage = mediaUrl(savedPage?.bannerImage) || hero.image;
   const contact = {
     name: institute?.name || "Chhotu Ram Polytechnic",
     phones: contactSettings?.phones || [],
@@ -296,6 +286,9 @@ export default function Contact() {
     label: item.label || item.platform,
     href: item.url,
   }));
+
+  if (!ready) return <main id="main" className="cnt-page"><PageLoader /></main>;
+
   return (
     <main id="main" className="cnt-page">
       <section className="cnt-hero" aria-label="Contact us" style={{ "--img": `url("${heroImage || hero.image}")` }}>

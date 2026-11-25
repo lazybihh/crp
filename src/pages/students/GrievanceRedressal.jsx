@@ -1,47 +1,49 @@
 // GrievanceRedressal.jsx - Students > Grievance redressal (route: /students/grievance).
 // Page order: hero -> title + navy "how it works" card -> two forms -> the two committees -> help strip.
 // Own hero, own styles (GrievanceRedressal.css, every class starts with "grv-").
+// Content comes from the database; the lists below are the fallback and seed.
 //
 // WHAT IS REAL AND WHAT IS SAMPLE
 //   REAL     the shape of the two committees (a Chairman plus members) and the one-line procedure: members review
 //            suggestions and take corrective action promptly. The two Google Forms. The contact details (same as Navbar/Footer).
-//   TO FILL  the member names and designations. The live page (crprohtak.ac.in/Grievance-redressal) lists them, but it could
-//            not be opened while this page was written, so nothing was invented: every `name` below is empty and the card
-//            shows "Name to be added". Copy each name and designation from the live page into the lists below.
+//   TO FILL  the committee names and designations. Every `name` below is empty and the card shows "Name to be added".
+//            Fill them in from the admin page (Grievance redressal).
 //   SAMPLE   the intro wording and the three "how it works" step texts. They only restate the procedure in plain words.
-//   LEFT OUT the old "student feedback" link that says "Updated soon" and goes nowhere. The two Google Forms replace it.
+//   NOT SHOWN  a separate "student feedback" link. The two Google Forms cover it.
 //
 // EDITING: `committees` is the list to edit - each member is { role, name }. Add or remove members freely.
 //
-// NO FILES TO COPY: this page uses no pictures except the shared banner (public/images/pages-banner.png).
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import {
   FiMapPin, FiChevronRight as FiCrumbArrow, FiArrowRight, FiPhone, FiMail, FiEdit3, FiSearch, FiCheckCircle,
   FiMessageCircle, FiExternalLink, FiUsers, FiUser, FiMonitor,
 } from "react-icons/fi";
+import PageLoader from "../../components/PageLoader";
+import { useStudentPage, mergeStudentContent } from "../../services/studentPageService";
+import { mediaUrl } from "../../services/mediaService";
 import "./GrievanceRedressal.css";
 import { useSite } from "../../context/SiteSettingsContext";
 
-const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
+const defaultHero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
-const intro = {
+const defaultIntro = {
   eyebrow: "Students",
   title: "Grievance redressal",
   lead: "If something is troubling you at the institute, you can say so. Your concern is read by a committee and acted on.", // SAMPLE wording
 };
 
 // SAMPLE wording of the REAL procedure: members review suggestions and take corrective action promptly.
-const steps = [
+const defaultSteps = [
   { icon: FiEdit3, title: "Share it", text: "Fill in the form or tell the office." },
   { icon: FiSearch, title: "It is reviewed", text: "The committee members read it." },
   { icon: FiCheckCircle, title: "Action is taken", text: "Corrective action is taken promptly." },
 ];
 
 // REAL - the two Google Forms. Both open in a new tab.
-// The two committees. REAL structure; names and designations are TO FILL from the live page (see the top of this file).
+// The two committees. REAL structure; names and designations are TO FILL (see the top of this file).
 // Keep the Chairman first. An empty name shows "Name to be added".
-const committees = [
+const defaultCommittees = [
   {
     id: "main",
     icon: FiUsers,
@@ -66,12 +68,41 @@ const committees = [
   },
 ];
 
+// Saved paths that start with /uploads/ become full backend addresses; everything else is left as it is.
+function resolveStudentMedia(value) {
+  if (Array.isArray(value)) return value.map(resolveStudentMedia);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, resolveStudentMedia(item)]));
+  }
+  if (typeof value === "string" && value.startsWith("/uploads/")) return mediaUrl(value);
+  return value;
+}
+
 export default function GrievanceRedressal() {
+  const { ready, content: savedContent } = useStudentPage("grievance");
+  const pageContent = resolveStudentMedia(
+    mergeStudentContent(
+      {
+      hero: defaultHero,
+      intro: defaultIntro,
+      steps: defaultSteps,
+      committees: defaultCommittees,
+      },
+      savedContent
+    )
+  );
+  const hero = pageContent.hero ?? defaultHero;
+  const intro = pageContent.intro ?? defaultIntro;
+  const steps = pageContent.steps ?? defaultSteps;
+  const committees = pageContent.committees ?? defaultCommittees;
+
   const { contact, links } = useSite();
   const forms = [
     { icon: FiMessageCircle, title: "Grievances form", text: "Use this form to raise a grievance with the committee.", label: "Open the grievances form", href: links?.grievanceForm || "" },
     { icon: FiEdit3, title: "Students feedback form", text: "Share your feedback or suggestions about the institute.", label: "Open the feedback form", href: links?.studentFeedbackForm || "" },
   ].filter((item) => item.href);
+  if (!ready) return <main id="main" className="grv-page"><PageLoader /></main>;
+
   return (
     <main id="main" className="grv-page">
       <section className="grv-hero" aria-label="Grievance redressal" style={{ "--img": `url("${hero.image}")` }}>

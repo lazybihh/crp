@@ -1,62 +1,195 @@
+/* AdminHelpline.css - styles of the "Student helpline" admin page (AdminHelpline.jsx). Every class starts with "aaw-". */
+
 .aaw-page {
   display: grid;
-  gap: 18px;
+  gap: 16px;
   min-width: 0;
 }
 
-.aaw-page h2 {
+.aaw-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.aaw-top h2 {
   margin: 0;
   color: var(--ink-900);
-  font-family: var(--font-display);
-  font-size: clamp(1.45rem, 2.5vw, 2rem);
-  line-height: 1.2;
-  white-space: normal;
+}
+
+.aaw-hint,
+.aaw-loading {
+  color: var(--muted);
 }
 
 .aaw-card {
-  display: grid;
-  justify-items: start;
-  gap: 14px;
-  max-width: 720px;
-  padding: clamp(22px, 3vw, 34px);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
   background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 18px;
   box-shadow: var(--shadow-soft);
+  display: grid;
+  gap: 14px;
 }
 
-.aaw-card p {
+.aaw-card h3 {
   margin: 0;
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.6;
+  color: var(--ink-900);
+  text-transform: capitalize;
 }
 
-.aaw-link {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 10px 18px;
-  border-radius: 999px;
-  background: var(--ink-900);
-  color: var(--white);
-  font-size: 1rem;
+/* groups of fields */
+.aaw-group {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.aaw-cell {
+  min-width: 0;
+}
+
+.aaw-wide {
+  grid-column: 1 / -1;
+}
+
+.aaw-field {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.aaw-field > span {
   font-weight: 700;
-  text-decoration: none;
-  transition: background 0.2s ease, transform 0.2s ease;
+  color: var(--ink-900);
+  text-transform: capitalize;
 }
 
-.aaw-link:hover {
-  background: var(--sky-700);
-  transform: translateY(-2px);
+.aaw-field input:not([type=file]):not([type=checkbox]),
+.aaw-field select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font: inherit;
 }
 
-.aaw-link:focus-visible {
-  outline: 3px solid var(--sky-700);
-  outline-offset: 3px;
+.aaw-field input[type=checkbox] {
+  width: 20px;
+  height: 20px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .aaw-link { transition: none; }
-  .aaw-link:hover { transform: none; }
+/* lists and their items */
+.aaw-list {
+  display: grid;
+  gap: 12px;
+}
+
+.aaw-list h4 {
+  margin: 0;
+  color: var(--ink-900);
+  text-transform: capitalize;
+}
+
+.aaw-item {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.aaw-itemhead {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+.aaw-itemhead div,
+.aaw-upload {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* buttons and the file chooser */
+.aaw-page button,
+.aaw-choose {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: var(--white);
+  cursor: pointer;
+  font: inherit;
+}
+
+.aaw-page button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.aaw-choose {
+  position: relative;
+}
+
+.aaw-choose input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.aaw-choose:focus-within {
+  outline: 2px solid var(--orange-500);
+}
+
+.aaw-preview {
+  max-width: 240px;
+  max-height: 160px;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+/* the sticky Save / Discard bar */
+.aaw-save {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  background: var(--white);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-soft);
+  padding: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  border-radius: var(--radius-md);
+}
+
+.aaw-save span {
+  margin-right: auto;
+  color: var(--ink-800);
+}
+
+.aaw-save .aaw-error {
+  color: var(--danger);
+}
+
+.aaw-save button:last-child {
+  background: var(--orange-500);
+  border-color: var(--orange-500);
+  font-weight: 800;
+}
+
+@media (max-width: 700px) {
+  .aaw-group {
+    grid-template-columns: 1fr;
+  }
 }

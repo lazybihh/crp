@@ -6,6 +6,7 @@ import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiChevronRight } from "react-icons/fi";
 import "./Videos.css";
 import { getMedia, getVideoEmbedUrl, mediaUrl } from "../../services/mediaService";
+import PageLoader, { usePageReady } from "../../components/PageLoader";
 
 const intro = {
   eyebrow: "Media",
@@ -81,39 +82,16 @@ function Poster({ video }) {
 }
 
 export default function Videos() {
-  const [videos, setVideos] = useState(FALLBACK_VIDEOS);
-  const [banner, setBanner] = useState("");
+  const { ready, data } = usePageReady(() => getMedia());
+  const media = data?.media;
+  const videos = media
+    ? (media.videos || []).filter((video) => video.published !== false)
+    : FALLBACK_VIDEOS;
+  const banner = media?.banners?.videos || "";
   const [current, setCurrent] = useState(null);
 
   const closeRef = useRef(null);
   const returnRef = useRef(null);
-
-  useEffect(() => {
-    let active = true;
-
-    getMedia()
-      .then(({ media }) => {
-        if (!active) return;
-
-        setVideos(
-          (media?.videos || []).filter(
-            (video) => video.published !== false
-          )
-        );
-
-        setBanner(media?.banners?.videos || "");
-      })
-      .catch((error) => {
-        console.warn(
-          "Media API unavailable; showing local video list.",
-          error
-        );
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
 
   const openVideo = (video, button) => {
     returnRef.current = button;
@@ -145,6 +123,8 @@ export default function Videos() {
   }, [current]);
 
   const embedUrl = current ? getVideoEmbedUrl(current.url) : "";
+
+  if (!ready) return <main id="main" className="vid-page"><PageLoader /></main>;
 
   return (
     <main id="main" className="vid-page">

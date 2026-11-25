@@ -23,7 +23,7 @@
 //   orientation-2025.jpg  <- media/Activities/660a394f-5060-4dc4-a661-a1b83dfa4bcc.jpeg
 //   rangoli.jpg           <- media/Activities/WhatsApp_Image_2023-01-23_at_3.18.24_AM.jpeg
 //   ncc-selection.jpg     <- media/Activities/ea4ad141-b6d7-4c34-bc51-d2d720974226_a8Ep18G.jpeg
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import {
@@ -32,6 +32,7 @@ import {
 import "./Events.css";
 import { useSite, telHref } from "../../context/SiteSettingsContext";
 import { getEvents, getEventsBanner, mediaUrl } from "../../services/eventService";
+import PageLoader, { usePageReady } from "../../components/PageLoader";
 
 const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
@@ -106,28 +107,14 @@ function Facts({ event }) {
 
 export default function Events() {
   const { contact } = useSite();
-  const [events, setEvents] = useState(fallbackEvents);
-  const [heroImage, setHeroImage] = useState(hero.image);
-
-  useEffect(() => {
-    let active = true;
-    getEventsBanner()
-      .then(({ page }) => {
-        const image = page?.bannerImage;
-        if (active && image) setHeroImage(mediaUrl(image) || hero.image);
-      })
-      .catch(() => {});
-    return () => { active = false; };
-  }, []);
-
-  // load the saved events once; replace the starting copy only after a successful answer (an empty list is a valid answer)
-  useEffect(() => {
-    let active = true;
-    getEvents()
-      .then((data) => { if (active && Array.isArray(data.events)) setEvents(data.events); })
-      .catch(() => { /* server down: keep the starting copy */ });
-    return () => { active = false; };
-  }, []);
+  const { ready, data: results } = usePageReady(() => Promise.allSettled([getEventsBanner(), getEvents()]));
+  const bannerResult = results?.[0];
+  const eventsResult = results?.[1];
+  const heroImage = bannerResult?.status === "fulfilled"
+    ? mediaUrl(bannerResult.value.page?.bannerImage) || hero.image
+    : hero.image;
+  const eventsData = eventsResult?.status === "fulfilled" ? eventsResult.value : null;
+  const events = Array.isArray(eventsData?.events) ? eventsData.events : fallbackEvents;
 
   const sorted = useMemo(() => sortEvents(events), [events]);
   const featured = sorted[0];
@@ -135,6 +122,8 @@ export default function Events() {
   const upcoming = sorted.filter((item) => isUpcoming(item.date)).length;
   const phones = (contact?.phones || []).filter(Boolean);
   const email = contact?.email || "";
+
+  if (!ready) return <main id="main" className="evt-page"><PageLoader /></main>;
 
   return (
     <main id="main" className="evt-page">

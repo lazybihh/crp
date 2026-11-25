@@ -1,62 +1,203 @@
+/* AdminAdmissions.css - styles of the "Admissions" admin page (AdminAdmissions.jsx). Every class starts with "aat-". */
+
 .aat-page {
   display: grid;
-  gap: 18px;
+  gap: 16px;
   min-width: 0;
 }
 
-.aat-page h2 {
+.aat-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.aat-top h2 {
   margin: 0;
   color: var(--ink-900);
-  font-family: var(--font-display);
-  font-size: clamp(1.45rem, 2.5vw, 2rem);
-  line-height: 1.2;
-  white-space: normal;
+}
+
+.aat-hint,
+.aat-loading {
+  color: var(--muted);
 }
 
 .aat-card {
-  display: grid;
-  justify-items: start;
-  gap: 14px;
-  max-width: 720px;
-  padding: clamp(22px, 3vw, 34px);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
   background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 18px;
   box-shadow: var(--shadow-soft);
+  display: grid;
+  gap: 14px;
 }
 
-.aat-card p {
+.aat-card h3 {
   margin: 0;
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.6;
+  color: var(--ink-900);
+  text-transform: capitalize;
 }
 
-.aat-link {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 10px 18px;
-  border-radius: 999px;
-  background: var(--ink-900);
-  color: var(--white);
-  font-size: 1rem;
+/* groups of fields */
+.aat-group {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.aat-cell {
+  min-width: 0;
+}
+
+.aat-wide {
+  grid-column: 1 / -1;
+}
+
+.aat-field {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.aat-field > span {
   font-weight: 700;
-  text-decoration: none;
-  transition: background 0.2s ease, transform 0.2s ease;
+  color: var(--ink-900);
+  text-transform: capitalize;
 }
 
-.aat-link:hover {
-  background: var(--sky-700);
-  transform: translateY(-2px);
+.aat-field input:not([type=file]):not([type=checkbox]),
+.aat-field select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font: inherit;
 }
 
-.aat-link:focus-visible {
-  outline: 3px solid var(--sky-700);
-  outline-offset: 3px;
+.aat-field input[type=checkbox] {
+  width: 20px;
+  height: 20px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .aat-link { transition: none; }
-  .aat-link:hover { transform: none; }
+/* lists and their items */
+.aat-list {
+  display: grid;
+  gap: 12px;
 }
+
+.aat-list h4 {
+  margin: 0;
+  color: var(--ink-900);
+  text-transform: capitalize;
+}
+
+.aat-item {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.aat-itemhead {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+.aat-itemhead div,
+.aat-upload {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* buttons and the file chooser */
+.aat-page button,
+.aat-choose {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: var(--white);
+  cursor: pointer;
+  font: inherit;
+}
+
+.aat-page button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.aat-choose {
+  position: relative;
+}
+
+.aat-choose input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.aat-choose:focus-within {
+  outline: 2px solid var(--orange-500);
+}
+
+.aat-preview {
+  max-width: 240px;
+  max-height: 160px;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+/* the sticky Save / Discard bar */
+.aat-save {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  background: var(--white);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-soft);
+  padding: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  border-radius: var(--radius-md);
+}
+
+.aat-save span {
+  margin-right: auto;
+  color: var(--ink-800);
+}
+
+.aat-save .aat-error {
+  color: var(--danger);
+}
+
+.aat-save button:last-child {
+  background: var(--orange-500);
+  border-color: var(--orange-500);
+  font-weight: 800;
+}
+
+@media (max-width: 700px) {
+  .aat-group {
+    grid-template-columns: 1fr;
+  }
+}
+
+.aat-combo { position: relative; width: 100%; }
+.aat-combo-list { position: absolute; z-index: 30; top: calc(100% - 2px); left: 0; right: 0; max-height: 260px; overflow-y: auto; background: var(--white, #fff); border: 1px solid var(--line, #d8e0e8); border-radius: 10px; box-shadow: var(--shadow-soft, 0 8px 24px rgba(0,0,0,.12)); }
+.aat-combo-option { display: flex; flex-direction: column; gap: 3px; width: 100%; padding: 10px 12px; border: 0; background: transparent; color: var(--ink-900, #172b43); text-align: left; cursor: pointer; }
+.aat-combo-option small { color: var(--muted, #68788a); }
+.aat-combo-active, .aat-combo-option:hover { background: var(--sky-50, #eef7fc); }
+.aat-combo-empty { padding: 10px 12px; color: var(--muted, #68788a); }
+.aat-combo input:focus { outline: 2px solid var(--focus-on-light, #2476a8); outline-offset: 2px; }

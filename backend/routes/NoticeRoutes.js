@@ -55,14 +55,37 @@ const safeDelete = async (url) => {
   }
 };
 
-const clean = (body) => ({
-  title: String(body.title || "").trim(),
-  category: body.category || "other",
-  file: body.file || "",
-  date: body.date || "",
-  note: body.note || "",
-  published: body.published !== false
-});
+const clean = (body) => {
+  const file = String(body.file || "").trim();
+  const link = String(body.link || "").trim();
+
+  if (file && link) {
+    throw new Error("A notice can have either a file or a link, not both.");
+  }
+
+  if (link) {
+    let parsed;
+    try {
+      parsed = new URL(link);
+    } catch {
+      throw new Error("Enter a valid HTTP or HTTPS notice link.");
+    }
+
+    if (!["http:", "https:"].includes(parsed.protocol)) {
+      throw new Error("Enter a valid HTTP or HTTPS notice link.");
+    }
+  }
+
+  return {
+    title: String(body.title || "").trim(),
+    category: body.category || "other",
+    file,
+    link,
+    date: body.date || "",
+    note: body.note || "",
+    published: body.published !== false
+  };
+};
 
 
 // Get published notices for public page.
@@ -225,7 +248,6 @@ router.put("/:id", async (req, res) => {
     }
 
     const oldFile = notice.file;
-
     Object.assign(
       notice,
       clean({ ...notice.toObject(), ...req.body })

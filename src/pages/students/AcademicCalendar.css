@@ -1,0 +1,76 @@
+/* AcademicCalendar.css - styles of the Academic calendar page (AcademicCalendar.jsx). Every class starts with "cal-". */
+
+.cal-page {
+  min-height: 70vh;
+  color: var(--ink-900);
+}
+
+.cal-hero {
+  min-height: 260px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  color: #fff;
+}
+
+.cal-hero h1 {
+  font-size: clamp(2rem,4vw,3rem);
+  margin: .5rem 0;
+}
+
+.cal-wrap {
+  max-width: 1100px;
+  padding: 42px 20px;
+}
+
+.cal-intro,
+.cal-docs,
+.cal-note {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-soft);
+}
+
+.cal-intro h2 {
+  margin: .4rem 0;
+}
+
+.cal-docs {
+  display: grid;
+  gap: 12px;
+}
+
+.cal-docs h2 {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.cal-doc {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink-900);
+  text-decoration: none;
+}
+
+.cal-doc span {
+  display: grid;
+  flex: 1;
+}
+
+.cal-doc small,
+.cal-help {
+  color: var(--muted);
+}
+
+.cal-note {
+  background: var(--sky-100);
+}

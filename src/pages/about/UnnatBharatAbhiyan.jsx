@@ -1,30 +1,33 @@
 // UnnatBharatAbhiyan.jsx - About us > Unnat Bharat Abhiyan (route: /about/unnat-bharat-abhiyan).
 // This page has its own hero, its own styles (Unnat-bharat-abhiyan.css, every class starts with "uba-") and its own downloads sidebar.
-// The live site says "Data Under Process" for this page, so all of the text below is SAMPLE - confirm it with the UBA coordinator
+// All of the text below is SAMPLE - confirm it with the UBA coordinator
 // and replace it with the institute's real work (villages adopted, activities, dates).
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiChevronRight, FiFileText, FiDownload, FiHome, FiClipboard, FiTool, FiHeart, FiUsers } from "react-icons/fi";
 import "./UnnatBharatAbhiyan.css";
+import { useAboutPage, mergeAboutContent } from "../../services/aboutUsService";
+import PageLoader from "../../components/PageLoader";
+import { mediaUrl } from "../../services/mediaService";
 
-const hero = { image: "/images/pages-banner.png" };
+const defaultHero = { image: "/images/pages-banner.png" };
 
-const intro = {
+const defaultIntro = {
   eyebrow: "About us",
   title: "Unnat Bharat Abhiyan",
   lead: "Taking the institute's knowledge to nearby villages - and learning from them in return.", // SAMPLE
 };
 
-const about = "Unnat Bharat Abhiyan is a national programme in which higher education institutions work with nearby villages to find local needs and help solve them with technology, skills and awareness. At our institute, students and staff take part together."; // SAMPLE
+const defaultAbout = "Unnat Bharat Abhiyan is a national programme in which higher education institutions work with nearby villages to find local needs and help solve them with technology, skills and awareness. At our institute, students and staff take part together."; // SAMPLE
 
-const activities = [
+const defaultActivities = [
   { icon: FiHome, title: "Adopt villages", text: "The institute works with a small group of nearby villages over a longer period." },
   { icon: FiClipboard, title: "Understand needs", text: "Students survey the village and list its needs in water, energy, health and livelihood." },
   { icon: FiTool, title: "Skills and technology", text: "Workshops and simple technology solutions prepared in our labs and workshop." },
   { icon: FiHeart, title: "Awareness drives", text: "Camps and sessions on health, hygiene, cleanliness and digital literacy." },
 ];
 
-const steps = [
+const defaultSteps = [
   { title: "Join the team", text: "Students sign up with the programme coordinator." },
   { title: "Visit the village", text: "Small groups visit with a teacher and meet the community." },
   { title: "Plan and act", text: "Choose one need and work on it with the villagers." },
@@ -37,10 +40,19 @@ const downloads = [
 ];
 
 export default function UnnatBharatAbhiyan() {
+  const { ready, content: savedContent } = useAboutPage("unnat-bharat-abhiyan");
+  const hero = mergeAboutContent(defaultHero, savedContent?.hero);
+  const intro = mergeAboutContent(defaultIntro, savedContent?.intro);
+  const about = mergeAboutContent(defaultAbout, savedContent?.about);
+  const activities = mergeAboutContent(defaultActivities, savedContent?.activities);
+  const steps = mergeAboutContent(defaultSteps, savedContent?.steps);
+
+  if (!ready) return <main id="main" className="uba-page"><PageLoader /></main>;
+
   return (
     <main id="main" className="uba-page">
       {/* ---- hero ---- */}
-      <section className="uba-hero" aria-label="Unnat Bharat Abhiyan" style={{ "--img": `url("${hero.image}")` }}>
+      <section className="uba-hero" aria-label="Unnat Bharat Abhiyan" style={{ "--img": `url("${mediaUrl(hero.image)}")` }}>
         <div className="uba-hero__photo" />
         <div className="uba-hero__tags">
           <span className="uba-hero__tag uba-hero__tag--left">

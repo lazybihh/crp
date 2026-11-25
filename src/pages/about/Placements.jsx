@@ -1,6 +1,6 @@
 // Placements.jsx - About us > Placements (route: /about/placements).
 // This page has its own hero, its own styles (placements.css, every class starts with "plc-") and its own downloads sidebar.
-// Placement cell facts come from the live site; recruiters and campus activity come from the Home page.
+// Recruiters and campus activity come from the Home page.
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
 import {
@@ -8,20 +8,23 @@ import {
   FiUser,
 } from "react-icons/fi";
 import "./Placements.css";
+import { useAboutPage, mergeAboutContent } from "../../services/aboutUsService";
+import PageLoader from "../../components/PageLoader";
+import { mediaUrl } from "../../services/mediaService";
 
 const img = (file) => `/images/${file}`;
 
-const hero = { image: "/images/pages-banner.png" };
+const defaultHero = { image: "/images/pages-banner.png" };
 
-const intro = {
+const defaultIntro = {
   eyebrow: "About us",
   title: "Placements",
   lead: "A placement cell that works all year - from industrial training to the final interview.",
 };
 
-const officer = { name: "Mr. Jai Kanwar", role: "Training & Placement Officer" };
+const defaultOfficer = { name: "Mr. Jai Kanwar", role: "Training & Placement Officer" };
 
-const support = [
+const defaultSupport = [
   { icon: FiBriefcase, title: "Training & Placement Office", text: "A separate, fully furnished, air-conditioned office for the placement cell." },
   { icon: FiUsers, title: "Mini-auditorium", text: "An air-conditioned mini-auditorium for pre-placement talks." },
   { icon: FiMonitor, title: "Smart classrooms", text: "Used for recruitment tests and interviews." },
@@ -30,7 +33,7 @@ const support = [
   { icon: FiCalendar, title: "Industry-Institute Cell", text: "Expert lectures, workshops at institute and state levels, and seminars." },
 ];
 
-const steps = [
+const defaultSteps = [
   "Companies are invited by email and fix a test or interview date",
   "Pre-placement talk (PPT)",
   "Pre-placement assessment: technical test, group discussion, psychomotor test or interview",
@@ -39,19 +42,19 @@ const steps = [
   "Offer letter with pay, package, fringe benefits and terms",
 ];
 
-const recruiters = [
+const defaultRecruiters = [
   { name: "HCL", logo: img("recruiter-hcl.jpg") },
   { name: "Jindal Steel & Power", logo: img("recruiter-jindal-steel-power.jpg") },
   { name: "Tata Motors", logo: img("recruiter-tata-motors.jpg") },
   { name: "Tech Mahindra", logo: img("recruiter-tech-mahindra.jpg") },
 ];
 
-const activity = [
+const defaultActivity = [
   { date: "23 Feb 2026", text: "Campus drive by VVDN Technologies, Manesar, in the Conference Hall" },
   { date: "2026", text: "Industrial visits for 3rd and 5th semester students" },
 ];
 
-// Visit reports go in public/docs. The 2022-23 folder stays on Google Drive (as on the old site).
+// Visit reports go in public/docs. The 2022-23 folder stays on Google Drive.
 const downloads = [
   { label: "Industrial visit folder, 2022-23", href: "https://drive.google.com/drive/folders/1xmq6M__BRi5x5Bzuull4-o5ALdUJ3zVm?usp=sharing", type: "Drive" },
   { label: "Industrial visit, 5th sem Mechanical", href: "/docs/industrial-visit-5th-sem-mechanical.pdf", type: "PDF" },
@@ -60,10 +63,21 @@ const downloads = [
 ];
 
 export default function Placements() {
+  const { ready, content: savedContent } = useAboutPage("placements");
+  const hero = mergeAboutContent(defaultHero, savedContent?.hero);
+  const intro = mergeAboutContent(defaultIntro, savedContent?.intro);
+  const officer = mergeAboutContent(defaultOfficer, savedContent?.officer);
+  const support = mergeAboutContent(defaultSupport, savedContent?.support);
+  const steps = mergeAboutContent(defaultSteps, savedContent?.steps);
+  const recruiters = mergeAboutContent(defaultRecruiters, savedContent?.recruiters);
+  const activity = mergeAboutContent(defaultActivity, savedContent?.activity);
+
+  if (!ready) return <main id="main" className="plc-page"><PageLoader /></main>;
+
   return (
     <main id="main" className="plc-page">
       {/* ---- hero ---- */}
-      <section className="plc-hero" aria-label="Placements" style={{ "--img": `url("${hero.image}")` }}>
+      <section className="plc-hero" aria-label="Placements" style={{ "--img": `url("${mediaUrl(hero.image)}")` }}>
         <div className="plc-hero__photo" />
         <div className="plc-hero__tags">
           <span className="plc-hero__tag plc-hero__tag--left">

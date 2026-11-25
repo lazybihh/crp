@@ -74,7 +74,7 @@
 
 .aev-banner { max-width: 860px; }
 .aev-banner__title { margin: 0; color: var(--ink-900); font-size: 1.1rem; }
-.aev-banner__preview { width: 100%; max-width: 760px; aspect-ratio: 16 / 9; }
+.aev-banner__preview { width: 100%; max-width: 480px; aspect-ratio: 16 / 9; }
 .aev-banner__hint { font-size: 1rem; }
 .aev-banner__message { min-height: 24px; margin: 0; color: var(--muted); font-size: 1rem; }
 .aev-banner__message.is-error { color: var(--danger); }

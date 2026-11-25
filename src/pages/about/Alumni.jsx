@@ -6,37 +6,40 @@ import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiChevronRight, FiFileText, FiDownload, FiArrowRight, FiMessageCircle, FiGift, FiMail } from "react-icons/fi";
 import "./Alumni.css";
 import { useSite } from "../../context/SiteSettingsContext";
+import { useAboutPage, mergeAboutContent } from "../../services/aboutUsService";
+import PageLoader from "../../components/PageLoader";
+import { mediaUrl } from "../../services/mediaService";
 
-const hero = { image: "/images/pages-banner.png" };
+const defaultHero = { image: "/images/pages-banner.png" };
 
-const intro = {
+const defaultIntro = {
   eyebrow: "About us",
   title: "Alumni",
   lead: "Once a Chhotu Ram student, always part of the family.",
 };
 
-const welcome = "Our alumni are a diverse group who have achieved notable things in their personal and professional lives. Their messages and contributions keep the next batches moving forward.";
+const defaultWelcome = "Our alumni are a diverse group who have achieved notable things in their personal and professional lives. Their messages and contributions keep the next batches moving forward.";
 
-const doors = [
+const defaultDoors = [
   { icon: FiMessageCircle, title: "Alumni messages", text: "Read what former students have to say about their years here and where life took them.", href: "#messages" },
   { icon: FiGift, title: "Contributions", text: "See how alumni have given back to the institute and its students.", href: "#contributions" },
 ];
 
 // SAMPLE: replace with real alumni (name, batch, trade, short quote).
-const voices = [
+const defaultVoices = [
   { name: "Alumnus name", batch: "Batch year, Civil Engineering", quote: "The workshop and my teachers gave me the confidence to start work from day one." },
   { name: "Alumnus name", batch: "Batch year, Electrical Engineering", quote: "What I learned here is still what I use on site every day." },
   { name: "Alumnus name", batch: "Batch year, Mechanical Engineering", quote: "Industrial visits and the placement cell opened my first job for me." },
 ];
 
 // SAMPLE: replace these placeholder messages with alumni submissions.
-const messages = [
+const defaultMessages = [
   { name: "Alumnus name", batch: "Batch year, Computer Engineering", quote: "The friendships and practical lessons from campus continue to inspire my work." },
   { name: "Alumna name", batch: "Batch year, Electronics & Communication", quote: "My time here gave me the confidence to take on new challenges." },
 ];
 
 // SAMPLE: replace these placeholder examples with verified alumni contributions.
-const contributions = [
+const defaultContributions = [
   "Sharing career guidance and mentorship with current students.",
   "Supporting workshops, laboratories and learning resources.",
   "Connecting students with internships and industry opportunities.",
@@ -47,15 +50,26 @@ const downloads = [
 ];
 
 export default function Alumni() {
+  const { ready, content: savedContent } = useAboutPage("alumni");
+  const hero = mergeAboutContent(defaultHero, savedContent?.hero);
+  const intro = mergeAboutContent(defaultIntro, savedContent?.intro);
+  const welcome = mergeAboutContent(defaultWelcome, savedContent?.welcome);
+  const doors = mergeAboutContent(defaultDoors, savedContent?.doors);
+  const voices = mergeAboutContent(defaultVoices, savedContent?.voices);
+  const messages = mergeAboutContent(defaultMessages, savedContent?.messages);
+  const contributions = mergeAboutContent(defaultContributions, savedContent?.contributions);
+
   const { contact: contactSettings } = useSite();
   const contact = {
     email: contactSettings?.alumniEmail || "",
     phone: contactSettings?.phones?.[0] || "",
   };
+  if (!ready) return <main id="main" className="al-page"><PageLoader /></main>;
+
   return (
     <main id="main" className="al-page">
       {/* ---- hero ---- */}
-      <section className="al-hero" aria-label="Alumni of Chhotu Ram Polytechnic" style={{ "--img": `url("${hero.image}")` }}>
+      <section className="al-hero" aria-label="Alumni of Chhotu Ram Polytechnic" style={{ "--img": `url("${mediaUrl(hero.image)}")` }}>
         <div className="al-hero__photo" />
         <div className="al-hero__tags">
           <span className="al-hero__tag al-hero__tag--left">
