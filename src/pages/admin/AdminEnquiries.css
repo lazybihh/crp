@@ -10,6 +10,18 @@
   white-space: normal;
 }
 
+.aeq-kinds { display: flex; }
+
+.aeq-tag {
+  margin-right: 8px;
+  padding: 1px 9px;
+  border-radius: 999px;
+  background: var(--orange-100);
+  color: var(--orange-700);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
 .aeq-bar {
   display: flex;
   flex-wrap: wrap;

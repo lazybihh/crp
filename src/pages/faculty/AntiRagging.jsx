@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { mediaUrl } from "../../services/homeService";
 import { getPolicy } from "../../services/facultyContentService";
+import { sendComplaint } from "../../services/enquiryService";
 import PageLoader, { usePageReady } from "../../components/PageLoader";
 
 import { Link } from "react-router-dom";
@@ -27,10 +28,26 @@ const commitments = [
 export default function AntiRagging() {
   const { ready, data: backendContent } = usePageReady(() => getPolicy("anti-ragging").then((row) => row.content || row));
   const [formNotice, setFormNotice] = useState("");
+  const [formFailed, setFormFailed] = useState(false);
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = (event) => {
+  // Sends the form to the backend; it then appears in Admin > Enquiries (filter: Complaints).
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    setFormNotice("This is a front-end form preview. No information has been sent or stored. The institute must connect an approved, secure submission system before this form is used.");
+    const form = event.currentTarget;
+    setSending(true);
+    setFormNotice("");
+    try {
+      await sendComplaint("anti-ragging", Object.fromEntries(new FormData(form)));
+      form.reset();
+      setFormFailed(false);
+      setFormNotice("Your complaint has been submitted to the institute. Thank you for speaking up.");
+    } catch (error) {
+      setFormFailed(true);
+      setFormNotice(error.message || "Could not submit the complaint. Please try again.");
+    } finally {
+      setSending(false);
+    }
   };
 
   if (!ready) return <main data-faculty-content-key="anti-ragging" id="main" className="pol-page pol-ragging"><PageLoader /></main>;
@@ -115,6 +132,7 @@ export default function AntiRagging() {
 
           <form className="pol-report__form" onSubmit={handleSubmit}>
             <div className="pol-report__grid">
+              <input name="website" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }} />
               <label>
                 Full name <span>(optional)</span>
                 <input name="fullName" type="text" autoComplete="name" placeholder="Enter your name" />
@@ -163,22 +181,22 @@ export default function AntiRagging() {
             </div>
 
             <p className="pol-report__privacy">
-              <FiInfo /> If someone may be in immediate danger, contact an authorised institute official or local emergency services directly. Do not use this demonstration form for urgent help.
+              <FiInfo /> If someone may be in immediate danger, contact an authorised institute official or local emergency services directly. Do not use this form for urgent help.
             </p>
 
-            <button className="pol-report__submit" type="submit">
-              <FiFileText /> Submit complaint
+            <button className="pol-report__submit" type="submit" disabled={sending}>
+              <FiFileText /> {sending ? "Submitting..." : "Submit complaint"}
             </button>
 
-            {formNotice && <p className="pol-report__notice" role="status">{formNotice}</p>}
+            {formNotice && <p className={formFailed ? "pol-report__notice pol-report__notice--error" : "pol-report__notice"} role={formFailed ? "alert" : "status"}>{formNotice}</p>}
           </form>
         </section>
 
         <aside className="pol-note">
           <FiAlertCircle />
           <div>
-            <strong>{backendContent?.noteTitle || "Important before publication"}</strong>
-            <p>{backendContent?.noteText || "This form is currently a visual front-end preview only. It does not send, save or email submissions. The institute should connect it to an approved secure complaint-handling system and publish verified contact details before accepting real reports."}</p>
+            <strong>{backendContent?.noteTitle || "Please note"}</strong>
+            <p>{backendContent?.noteText || "Complaints sent through this form reach the institute's authorised committee. Share only information relevant to the matter."}</p>
           </div>
         </aside>
 

@@ -43,6 +43,7 @@ import MechanicalResources from "./pages/students/MechanicalResources";
 import Notices from "./pages/notices/Notices";
 import Events from "./pages/events/Events";
 import Contact from "./pages/about/Contact";
+import AcademicCalendar from "./pages/students/AcademicCalendar";
 import TrainingPolicy from "./pages/faculty/TrainingPolicy";
 import AntiRagging from "./pages/faculty/AntiRagging";
 import AntiSexualHarassment from "./pages/faculty/AntiSexualHarassment";
@@ -72,7 +73,6 @@ import AdminResults from "./pages/admin/AdminResults";
 import AdminPlacements from "./pages/admin/AdminPlacements";
 import AdminEntrepreneurship from "./pages/admin/AdminEntrepreneurship";
 import AdminAnnualReport from "./pages/admin/AdminAnnualReport";
-import AdminMandatoryDisclosure from "./pages/admin/AdminMandatoryDisclosure";
 import AdminLuminaries from "./pages/admin/AdminLuminaries";
 import AdminProjects from "./pages/admin/AdminProjects";
 import AdminExtracurricular from "./pages/admin/AdminExtracurricular";
@@ -104,8 +104,6 @@ import AdminSocialLinks from "./pages/admin/AdminSocialLinks";
 import AdminSiteSettings from "./pages/admin/AdminSiteSettings";
 
 const routeLabels = {
-  "/about/mandatory-disclosure": "Mandatory disclosure",
-  "/students/academic-calendar": "Academic calendar",
 };
 const placeholderPaths = Object.keys(routeLabels);
 
@@ -129,7 +127,6 @@ export default function App() {
         <Route path="/admin/about/placements" element={<AdminPlacements />} />
         <Route path="/admin/about/entrepreneurship" element={<AdminEntrepreneurship />} />
         <Route path="/admin/about/annual-report" element={<AdminAnnualReport />} />
-        <Route path="/admin/about/mandatory-disclosure" element={<AdminMandatoryDisclosure />} />
         <Route path="/admin/about/luminaries" element={<AdminLuminaries />} />
         <Route path="/admin/about/projects" element={<AdminProjects />} />
         <Route path="/admin/about/extracurricular" element={<AdminExtracurricular />} />
@@ -190,6 +187,7 @@ export default function App() {
         <Route path="/media/social" element={<SocialLinks />} />
         <Route path="/students/admissions" element={<Admissions />} />
         <Route path="/admissions" element={<Admissions />} />
+        <Route path="/students/academic-calendar" element={<AcademicCalendar />} />
         <Route path="/students/online-learning" element={<OnlineLearning />} />
         <Route path="/students/skill-courses" element={<SkillCourses />} />
         <Route path="/students/freelancing" element={<Freelancing />} />

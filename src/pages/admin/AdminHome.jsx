@@ -28,7 +28,7 @@ const countFields = (value) =>
   : 1;
 
 // a section: closed it shows only its title and field count; click to open. One section is open at a time.
-function Card({ title, hint, parts, children }) {
+function Card({ title, hint, parts, summary, children }) {
   const { draft, openCard, setOpenCard } = useContext(Editor);
   const open = openCard === title;
   const fields = parts.reduce((sum, path) => sum + countFields(getIn(draft, path)), 0);
@@ -36,7 +36,7 @@ function Card({ title, hint, parts, children }) {
     <section className={`ahm-card${open ? " is-open" : ""}`}>
       <button type="button" className="ahm-card__head" aria-expanded={open} onClick={() => setOpenCard(open ? "" : title)}>
         <h3>{title}</h3>
-        <span>{fields} fields <FiChevronRight aria-hidden="true" /></span>
+        <span>{summary || `${fields} fields`} <FiChevronRight aria-hidden="true" /></span>
       </button>
       {open && (
         <div className="ahm-card__body">
@@ -122,7 +122,8 @@ export default function AdminHome() {
   const [saved, setSaved] = useState(""); // the page as last loaded / saved, to know what changed
   const [openCard, setOpenCard] = useState("");
   const [failed, setFailed] = useState(false);
-  const [options, setOptions] = useState({ notices: [], facilities: [], events: [] });
+  const [options, setOptions] = useState({ notices: [], latestNotices: [], facilities: [], events: [] });
+  const [noticeSearch, setNoticeSearch] = useState("");
   const [message, setMessage] = useState({ text: "", error: false });
   const [saving, setSaving] = useState(false);
 
@@ -141,6 +142,11 @@ export default function AdminHome() {
       }
       const start = structuredClone(content);
       start.eventIds = start.eventIds || [];
+      start.noticeIds = Array.isArray(start.noticeIds) ? start.noticeIds : [];
+      start.facilities = Array.isArray(start.facilities) ? start.facilities : [];
+      if (start.facilities.length === 0) {
+        start.facilities = [{ facility: "", photo: 0, name: "", text: "" }];
+      }
       setDraft(start);
       setSaved(JSON.stringify(start));
       setOptions(choices);
@@ -186,7 +192,14 @@ export default function AdminHome() {
   const noticeById = (id) => options.notices.find((notice) => notice._id === id);
   const eventById = (id) => options.events.find((event) => event._id === id);
   const facilityById = (id) => options.facilities.find((facility) => facility._id === id);
-  const unpickedNotices = options.notices.filter((notice) => !draft.noticeIds.includes(notice._id));
+  const latestNotices = options.latestNotices || options.notices.slice(0, 8);
+  const latestNoticeIds = latestNotices.map((notice) => notice._id);
+  const activeNoticeIds = draft.noticeIds.length ? draft.noticeIds : latestNoticeIds;
+  const missingLatestNotices = latestNotices.filter((notice) => !activeNoticeIds.includes(notice._id));
+  const unpickedNotices = options.notices.filter((notice) =>
+    !activeNoticeIds.includes(notice._id) &&
+    notice.title.toLowerCase().includes(noticeSearch.trim().toLowerCase())
+  );
 
   return (
     <AdminSidebar title="Home">
@@ -275,14 +288,62 @@ export default function AdminHome() {
             <Image label="Featured news - photo" path={["news", "image"]} />
           </Card>
 
-          <Card title="Notice board" parts={[["noticeIds"]]} hint="Only notices that already exist on the Notices page can be shown here. Leave the list empty to show the newest notices automatically.">
+          <Card
+            title="Notice board"
+            parts={[["noticeIds"]]}
+            summary={draft.noticeIds.length
+              ? `${draft.noticeIds.length} selected · ${options.notices.length} published`
+              : `${latestNotices.length} shown automatically · ${options.notices.length} published`}
+            hint="Choose notices to control the Home board. Adding a notice while automatic mode is active keeps the currently shown notices and adds your choice."
+          >
+            {!draft.noticeIds.length && latestNotices.length > 0 && (
+              <div className="ahm-row">
+                <b>Currently shown on Home (newest published)</b>
+                {latestNotices.map((notice) => (
+                  <div className="ahm-row__bar" key={notice._id}>
+                    <b>{notice.title}</b>
+                    <button
+                      type="button"
+                      aria-label={`Remove ${notice.title} from Home`}
+                      onClick={() => set(["noticeIds"], latestNotices.filter((item) => item._id !== notice._id).map((item) => item._id))}
+                    >
+                      <FiTrash2 aria-hidden="true" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {missingLatestNotices.length > 0 && (
+              <button
+                type="button"
+                className="ahm-btn ahm-btn--add"
+                onClick={() => set(["noticeIds"], [...latestNoticeIds, ...activeNoticeIds.filter((id) => !latestNoticeIds.includes(id))])}
+              >
+                Add latest {latestNotices.length} notices to Home
+              </button>
+            )}
+            {draft.noticeIds.length > 0 && (
+              <button type="button" className="ahm-btn" onClick={() => set(["noticeIds"], [])}>
+                Show newest notices automatically
+              </button>
+            )}
+            <p className="ahm-hint">Edit notice details or permanently delete a notice from <a href="/admin/notices">Notices management</a>.</p>
+            <label className="ahm-field">
+              <span>Search available notices</span>
+              <input
+                type="search"
+                value={noticeSearch}
+                onChange={(event) => setNoticeSearch(event.target.value)}
+                placeholder="Type a notice title..."
+              />
+            </label>
             <Rows
               path={["noticeIds"]}
               noun="Notice"
               editable
               adder={
-                <select className="ahm-select" value="" onChange={(event) => event.target.value && set(["noticeIds"], [...draft.noticeIds, event.target.value])}>
-                  <option value="">+ Add a notice from the Notices page...</option>
+                <select className="ahm-select" value="" onChange={(event) => event.target.value && set(["noticeIds"], [...activeNoticeIds, event.target.value])}>
+                  <option value="">+ Add a notice from the Notices page... ({unpickedNotices.length} matches)</option>
                   {unpickedNotices.map((notice) => <option key={notice._id} value={notice._id}>{notice.title}</option>)}
                 </select>
               }
@@ -326,8 +387,8 @@ export default function AdminHome() {
             ))}
           </Card>
 
-          <Card title="Facilities" parts={[["sectionContent", "facilities"], ["facilities"]]} hint="Choose facilities that already exist on the Facilities page. Their names and first photos are displayed automatically; only the Home description is editable here.">
-            <Text label="Small heading" path={["sectionContent", "facilities", "eyebrow"]} />
+          <Card title="Facilities" parts={[["sectionContent", "facilities"], ["facilities"]]} summary={`${options.facilities.length} available · ${draft.facilities.filter((tile) => tile.facility).length} selected`} hint={`Choose from the ${options.facilities.length} facilities already on the Facilities page. A selector is ready below; use Add facility to add more. Their names and first photos are displayed automatically.`}>
+            <Text label="Small heading text" path={["sectionContent", "facilities", "eyebrow"]} />
             <Text label="Title" path={["sectionContent", "facilities", "title"]} />
             <Text label="Description" path={["sectionContent", "facilities", "description"]} area />
             <Rows path={["facilities"]} noun="Facility" editable blank={{ facility: "", photo: 0, name: "", text: "" }}>

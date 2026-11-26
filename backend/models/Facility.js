@@ -52,17 +52,45 @@ const facilities = [
 // 2) a database made with the first version (only label, headline, text, photos) -> add the new fields to the rows that do not have them yet.
 //    Nothing that was already saved is changed or overwritten.
 FacilitySchema.statics.seed = async function () {
-  if (!(await this.countDocuments())) {
-    await this.insertMany(facilities);
-    console.log(`Facilities added: ${facilities.length}`);
-    return;
-  }
   for (const item of facilities) {
-    await this.updateOne({ slug: item.slug, points: { $exists: false } }, { $set: { points: item.points } });
-    await this.updateOne({ slug: item.slug, more: { $exists: false } }, { $set: { more: item.more } });
-    await this.updateOne({ slug: item.slug, facts: { $exists: false } }, { $set: { facts: item.facts } });
-    await this.updateOne({ slug: item.slug, order: { $exists: false } }, { $set: { order: item.order } });
+    // Add the facility if it does not already exist.
+    // Existing facility content and admin edits are preserved.
+    await this.updateOne(
+      { slug: item.slug },
+      {
+        $setOnInsert: item,
+      },
+      { upsert: true }
+    );
+
+    // Add missing fields to older database records.
+    await this.updateOne(
+      { slug: item.slug, points: { $exists: false } },
+      { $set: { points: item.points } }
+    );
+
+    await this.updateOne(
+      { slug: item.slug, more: { $exists: false } },
+      { $set: { more: item.more } }
+    );
+
+    await this.updateOne(
+      { slug: item.slug, facts: { $exists: false } },
+      { $set: { facts: item.facts } }
+    );
+
+    await this.updateOne(
+      { slug: item.slug, order: { $exists: false } },
+      { $set: { order: item.order } }
+    );
+
+    await this.updateOne(
+      { slug: item.slug, photos: { $exists: false } },
+      { $set: { photos: item.photos } }
+    );
   }
+
+  console.log(`Facilities checked and missing records added: ${facilities.length}`);
 };
 
 const Facility = mongoose.model("Facility", FacilitySchema);

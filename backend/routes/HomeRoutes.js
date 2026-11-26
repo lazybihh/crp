@@ -7,6 +7,8 @@ const AboutUsInstitute = require("../models/AboutUsInstitute");
 
 const router = express.Router();
 const BOARD_SIZE = 8;
+const getLatestNotices = () =>
+  Notice.find({ published: { $ne: false } }).sort({ date: -1, order: 1, createdAt: -1 }).limit(BOARD_SIZE).lean();
 
 // Home page content for visitors AND the admin editor.
 // Besides the saved fields it adds two ready-to-show lists:
@@ -24,8 +26,11 @@ router.get("/", async (req, res) => {
     if (ids.length) {
       const rows = await Notice.find({ _id: { $in: ids }, published: { $ne: false } }).lean();
       notices = ids.map((id) => rows.find((row) => String(row._id) === String(id))).filter(Boolean);
+      if (notices.length === 0) {
+        notices = await getLatestNotices();
+      }
     } else {
-      notices = await Notice.find({ published: { $ne: false } }).sort({ date: -1, order: 1 }).limit(BOARD_SIZE).lean();
+      notices = await getLatestNotices();
     }
 
     const tiles = home.facilities || [];
@@ -60,10 +65,14 @@ router.get("/", async (req, res) => {
 // What the admin can choose from: every notice and every facility that exists on their own pages.
 router.get("/options", async (req, res) => {
   try {
-    const notices = await Notice.find({ published: { $ne: false } }).sort({ order: 1 }).select("title category date file").lean();
+    const notices = await Notice.find({ published: { $ne: false } })
+      .sort({ date: -1, order: 1, createdAt: -1 })
+      .select("title category date file")
+      .lean();
+    const latestNotices = notices.slice(0, BOARD_SIZE);
     const facilities = await Facility.find().sort({ order: 1, _id: 1 }).select("slug label photos").lean();
     const events = await Event.find({ published: { $ne: false } }).sort({ date: -1, order: 1 }).select("title kind date photo").lean();
-    res.json({ notices, facilities, events });
+    res.json({ notices, latestNotices, facilities, events });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch the choices", error: error.message });
   }

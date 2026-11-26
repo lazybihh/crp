@@ -21,6 +21,10 @@ const json = (method, data) => ({
 export const sendEnquiry = (data) =>
   request("/enquiries", json("POST", data), "Failed to send enquiry");
 
+// kind: "anti-ragging" or "anti-sexual-harassment"; data = the form fields (see the two Faculty pages)
+export const sendComplaint = (kind, data) =>
+  request("/enquiries/complaint", json("POST", { ...data, kind }), "Failed to submit the complaint");
+
 export const getEnquiries = () =>
   request("/enquiries", undefined, "Failed to load enquiries");
 

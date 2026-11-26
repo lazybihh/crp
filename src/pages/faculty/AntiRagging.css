@@ -1236,3 +1236,6 @@
         padding: 16px;
     }
 }
+/* complaint form: sending and error state */
+.pol-report__submit:disabled { opacity: .7; cursor: wait; transform: none; }
+.pol-report__notice--error { border-left-color: var(--danger, #b42318); background: #fdecea; }

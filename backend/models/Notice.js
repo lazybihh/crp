@@ -4,15 +4,12 @@ const NoticeSchema = new mongoose.Schema({
   title: { type: String, required: true, trim: true },
   category: { type: String, default: "other" },
   file: { type: String, default: "" },
-  link: { type: String, default: "" },
   date: { type: String, default: "" },
   note: { type: String, default: "" },
   order: { type: Number, default: 0 },
   published: { type: Boolean, default: true },
 }, { timestamps: true });
 
-// Keep the original starter notices.
-// They are inserted only when the collection is empty.
 const starterNotices = [
   ["Tender", "tenders", "d436029d-7b43-4fd1-8f24-edaee6853c9b.jpeg"],
   ["DET-L MERIT LIST 2026", "admissions", "Det-L_merit_list_26.pdf"],
@@ -57,46 +54,48 @@ const starterNotices = [
 ];
 
 NoticeSchema.statics.seed = async function () {
-  if (await this.countDocuments()) {
-    await this.updateMany(
-      { published: { $exists: false } },
-      { $set: { published: true } }
+  // Add missing starter notices without replacing existing admin edits.
+  for (const [title, category, file] of starterNotices) {
+    const order = starterNotices.findIndex(
+      (item) => item[0] === title && item[1] === category && item[2] === file
     );
 
-    await this.updateMany(
-      { order: { $exists: false } },
-      { $set: { order: 0 } }
+    await this.updateOne(
+      { title, file },
+      {
+        $setOnInsert: {
+          title,
+          category,
+          file,
+          date: "",
+          note: "",
+          order,
+          published: true,
+        },
+      },
+      { upsert: true }
     );
-
-    await this.updateMany(
-      { category: { $exists: false } },
-      { $set: { category: "other" } }
-    );
-
-    return;
   }
 
-  await this.insertMany(
-    starterNotices.map(([title, category, file], order) => ({
-      title,
-      category,
-      file,
-      date: "",
-      note: "",
-      order,
-      published: true
-    }))
+  await this.updateMany(
+    { published: { $exists: false } },
+    { $set: { published: true } }
   );
 
-  console.log(`Notices added: ${starterNotices.length}`);
+  await this.updateMany(
+    { order: { $exists: false } },
+    { $set: { order: 0 } }
+  );
+
+  await this.updateMany(
+    { category: { $exists: false } },
+    { $set: { category: "other" } }
+  );
 };
 
 const Notice = mongoose.model("Notice", NoticeSchema);
 
-
-// Page-level content for the Notices page.
-// Following the same pattern as FacilitiesPage in Facility.js.
-
+// Notices page content
 const NoticePageSchema = new mongoose.Schema({
   banner: { type: String, default: "/images/pages-banner.png" },
   eyebrow: { type: String, default: "Latest updates" },
@@ -144,7 +143,5 @@ const NoticePage =
   mongoose.models.NoticePage ||
   mongoose.model("NoticePage", NoticePageSchema);
 
-
-// Export both models from the same file.
 module.exports = Notice;
 module.exports.NoticePage = NoticePage;

@@ -41,7 +41,7 @@ function Photo({ label, value, onChange, say }) {
   const [busy, setBusy] = useState(false);
   const choose = async (event) => {
     const file = event.target.files[0];
-    event.target.value = "";
+    event.target.value = "";w
     if (!file) return;
     setBusy(true);
     try {

@@ -161,14 +161,33 @@ const homeTiles = [
   {slug: "workshop", name: "Workshop", text: "Hands-on sessions that build practical skills and teamwork."},
 ];
 
-// Creates the Home record (all the starting text above) with those five tiles - only when there is no Home record yet.
+// Creates the Home record with the starting tiles, or fills only an empty facility list on an existing record.
 // Run it after Facility.seed(), because the tiles point to facility rows.
 HomeContentSchema.statics.seed = async function () {
-  if (await this.countDocuments()) return;
   const facilities = await mongoose.model("Facility").find({ slug: { $in: homeTiles.map((tile) => tile.slug) } });
   const tiles = homeTiles
     .map((tile) => ({ facility: facilities.find((item) => item.slug === tile.slug)?._id, photo: 0, name: tile.name, text: tile.text }))
     .filter((tile) => tile.facility);
+
+  const existingHome = await this.findOne();
+  if (existingHome) {
+    if ((!Array.isArray(existingHome.facilities) || existingHome.facilities.length === 0) && tiles.length > 0) {
+      await this.updateOne(
+        {
+          _id: existingHome._id,
+          $or: [
+            { facilities: { $size: 0 } },
+            { facilities: { $exists: false } },
+            { facilities: null },
+          ],
+        },
+        { $set: { facilities: tiles } }
+      );
+      console.log(`Home page facility tiles added with ${tiles.length} defaults`);
+    }
+    return;
+  }
+
   await this.create({ facilities: tiles });
   console.log(`Home page added with ${tiles.length} facility tiles`);
 };

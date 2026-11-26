@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { mediaUrl } from "../../services/homeService";
 import { getPolicy } from "../../services/facultyContentService";
+import { sendComplaint } from "../../services/enquiryService";
 import PageLoader, { usePageReady } from "../../components/PageLoader";
 import { Link } from "react-router-dom";
 import { FaGraduationCap } from "react-icons/fa";
@@ -43,10 +44,26 @@ const steps = [
 export default function AntiSexualHarassment() {
   const { ready, data: backendContent } = usePageReady(() => getPolicy("anti-sexual-harassment").then((row) => row.content || row));
   const [formNotice, setFormNotice] = useState("");
+  const [formFailed, setFormFailed] = useState(false);
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = (event) => {
+  // Sends the form to the backend; it then appears in Admin > Enquiries (filter: Complaints).
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    setFormNotice("This is a front-end form preview. No information has been sent or stored. The institute must connect an approved, secure submission system before this form is used.");
+    const form = event.currentTarget;
+    setSending(true);
+    setFormNotice("");
+    try {
+      await sendComplaint("anti-sexual-harassment", Object.fromEntries(new FormData(form)));
+      form.reset();
+      setFormFailed(false);
+      setFormNotice("Your complaint has been submitted to the institute. Thank you for speaking up.");
+    } catch (error) {
+      setFormFailed(true);
+      setFormNotice(error.message || "Could not submit the complaint. Please try again.");
+    } finally {
+      setSending(false);
+    }
   };
 
   if (!ready) return <main data-faculty-content-key="anti-sexual-harassment" id="main" className="pol-page pol-harassment"><PageLoader /></main>;
@@ -137,6 +154,7 @@ export default function AntiSexualHarassment() {
 
           <form className="pol-report__form" onSubmit={handleSubmit}>
             <div className="pol-report__grid">
+              <input name="website" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }} />
               <label>
                 Full name <span>(optional)</span>
                 <input name="fullName" type="text" autoComplete="name" placeholder="Enter your name" />
@@ -194,15 +212,15 @@ export default function AntiSexualHarassment() {
             </div>
 
             <p className="pol-report__privacy">
-              <FiLock /> Please share this information only through the institute's approved secure channel. This page preview does not provide a confidential submission service.
+              <FiLock /> Your complaint is sent to the institute's authorised committee only. Share only the details needed to understand the concern.
             </p>
 
-            <button className="pol-report__submit" type="submit">
-              <FiFileText /> Submit complaint
+            <button className="pol-report__submit" type="submit" disabled={sending}>
+              <FiFileText /> {sending ? "Submitting..." : "Submit complaint"}
             </button>
 
             {formNotice && (
-              <p className="pol-report__notice" role="status">
+              <p className={formFailed ? "pol-report__notice pol-report__notice--error" : "pol-report__notice"} role={formFailed ? "alert" : "status"}>
                 {formNotice}
               </p>
             )}
@@ -212,8 +230,8 @@ export default function AntiSexualHarassment() {
         <aside className="pol-note">
           <FiInfo />
           <div>
-            <strong>{backendContent?.noteTitle || "Important before publication"}</strong>
-            <p>{backendContent?.noteText || "The official page refers to a committee, but its current membership and contact details must be verified by the institute. This form is a front-end preview only; it does not send, save or email submissions. Connect an approved secure complaint-handling system before collecting real complaints."}</p>
+            <strong>{backendContent?.noteTitle || "Please note"}</strong>
+            <p>{backendContent?.noteText || "Complaints sent through this form reach the institute's authorised committee and are handled with care for privacy. Share only the details needed to understand the concern."}</p>
           </div>
         </aside>
 
