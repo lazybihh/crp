@@ -2,6 +2,7 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import Preloader from "./components/Preloader";
 import Navbar from "./components/Navbar";
+import WelcomePopup from "./components/WelcomePopup";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop"; 
 import Home from "./pages/home/Home";
@@ -168,6 +169,7 @@ export default function App() {
     <>
       <Preloader />
       <Navbar />
+      <WelcomePopup />
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<Home />} />

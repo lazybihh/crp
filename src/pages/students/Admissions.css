@@ -191,7 +191,11 @@ main#main.ads-page h3 {
   font-weight: 700;
   line-height: 1.2;
   transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease), background 0.3s, color 0.3s, border-color 0.3s;
+  font-family: inherit;
+  cursor: pointer;
 }
+
+.ads-admission-form { border:1px solid var(--line); border-radius:26px; background:var(--white); box-shadow:var(--shadow-soft); }
 
 .ads-btn svg {
   flex: none;
@@ -485,6 +489,9 @@ main#main.ads-page .ads-step h3 {
   padding: 0;
   list-style: none;
 }
+
+.ads-prog__entry { display:grid; gap:8px; height:100%; }
+.ads-prog__enquiry { justify-self:end; padding:8px 17px; font-size:.9rem; }
 
 .ads-prog__card {
   display: flex;

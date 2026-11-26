@@ -12,6 +12,7 @@ import { useSite } from "../../context/SiteSettingsContext";
 import { useAboutPage, mergeAboutContent } from "../../services/aboutUsService";
 import PageLoader from "../../components/PageLoader";
 import { mediaUrl } from "../../services/mediaService";
+import { CourseEnquiryButton } from "../../components/LeadForm";
 
 const defaultHero = { image: "/images/pages-banner.png" };
 
@@ -110,9 +111,9 @@ export default function Courses() {
                     <span className="crs-card__icon"><Icon aria-hidden="true" /></span>
                     <h3>{course.name}</h3>
                     <p>{course.text}</p>
-                    <div className="crs-card__foot">
+                      <div className="crs-card__foot">
                       <span className="crs-card__seats">{course.seats} seats</span>
-                      <Link to={`/departments/${course.id}`}>Explore department <FiArrowRight aria-hidden="true" /></Link>
+                        <div className="crs-card__actions"><Link to={`/departments/${course.id}`}>Details <FiArrowRight aria-hidden="true" /></Link><CourseEnquiryButton department={course.name}>Enquiry</CourseEnquiryButton></div>
                     </div>
                   </article>
                 );

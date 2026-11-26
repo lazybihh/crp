@@ -636,3 +636,7 @@ main#main.crs-page .crs-adm h3 {
     transform: none;
   }
 }
+.crs-card__actions { display:flex; align-items:center; gap:12px; }
+.crs-card__actions button { border:0; border-radius:999px; padding:9px 15px; background:var(--orange-100); color:var(--orange-700); font:inherit; font-weight:800; cursor:pointer; }
+.crs-card__actions button:hover { background:var(--orange-500); color:var(--ink-950); }
+.crs-card__actions button:focus-visible { outline:3px solid var(--sky-700); outline-offset:3px; }

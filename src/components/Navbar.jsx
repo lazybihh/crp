@@ -14,6 +14,7 @@ import {
 } from "react-icons/fi";
 import { socialIcon, telHref, useSite } from "../context/SiteSettingsContext";
 import "./Navbar.css";
+import { AdmissionFormButton } from "./LeadForm";
 
 const link = (label, to) => ({ label, to });
 const external = (label, href) => ({ label, href });
@@ -550,19 +551,7 @@ export default function Navbar() {
             </ul>
           </nav>
 
-          {navCta && (
-            navCta.to.startsWith("/") ? (
-              <Link className="navbar__cta" to={navCta.to}>
-                {navCta.label}
-                <FiArrowRight aria-hidden="true" />
-              </Link>
-            ) : (
-              <a className="navbar__cta" href={navCta.to} target="_blank" rel="noopener noreferrer">
-                {navCta.label}
-                <FiArrowRight aria-hidden="true" />
-              </a>
-            )
-          )}
+          {navCta && <AdmissionFormButton className="navbar__cta">{navCta.label}<FiArrowRight aria-hidden="true" /></AdmissionFormButton>}
         </div>
       </div>
 
@@ -645,19 +634,7 @@ export default function Navbar() {
         <div className="drawer__foot">
           <PayFee className="pay-fee--drawer" onNavigate={closeAll} />
 
-          {navCta && (
-            navCta.to.startsWith("/") ? (
-              <Link className="btn btn--cta" to={navCta.to} onClick={closeAll}>
-                {navCta.label}
-                <FiArrowRight aria-hidden="true" />
-              </Link>
-            ) : (
-              <a className="btn btn--cta" href={navCta.to} target="_blank" rel="noopener noreferrer" onClick={closeAll}>
-                {navCta.label}
-                <FiArrowRight aria-hidden="true" />
-              </a>
-            )
-          )}
+          {navCta && <AdmissionFormButton className="btn btn--cta" onClick={closeAll}>{navCta.label}<FiArrowRight aria-hidden="true" /></AdmissionFormButton>}
 
           <div className="drawer__contact">
             {site.phones[0] && (

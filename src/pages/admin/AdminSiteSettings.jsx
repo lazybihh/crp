@@ -56,6 +56,7 @@ export default function AdminSiteSettings() {
           links: { ...siteDefaults.links, ...data.links },
           images: { ...siteDefaults.images, ...data.images },
           headerButton: { ...siteDefaults.headerButton, ...data.headerButton },
+          welcomePopup: { ...siteDefaults.welcomePopup, ...data.welcomePopup },
         });
         setDraft(start);
         setSaved(JSON.stringify(start));
@@ -178,6 +179,18 @@ export default function AdminSiteSettings() {
               <input type="text" value={draft.images[key] ?? ""} onChange={(event) => set(["images", key], event.target.value)} />
             </div>
           ))}
+        </Card>
+
+        <Card title="Welcome popup" open={open === "Welcome popup"} setOpen={setOpen} count={2}>
+          <Field label="Popup title" value={draft.welcomePopup.title} onChange={(v) => set(["welcomePopup", "title"], v)} />
+          <div className="ass-field">
+            <span>Popup image</span>
+            <div className="ass-image">
+              <div className="ass-image__box">{draft.welcomePopup.image ? <img src={mediaUrl(draft.welcomePopup.image)} alt="Welcome popup preview" /> : <em>No image</em>}</div>
+              <label className="ass-btn"><FiUpload /> Change image<input type="file" accept="image/*" hidden onChange={(event) => uploadImage(["welcomePopup", "image"], event)} /></label>
+            </div>
+            <input type="text" value={draft.welcomePopup.image ?? ""} onChange={(event) => set(["welcomePopup", "image"], event.target.value)} aria-label="Popup image path" />
+          </div>
         </Card>
 
         <Card title="Header button" open={open === "Header button"} setOpen={setOpen} count={3}>

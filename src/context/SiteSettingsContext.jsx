@@ -38,6 +38,7 @@ export function socialIcon(platform) {
 
 export function SiteSettingsProvider({ children }) {
   const [site, setSite] = useState(siteDefaults);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -46,6 +47,7 @@ export function SiteSettingsProvider({ children }) {
         if (!active) return;
         const merged = merge(siteDefaults, saved);
         setSite(merged);
+        setSettingsLoaded(true);
         if (merged.images?.tabIcon) {
           let icon = document.querySelector('link[rel="icon"]');
           if (!icon) {
@@ -56,11 +58,11 @@ export function SiteSettingsProvider({ children }) {
           icon.href = mediaUrl(merged.images.tabIcon);
         }
       })
-      .catch(() => { if (active) setSite(siteDefaults); });
+      .catch(() => { if (active) { setSite(siteDefaults); setSettingsLoaded(true); } });
     return () => { active = false; };
   }, []);
 
-  const value = useMemo(() => ({ ...site, site, mediaUrl }), [site]);
+  const value = useMemo(() => ({ ...site, site, mediaUrl, settingsLoaded }), [site, settingsLoaded]);
   return <SiteSettingsContext.Provider value={value}>{children}</SiteSettingsContext.Provider>;
 }
 

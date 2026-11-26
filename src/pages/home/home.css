@@ -1030,6 +1030,10 @@ main#main > .section.principal {
   text-decoration: underline;
 }
 
+.flip__actions { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.flip__actions button { padding:8px 14px; border:1px solid color-mix(in srgb,var(--white) 35%,transparent); border-radius:999px; background:color-mix(in srgb,var(--white) 9%,transparent); color:var(--white); font:inherit; font-weight:700; cursor:pointer; }
+.flip__actions button:hover { background:var(--orange-500); border-color:var(--orange-500); color:var(--ink-950); }
+
 /* ============ 9. RECRUITERS (marquee) ============ */
 .recruiters {
   overflow: hidden;

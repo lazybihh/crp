@@ -553,17 +553,11 @@ main#main.inc-page .inc-journey h2 {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 24px;
-  background: linear-gradient(180deg, var(--white), var(--surface-blue-light));
+  background:
+    linear-gradient(90deg, var(--sky-500), var(--orange-500)) top / 100% 4px no-repeat,
+    linear-gradient(180deg, var(--white), var(--surface-blue-light));
   box-shadow: var(--shadow-soft);
   transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease), border-color 0.35s;
-}
-
-.inc-card::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--sky-500), var(--orange-500));
 }
 
 .inc-card:hover {

@@ -50,6 +50,10 @@ const SiteSettingsSchema = new mongoose.Schema(
       link: { type: String, default: "/admissions" },
       show: { type: Boolean, default: true },
     },
+    welcomePopup: {
+      title: { type: String, default: "Welcome to Chhotu Ram Polytechnic" },
+      image: { type: String, default: "/images/campus-workshop.jpg" },
+    },
   },
   { timestamps: true }
 );
@@ -77,6 +81,8 @@ SiteSettingsSchema.statics.seed = async function () {
       ["links.studentFeedbackForm", "https://forms.gle/uDDtofTbuHvyN7QU9"],
       ["links.grievanceForm", "https://forms.gle/59a69DF2cuMYr7vy7"],
       ["images.tabIcon", ""],
+      ["welcomePopup.title", "Welcome to Chhotu Ram Polytechnic"],
+      ["welcomePopup.image", "/images/campus-workshop.jpg"],
       ["socialLinks", [
         { platform: "facebook", label: "Facebook", url: "https://www.facebook.com/C.R.POLYTECHNIC.ROHTAK" },
         { platform: "instagram", label: "Instagram", url: "https://www.instagram.com/crprohtak/" },

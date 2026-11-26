@@ -38,6 +38,7 @@ const siteDefaults = {
     tabIcon: "",
   },
   headerButton: { label: "Admissions Open", link: "/admissions", show: true },
+  welcomePopup: { title: "Welcome to Chhotu Ram Polytechnic", image: "/images/campus-workshop.jpg" },
 };
 
 export default siteDefaults;

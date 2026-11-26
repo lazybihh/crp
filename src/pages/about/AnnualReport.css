@@ -96,6 +96,7 @@ main#main.ann-page h3 {
   box-shadow: 0 8px 22px color-mix(in srgb, var(--ink-950) 35%, transparent);
   color: color-mix(in srgb, var(--surface-blue-light) 82%, transparent);
   font-size: 0.95rem;
+}
 
 /* ============ TITLE BLOCK (level with the downloads card) ============ */
 .ann-intro {

@@ -113,7 +113,7 @@ function InlineMessageForm({ topics, contact }) {
     setStatus("sending");
     setServerError("");
     try {
-      await sendEnquiry({ ...values, website });
+      await sendEnquiry({ ...values, kind: "contact", website });
       setSentMode("saved");
       setStatus("sent");
       window.dispatchEvent(new Event("enquiries-updated"));
@@ -175,7 +175,7 @@ function InlineMessageForm({ topics, contact }) {
             />
             <div className="cnt-form-intro">
               <span className="cnt-form-intro__icon"><FiSend aria-hidden="true" /></span>
-              <div><strong>College enquiry form</strong><span>Share your details so we can direct your message to the right place.</span></div>
+              <div><strong>Contact form</strong><span>Share your details so we can direct your message to the right place.</span></div>
               <span className="cnt-form-intro__required">* Required fields</span>
             </div>
             <div className="cnt-fields">

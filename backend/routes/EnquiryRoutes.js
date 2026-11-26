@@ -31,6 +31,8 @@ router.post("/", async (req, res) => {
   try {
     if (text(req.body?.website)) return res.status(201).json({ message: "Message sent successfully" });
 
+    const kind = text(req.body?.kind) || "contact";
+    if (!["contact", "enquiry", "course-enquiry", "admission-form"].includes(kind)) return res.status(400).json({ message: "Unknown enquiry form." });
     const name = text(req.body?.name).slice(0, 100);
     const phone = text(req.body?.phone).replace(/[^\d]/g, "");
     const email = text(req.body?.email).slice(0, 150);
@@ -38,15 +40,20 @@ router.post("/", async (req, res) => {
     const department = text(req.body?.department).slice(0, 100);
     const topic = text(req.body?.topic).slice(0, 100);
     const message = text(req.body?.message).slice(0, 1000);
+    const qualification = text(req.body?.qualification).slice(0, 120);
+    const admissionSession = text(req.body?.admissionSession).slice(0, 20);
 
     if (!name) return res.status(400).json({ message: "Enter your name." });
     if (phone.length < 10 || phone.length > 13) return res.status(400).json({ message: "Enter a phone number with at least 10 digits." });
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ message: "Enter a valid email address, or leave it empty." });
     if (message.length < 10) return res.status(400).json({ message: "Write your message (at least 10 characters)." });
+    if (kind === "course-enquiry" && !department) return res.status(400).json({ message: "Choose a department." });
+    if (kind === "admission-form" && (!department || !qualification || !admissionSession)) return res.status(400).json({ message: "Complete the course, qualification and admission session fields." });
 
     if (tooMany(req, `phone:${phone}`)) return res.status(429).json({ message: "Too many enquiries. Please try again later." });
 
-    await Enquiry.create({ name, phone: text(req.body?.phone).slice(0, 50), email, role, department, topic, message, status: "new" });
+    const formTopic = kind === "admission-form" ? "Admission form" : kind === "course-enquiry" ? "Course enquiry" : topic;
+    await Enquiry.create({ kind, name, phone: text(req.body?.phone).slice(0, 50), email, role, department, topic: formTopic, qualification, admissionSession, message, status: "new" });
     res.status(201).json({ message: "Message sent successfully" });
   } catch (error) {
     res.status(400).json({ message: "Please check the enquiry details and try again." });

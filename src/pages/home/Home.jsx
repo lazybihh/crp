@@ -10,6 +10,7 @@ import { getHomeContent, mediaUrl } from "../../services/homeService";
 import { noticeFileUrl } from "../../services/noticeService";
 import PageLoader, { usePageReady } from "../../components/PageLoader";
 import "./Home.css";
+import { CourseEnquiryButton } from "../../components/LeadForm";
 
 // Starting content. It is shown while the page loads, and whenever the server cannot be reached.
 // The same text is the starting content of the database model (backend/models/HomeContent.js) - keep the two in step.
@@ -641,6 +642,7 @@ function Courses() {
                 aria-pressed={isOpen}
                 onClick={() => toggle(course.id)}
                 onKeyDown={(event) => {
+                  if (event.target !== event.currentTarget) return;
                   if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
                     toggle(course.id);
@@ -660,7 +662,7 @@ function Courses() {
                   <div className="flip__face flip__back">
                     <h3>{course.name}</h3>
                     <p>{course.text}</p>
-                    <Link to={`/departments/${course.id}`} onClick={(event) => event.stopPropagation()}>Explore department →</Link>
+                    <div className="flip__actions"><Link to={`/departments/${course.id}`} onClick={(event) => event.stopPropagation()}>Explore department →</Link><CourseEnquiryButton department={course.name} onClick={(event) => event.stopPropagation()}>Enquiry</CourseEnquiryButton></div>
                   </div>
                 </div>
               </div>

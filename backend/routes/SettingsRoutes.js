@@ -30,6 +30,7 @@ router.put("/", async (req, res) => {
     const links = body.links || {};
     const images = body.images || {};
     const headerButton = body.headerButton || {};
+    const welcomePopup = body.welcomePopup || {};
     const email = text(contact.email);
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ message: "Main email is not valid" });
@@ -78,6 +79,10 @@ router.put("/", async (req, res) => {
         label: text(headerButton.label),
         link: text(headerButton.link),
         show: headerButton.show !== false,
+      },
+      welcomePopup: {
+        title: text(welcomePopup.title),
+        image: text(welcomePopup.image),
       },
     };
     const before = await SiteSettings.findOne();

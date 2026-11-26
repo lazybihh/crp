@@ -35,6 +35,7 @@ import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiChevronRight as FiCrumbArrow } from "react-icons/fi";
 import "./Admissions.css";
 import { useSite } from "../../context/SiteSettingsContext";
+import { CourseEnquiryButton, LeadForm, LeadModal } from "../../components/LeadForm";
 
 const defaultHero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
 
@@ -151,6 +152,7 @@ function pickNotices(allNotices, pickedIds) {
 }
 
 export default function Admissions() {
+  const [admissionOpen, setAdmissionOpen] = useState(false);
   const { ready, content: savedContent, extra: noticeResponse } = useStudentPage("admissions", getNotices);
   const pageContent = resolveStudentMedia(
     mergeStudentContent(
@@ -186,8 +188,7 @@ export default function Admissions() {
   const totalSeats = courses.reduce((sum, course) => sum + course.seats, 0);
   const topSeats = Math.max(...courses.map((course) => course.seats));
 
-  const { contact, links } = useSite();
-  const portalUrl = links?.admissionPortal || "";
+  const { contact } = useSite();
   if (!ready) return <main id="main" className="ads-page"><PageLoader /></main>;
   return (
     <main id="main" className="ads-page">
@@ -220,11 +221,7 @@ export default function Admissions() {
             <h1>{intro.title}</h1>
             <p>{intro.lead}</p>
             <div className="ads-intro__actions">
-              <a className="ads-btn ads-btn--primary" href={portalUrl} target="_blank" rel="noopener noreferrer">
-                Apply on the state portal
-                <FiArrowUpRight aria-hidden="true" />
-                <span className="sr-only">(opens in a new tab)</span>
-              </a>
+              <button className="ads-btn ads-btn--primary" type="button" onClick={() => setAdmissionOpen(true)}>Admission enquiry <FiArrowUpRight aria-hidden="true" /></button>
               <a className="ads-btn ads-btn--line" href="#ads-notices">
                 Dates and downloads
                 <FiArrowRight aria-hidden="true" />
@@ -275,15 +272,18 @@ export default function Admissions() {
               const Icon = course.icon;
               return (
                 <li key={course.id}>
-                  <Link className="ads-prog__card" to={`/departments/${course.id}`}>
-                    <span className="ads-prog__icon"><Icon aria-hidden="true" /></span>
-                    <span className="ads-prog__body">
-                      <strong>{course.name}</strong>
-                      <span className="ads-prog__seats">{course.seats} seats</span>
-                      <span className="ads-prog__bar" aria-hidden="true"><i style={{ width: `${(course.seats / topSeats) * 100}%` }} /></span>
-                    </span>
-                    <FiArrowRight className="ads-prog__go" aria-hidden="true" />
-                  </Link>
+                  <div className="ads-prog__entry">
+                    <Link className="ads-prog__card" to={`/departments/${course.id}`}>
+                      <span className="ads-prog__icon"><Icon aria-hidden="true" /></span>
+                      <span className="ads-prog__body">
+                        <strong>{course.name}</strong>
+                        <span className="ads-prog__seats">{course.seats} seats</span>
+                        <span className="ads-prog__bar" aria-hidden="true"><i style={{ width: `${(course.seats / topSeats) * 100}%` }} /></span>
+                      </span>
+                      <FiArrowRight className="ads-prog__go" aria-hidden="true" />
+                    </Link>
+                    <CourseEnquiryButton department={course.name} className="ads-btn ads-btn--line ads-prog__enquiry">Enquiry</CourseEnquiryButton>
+                  </div>
                 </li>
               );
             })}
@@ -345,6 +345,11 @@ export default function Admissions() {
           </div>
         </section>
 
+        {/* ---- admission form: same fields and submission path as the header popup ---- */}
+        <section className="ads-block ads-admission-form" aria-label="Admission enquiry form">
+          <LeadForm kind="admission-form" />
+        </section>
+
         {/* ---- questions ---- */}
         <section className="ads-block" aria-labelledby="ads-faq-title">
           <header className="ads-head">
@@ -382,6 +387,7 @@ export default function Admissions() {
           </div>
         </section>
       </div>
+      {admissionOpen && <LeadModal kind="admission-form" onClose={() => setAdmissionOpen(false)} />}
     </main>
   );
 }
