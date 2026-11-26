@@ -402,6 +402,11 @@ export default function AdminAdmissions() {
   };
 
   const save = async () => {
+    const blankPoster = Array.isArray(content?.posters) && content.posters.findIndex((poster) => !poster || !String(poster.src || "").trim());
+    if (blankPoster !== false && blankPoster >= 0) {
+      say(`Poster ${blankPoster + 1} has no image. Upload one or remove that poster before saving.`, true);
+      return;
+    }
     setBusy(true);
     try {
       const row = await saveStudentPage(PAGE_KEY, tidy(normalizeDocumentTypes(content)));

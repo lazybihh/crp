@@ -6,6 +6,9 @@ import App from "./App";
 import "./styles/theme.css";
 import "./styles/global.css";
 import { SiteSettingsProvider } from "./context/SiteSettingsContext";
+import { installAuthFetch } from "./services/authService";
+
+installAuthFetch(); // adds the admin token to backend requests
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

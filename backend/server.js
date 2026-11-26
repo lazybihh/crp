@@ -3,6 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
 const connectDB = require("./config/db");
+const Admin = require("./models/Admin");
 
 const Notice = require("./models/Notice");
 const Facility = require("./models/Facility");
@@ -37,6 +38,11 @@ app.use(express.json({ limit: "2mb" }));
 
 // Uploaded images
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// Admin login, then the gate: saves, uploads, deletes and admin-only lists need the token.
+const { authGate } = require("./middleware/auth");
+app.use("/api/auth", require("./routes/AuthRoutes"));
+app.use("/api", authGate);
 
 // Existing API routes
 app.use("/api/home", require("./routes/HomeRoutes"));
@@ -100,8 +106,16 @@ if (process.env.MONGO_URI) {
       await Media.seed(settings?.socialLinks || []);
 
       console.log("All database content seeded successfully.");
+
+      if (!(await Admin.countDocuments())) {
+        console.log("NO ADMIN YET: run  npm run create-admin  to create the first admin login.");
+      }
     })
     .catch((error) => console.log("Seeding failed:", error.message));
+}
+
+if (!process.env.AUTH_SECRET) {
+  console.log("WARNING: AUTH_SECRET is missing in .env, so nobody can log in to the admin panel.");
 }
 
 const PORT = process.env.PORT || 5000;

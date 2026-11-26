@@ -60,6 +60,8 @@ import Plastic from "./pages/faculty/Plastic";
 import Workshop from "./pages/faculty/Workshop";
 import Administrative from "./pages/faculty/Administrative";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminLogin from "./pages/admin/AdminLogin";
+import RequireAdmin from "./components/RequireAdmin";
 import AdminEnquiries from "./pages/admin/AdminEnquiries";
 import AdminHome from "./pages/admin/AdminHome";
 import AdminNotices from "./pages/admin/AdminNotices";
@@ -113,50 +115,51 @@ export default function App() {
   if (pathname.startsWith("/admin")) {
     return (
       <Routes>
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/enquiries" element={<AdminEnquiries />} />
-        <Route path="/admin/home" element={<AdminHome />} />
-        <Route path="/admin/notices" element={<AdminNotices />} />
-        <Route path="/admin/events" element={<AdminEvents />} />
-        <Route path="/admin/about/history" element={<AdminHistory />} />
-        <Route path="/admin/about/principal-message" element={<AdminPrincipalMessage />} />
-        <Route path="/admin/about/rank-accreditation" element={<AdminRankAccreditation />} />
-        <Route path="/admin/about/alumni" element={<AdminAlumni />} />
-        <Route path="/admin/about/courses" element={<AdminCourses />} />
-        <Route path="/admin/about/results" element={<AdminResults />} />
-        <Route path="/admin/about/placements" element={<AdminPlacements />} />
-        <Route path="/admin/about/entrepreneurship" element={<AdminEntrepreneurship />} />
-        <Route path="/admin/about/annual-report" element={<AdminAnnualReport />} />
-        <Route path="/admin/about/luminaries" element={<AdminLuminaries />} />
-        <Route path="/admin/about/projects" element={<AdminProjects />} />
-        <Route path="/admin/about/extracurricular" element={<AdminExtracurricular />} />
-        <Route path="/admin/about/unnat-bharat-abhiyan" element={<AdminUnnatBharat />} />
-        <Route path="/admin/about/facilities" element={<AdminFacilities />} />
-        <Route path="/admin/about/contact" element={<AdminContact />} />
-        <Route path="/admin/students/admissions" element={<AdminAdmissions />} />
-        <Route path="/admin/students/academic-calendar" element={<AdminAcademicCalendar />} />
-        <Route path="/admin/students/online-learning" element={<AdminOnlineLearning />} />
-        <Route path="/admin/students/helpline" element={<AdminHelpline />} />
-        <Route path="/admin/students/grievance" element={<AdminGrievance />} />
-        <Route path="/admin/students/e-services" element={<AdminEServices />} />
-        <Route path="/admin/students/skill-courses" element={<AdminSkillCourses />} />
-        <Route path="/admin/students/freelancing" element={<AdminFreelancing />} />
-        <Route path="/admin/students/incubator" element={<AdminIncubator />} />
-        <Route path="/admin/students/apprenticeship" element={<AdminApprenticeship />} />
-        <Route path="/admin/students/ncc-nss" element={<AdminNccNss />} />
-        <Route path="/admin/departments" element={<AdminDepartments />} />
-        <Route path="/admin/students/study-resources" element={<AdminStudyResources />} />
-        <Route path="/admin/faculty/training-policy" element={<AdminTrainingPolicy />} />
-        <Route path="/admin/faculty/anti-ragging" element={<AdminAntiRagging />} />
-        <Route path="/admin/faculty/anti-sexual-harassment" element={<AdminAntiSexualHarassment />} />
-        <Route path="/admin/faculty/service-rules" element={<AdminServiceRules />} />
-        <Route path="/admin/faculty/iqac" element={<AdminIqac />} />
-        <Route path="/admin/faculty/e-services" element={<AdminFacultyEServices />} />
-        <Route path="/admin/media/photos" element={<AdminPhotos />} />
-        <Route path="/admin/media/videos" element={<AdminVideos />} />
-        <Route path="/admin/media/social" element={<AdminSocialLinks />} />
-        <Route path="/admin/site-settings" element={<AdminSiteSettings />} />
-        <Route path="*" element={<AdminDashboard />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
+        <Route path="/admin/enquiries" element={<RequireAdmin><AdminEnquiries /></RequireAdmin>} />
+        <Route path="/admin/home" element={<RequireAdmin><AdminHome /></RequireAdmin>} />
+        <Route path="/admin/notices" element={<RequireAdmin><AdminNotices /></RequireAdmin>} />
+        <Route path="/admin/events" element={<RequireAdmin><AdminEvents /></RequireAdmin>} />
+        <Route path="/admin/about/history" element={<RequireAdmin><AdminHistory /></RequireAdmin>} />
+        <Route path="/admin/about/principal-message" element={<RequireAdmin><AdminPrincipalMessage /></RequireAdmin>} />
+        <Route path="/admin/about/rank-accreditation" element={<RequireAdmin><AdminRankAccreditation /></RequireAdmin>} />
+        <Route path="/admin/about/alumni" element={<RequireAdmin><AdminAlumni /></RequireAdmin>} />
+        <Route path="/admin/about/courses" element={<RequireAdmin><AdminCourses /></RequireAdmin>} />
+        <Route path="/admin/about/results" element={<RequireAdmin><AdminResults /></RequireAdmin>} />
+        <Route path="/admin/about/placements" element={<RequireAdmin><AdminPlacements /></RequireAdmin>} />
+        <Route path="/admin/about/entrepreneurship" element={<RequireAdmin><AdminEntrepreneurship /></RequireAdmin>} />
+        <Route path="/admin/about/annual-report" element={<RequireAdmin><AdminAnnualReport /></RequireAdmin>} />
+        <Route path="/admin/about/luminaries" element={<RequireAdmin><AdminLuminaries /></RequireAdmin>} />
+        <Route path="/admin/about/projects" element={<RequireAdmin><AdminProjects /></RequireAdmin>} />
+        <Route path="/admin/about/extracurricular" element={<RequireAdmin><AdminExtracurricular /></RequireAdmin>} />
+        <Route path="/admin/about/unnat-bharat-abhiyan" element={<RequireAdmin><AdminUnnatBharat /></RequireAdmin>} />
+        <Route path="/admin/about/facilities" element={<RequireAdmin><AdminFacilities /></RequireAdmin>} />
+        <Route path="/admin/about/contact" element={<RequireAdmin><AdminContact /></RequireAdmin>} />
+        <Route path="/admin/students/admissions" element={<RequireAdmin><AdminAdmissions /></RequireAdmin>} />
+        <Route path="/admin/students/academic-calendar" element={<RequireAdmin><AdminAcademicCalendar /></RequireAdmin>} />
+        <Route path="/admin/students/online-learning" element={<RequireAdmin><AdminOnlineLearning /></RequireAdmin>} />
+        <Route path="/admin/students/helpline" element={<RequireAdmin><AdminHelpline /></RequireAdmin>} />
+        <Route path="/admin/students/grievance" element={<RequireAdmin><AdminGrievance /></RequireAdmin>} />
+        <Route path="/admin/students/e-services" element={<RequireAdmin><AdminEServices /></RequireAdmin>} />
+        <Route path="/admin/students/skill-courses" element={<RequireAdmin><AdminSkillCourses /></RequireAdmin>} />
+        <Route path="/admin/students/freelancing" element={<RequireAdmin><AdminFreelancing /></RequireAdmin>} />
+        <Route path="/admin/students/incubator" element={<RequireAdmin><AdminIncubator /></RequireAdmin>} />
+        <Route path="/admin/students/apprenticeship" element={<RequireAdmin><AdminApprenticeship /></RequireAdmin>} />
+        <Route path="/admin/students/ncc-nss" element={<RequireAdmin><AdminNccNss /></RequireAdmin>} />
+        <Route path="/admin/departments" element={<RequireAdmin><AdminDepartments /></RequireAdmin>} />
+        <Route path="/admin/students/study-resources" element={<RequireAdmin><AdminStudyResources /></RequireAdmin>} />
+        <Route path="/admin/faculty/training-policy" element={<RequireAdmin><AdminTrainingPolicy /></RequireAdmin>} />
+        <Route path="/admin/faculty/anti-ragging" element={<RequireAdmin><AdminAntiRagging /></RequireAdmin>} />
+        <Route path="/admin/faculty/anti-sexual-harassment" element={<RequireAdmin><AdminAntiSexualHarassment /></RequireAdmin>} />
+        <Route path="/admin/faculty/service-rules" element={<RequireAdmin><AdminServiceRules /></RequireAdmin>} />
+        <Route path="/admin/faculty/iqac" element={<RequireAdmin><AdminIqac /></RequireAdmin>} />
+        <Route path="/admin/faculty/e-services" element={<RequireAdmin><AdminFacultyEServices /></RequireAdmin>} />
+        <Route path="/admin/media/photos" element={<RequireAdmin><AdminPhotos /></RequireAdmin>} />
+        <Route path="/admin/media/videos" element={<RequireAdmin><AdminVideos /></RequireAdmin>} />
+        <Route path="/admin/media/social" element={<RequireAdmin><AdminSocialLinks /></RequireAdmin>} />
+        <Route path="/admin/site-settings" element={<RequireAdmin><AdminSiteSettings /></RequireAdmin>} />
+        <Route path="*" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
       </Routes>
     );
   }

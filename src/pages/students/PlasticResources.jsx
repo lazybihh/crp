@@ -171,7 +171,7 @@ export default function PlasticResources() {
 
   return (
     <main id="main" className="rpla-page">
-      <section className="rpla-hero" aria-label="Plastic Technology study resources" style={{ "--img": `url("${pageHeroImage}")` }}>
+      <section className="rpla-hero" aria-label="Plastic Technology study resources" style={{ "--img": `url("${studyResourceFileUrl(pageHeroImage)}")` }}>
         <div className="rpla-hero__photo" />
         <div className="rpla-hero__tags">
           <span className="rpla-hero__tag rpla-hero__tag--left">

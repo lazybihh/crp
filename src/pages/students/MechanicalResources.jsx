@@ -175,7 +175,7 @@ export default function MechanicalResources() {
 
   return (
     <main id="main" className="rmec-page">
-      <section className="rmec-hero" aria-label="Mechanical Engineering study resources" style={{ "--img": `url("${pageHeroImage}")` }}>
+      <section className="rmec-hero" aria-label="Mechanical Engineering study resources" style={{ "--img": `url("${studyResourceFileUrl(pageHeroImage)}")` }}>
         <div className="rmec-hero__photo" />
         <div className="rmec-hero__tags">
           <span className="rmec-hero__tag rmec-hero__tag--left">

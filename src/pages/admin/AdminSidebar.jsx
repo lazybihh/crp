@@ -1,9 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { FiHome, FiInfo, FiUsers, FiBookOpen, FiLayers, FiBriefcase, FiTool, FiImage, FiBell, FiCalendar, FiPhone, FiSettings, FiGrid, FiMessageSquare, FiChevronDown, FiMenu, FiX, FiExternalLink, FiUser } from "react-icons/fi";
+import { FiLogOut, FiHome, FiInfo, FiUsers, FiBookOpen, FiLayers, FiBriefcase, FiTool, FiImage, FiBell, FiCalendar, FiPhone, FiSettings, FiGrid, FiMessageSquare, FiChevronDown, FiMenu, FiX, FiExternalLink, FiUser } from "react-icons/fi";
 import { useSite } from "../../context/SiteSettingsContext";
 import { mediaUrl } from "../../services/settingsService";
 import { getEnquiryStats } from "../../services/enquiryService";
+import { logout } from "../../services/authService";
 import "./AdminSidebar.css";
 
 // Single source of truth for the admin navigation and editable-page count.
@@ -348,7 +349,7 @@ export default function AdminSidebar({ title, children }) {
         <header className="asb-top">
           <button type="button" className="asb-menu-btn" aria-label="Open menu" aria-expanded={drawer} aria-controls="admin-sidebar" onClick={() => setDrawer(true)}><FiMenu aria-hidden="true" /></button>
           <h1 className="asb-title">{title}</h1>
-          <div className="asb-top__right"><Link className="asb-top__site" to="/" target="_blank" rel="noopener noreferrer">View website <FiExternalLink aria-hidden="true" /></Link><span className="asb-user"><FiUser aria-hidden="true" /> Admin</span></div>
+          <div className="asb-top__right"><Link className="asb-top__site" to="/" target="_blank" rel="noopener noreferrer">View website <FiExternalLink aria-hidden="true" /></Link><span className="asb-user"><FiUser aria-hidden="true" /> Admin</span><button type="button" className="asb-top__site" onClick={logout}>Log out <FiLogOut aria-hidden="true" /></button></div>
         </header>
         <main id="admin-main" className="asb-main" tabIndex={-1}>{children}</main>
       </div>

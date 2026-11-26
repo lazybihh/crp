@@ -193,7 +193,7 @@ export default function ComputerResources() {
 
   return (
     <main id="main" className="rcse-page">
-      <section className="rcse-hero" aria-label="Computer Engineering study resources" style={{ "--img": `url("${pageHeroImage}")` }}>
+      <section className="rcse-hero" aria-label="Computer Engineering study resources" style={{ "--img": `url("${studyResourceFileUrl(pageHeroImage)}")` }}>
         <div className="rcse-hero__photo" />
         <div className="rcse-hero__tags">
           <span className="rcse-hero__tag rcse-hero__tag--left">

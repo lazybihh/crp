@@ -158,7 +158,7 @@ export default function Placements() {
             <ul className="plc-recruiters">
               {recruiters.map((company) => (
                 <li key={company.name}>
-                  <img src={company.logo} alt={company.name} loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />
+                  <img src={mediaUrl(company.logo)} alt={company.name} loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />
                   <span>{company.name}</span>
                 </li>
               ))}

@@ -171,7 +171,7 @@ export default function CivilResources() {
 
   return (
     <main id="main" className="rciv-page">
-      <section className="rciv-hero" aria-label="Civil Engineering study resources" style={{ "--img": `url("${pageHeroImage}")` }}>
+      <section className="rciv-hero" aria-label="Civil Engineering study resources" style={{ "--img": `url("${studyResourceFileUrl(pageHeroImage)}")` }}>
         <div className="rciv-hero__photo" />
         <div className="rciv-hero__tags">
           <span className="rciv-hero__tag rciv-hero__tag--left">

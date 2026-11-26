@@ -176,7 +176,7 @@ export default function ElectricalResources() {
 
   return (
     <main id="main" className="rele-page">
-      <section className="rele-hero" aria-label="Electrical Engineering study resources" style={{ "--img": `url("${pageHeroImage}")` }}>
+      <section className="rele-hero" aria-label="Electrical Engineering study resources" style={{ "--img": `url("${studyResourceFileUrl(pageHeroImage)}")` }}>
         <div className="rele-hero__photo" />
         <div className="rele-hero__tags">
           <span className="rele-hero__tag rele-hero__tag--left">

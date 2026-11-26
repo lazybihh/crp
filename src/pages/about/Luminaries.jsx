@@ -61,7 +61,7 @@ function Portrait({ person }) {
   return (
     <div className="lum-photo">
       <span aria-hidden="true">{person.initials}</span>
-      <img src={person.image} alt={person.name} loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />
+      <img src={mediaUrl(person.image)} alt={person.name} loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />
     </div>
   );
 }

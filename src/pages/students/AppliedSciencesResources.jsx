@@ -172,7 +172,7 @@ export default function AppliedSciencesResources() {
 
   return (
     <main id="main" className="rapl-page">
-      <section className="rapl-hero" aria-label="Applied Sciences study resources" style={{ "--img": `url("${pageHeroImage}")` }}>
+      <section className="rapl-hero" aria-label="Applied Sciences study resources" style={{ "--img": `url("${studyResourceFileUrl(pageHeroImage)}")` }}>
         <div className="rapl-hero__photo" />
         <div className="rapl-hero__tags">
           <span className="rapl-hero__tag rapl-hero__tag--left">

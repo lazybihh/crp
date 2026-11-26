@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "clean-uploads": "node scripts/cleanUploads.js"
+    "clean-uploads": "node scripts/cleanUploads.js",
+    "create-admin": "node scripts/createAdmin.js"
   },
   "license": "ISC",
   "dependencies": {

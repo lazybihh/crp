@@ -180,7 +180,7 @@ export default function ElectronicsResources() {
 
   return (
     <main id="main" className="rece-page">
-      <section className="rece-hero" aria-label="Electronics & Communication Engineering study resources" style={{ "--img": `url("${pageHeroImage}")` }}>
+      <section className="rece-hero" aria-label="Electronics & Communication Engineering study resources" style={{ "--img": `url("${studyResourceFileUrl(pageHeroImage)}")` }}>
         <div className="rece-hero__photo" />
         <div className="rece-hero__tags">
           <span className="rece-hero__tag rece-hero__tag--left">
