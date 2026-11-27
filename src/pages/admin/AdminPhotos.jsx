@@ -7,18 +7,25 @@ import {
   mediaUrl,
   savePageBanner,
   savePhotos,
-  savePhotoCategories,
+  addPhotoCategory,
+  renamePhotoCategory,
+  deletePhotoCategory,
   uploadMediaImage,
 } from "../../services/mediaService";
 import "./AdminPhotos.css";
+import { DEFAULT_GALLERY_PHOTOS, DEFAULT_PHOTO_CATEGORIES } from "../../data/galleryDefaults";
+
+const OTHER_CATEGORY = "Other";
+const MAX_EDITABLE_CATEGORIES = 8;
 
 export default function AdminPhotos() {
-  const [photos, setPhotos] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [categoryDrafts, setCategoryDrafts] = useState([]);
+  const [photos, setPhotos] = useState(DEFAULT_GALLERY_PHOTOS);
+  const [categories, setCategories] = useState(DEFAULT_PHOTO_CATEGORIES);
+  const [categoryDrafts, setCategoryDrafts] = useState({});
+  const [newCategoryName, setNewCategoryName] = useState("");
   const [banner, setBanner] = useState("");
   const [newTitle, setNewTitle] = useState("");
-  const [newCategory, setNewCategory] = useState("Campus");
+  const [newCategory, setNewCategory] = useState(OTHER_CATEGORY);
   const [newPhotoFile, setNewPhotoFile] = useState(null);
   const [newPhotoPreview, setNewPhotoPreview] = useState("");
   const [loading, setLoading] = useState(true);
@@ -26,21 +33,32 @@ export default function AdminPhotos() {
   const [message, setMessage] = useState({ text: "", error: false });
 
   const say = (text, error = false) => setMessage({ text, error });
+  const categoryDraftFor = (category) =>
+    Object.prototype.hasOwnProperty.call(categoryDrafts, category)
+      ? categoryDrafts[category]
+      : category;
 
   const load = async () => {
     const { media } = await getMedia();
-
-    setPhotos((media?.photos || []).map((photo) => ({ ...photo })));
-
-    const loadedCategories = media?.photoCategories || [];
+    const loadedCategories = (media?.photoCategories?.length ? media.photoCategories : DEFAULT_PHOTO_CATEGORIES)
+      .filter((name) => name && name.toLocaleLowerCase() !== OTHER_CATEGORY.toLocaleLowerCase())
+      .slice(0, MAX_EDITABLE_CATEGORIES);
+    const loadedPhotos = media?.photos?.length ? media.photos : DEFAULT_GALLERY_PHOTOS;
+    setPhotos(loadedPhotos.map((photo) => ({
+      ...photo,
+      category: loadedCategories.includes(photo.category) || photo.category === OTHER_CATEGORY
+        ? photo.category
+        : OTHER_CATEGORY,
+    })));
     setCategories(loadedCategories);
-    setCategoryDrafts(loadedCategories);
+    setCategoryDrafts(Object.fromEntries(loadedCategories.map((name) => [name, name])));
+    setNewCategory(OTHER_CATEGORY);
     setBanner(media?.banners?.gallery || "");
   };
 
   useEffect(() => {
     load()
-      .catch((error) => say(error.message, true))
+      .catch((error) => say(`${error.message} Showing the built-in gallery photos until the server is available.`, true))
       .finally(() => setLoading(false));
   }, []);
 
@@ -149,30 +167,67 @@ export default function AdminPhotos() {
     }
   };
 
-  const saveCategories = async () => {
+  const applyCategoryResult = (result, categoryChanges = {}) => {
+    const updatedCategories = (result.categories || []).filter((name) => name !== OTHER_CATEGORY);
+    setCategories(updatedCategories);
+    setCategoryDrafts(Object.fromEntries(updatedCategories.map((name) => [name, name])));
+    const localByKey = new Map(photos.map((photo) => [String(photo._id || photo.src), photo]));
+    setPhotos((result.photos || []).map((photo) => {
+      const local = localByKey.get(String(photo._id || photo.src));
+      let category = local?.category ?? photo.category;
+      if (Object.prototype.hasOwnProperty.call(categoryChanges, category)) category = categoryChanges[category];
+      if (!updatedCategories.includes(category) && category !== OTHER_CATEGORY) category = OTHER_CATEGORY;
+      return { ...photo, ...local, category };
+    }));
+  };
+
+  const addCategory = async () => {
+    const name = newCategoryName.trim();
+    if (!name) return say("Enter a category name first.", true);
+    if (categories.length >= MAX_EDITABLE_CATEGORIES) {
+      return say(`You can have up to ${MAX_EDITABLE_CATEGORIES} editable categories. Other is fixed.`, true);
+    }
+
     setBusy(true);
-
     try {
-      const previousCategories = categories;
-      const result = await savePhotoCategories(categoryDrafts);
-      const updatedCategories = result.categories || categoryDrafts;
+      const result = await addPhotoCategory(name);
+      applyCategoryResult(result);
+      setNewCategoryName("");
+      say(`“${name}” category added.`);
+    } catch (error) {
+      say(error.message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
 
-      const selectedIndex = previousCategories.indexOf(newCategory);
+  const renameCategory = async (category) => {
+    const name = categoryDraftFor(category).trim();
+    if (!name) return say("Category names cannot be empty.", true);
+    if (name === category) return say("There are no category name changes to save.");
 
-      if (selectedIndex >= 0) {
-        setNewCategory(
-          updatedCategories[selectedIndex] || updatedCategories[0] || ""
-        );
-      }
+    setBusy(true);
+    try {
+      const result = await renamePhotoCategory(category, name);
+      applyCategoryResult(result, { [category]: name });
+      if (newCategory === category) setNewCategory(name);
+      say(`“${category}” renamed to “${name}”. Photos in that category were updated.`);
+    } catch (error) {
+      say(error.message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
 
-      setCategories(updatedCategories);
-      setCategoryDrafts(updatedCategories);
+  const removeCategory = async (category) => {
+    if (!window.confirm(`Delete “${category}”? Its photos will move to the fixed Other category.`)) return;
 
-      setPhotos(
-        (result.photos || []).map((photo) => ({ ...photo }))
-      );
-
-      say("Existing photo category names updated successfully.");
+    setBusy(true);
+    try {
+      const result = await deletePhotoCategory(category);
+      applyCategoryResult(result, { [category]: OTHER_CATEGORY });
+      if (newCategory === category) setNewCategory(OTHER_CATEGORY);
+      say(result.message || `“${category}” deleted. Its photos moved to Other.`);
     } catch (error) {
       say(error.message, true);
     } finally {
@@ -280,7 +335,7 @@ export default function AdminPhotos() {
             <h2>Photo gallery management</h2>
             <p>
               Upload, replace, caption, categorize or remove gallery images.
-              Existing categories can be renamed, but not added or deleted.
+              Create and manage up to eight categories; Other is fixed.
             </p>
           </div>
 
@@ -316,7 +371,7 @@ export default function AdminPhotos() {
 
           <div className="am-banner-preview">
             <img
-              src={banner ? mediaUrl(banner) : "/images/pages-banner.png"}
+              src={banner ? mediaUrl(banner) : "/images/campus-3.jpg"}
               alt="Photo Gallery banner preview"
             />
           </div>
@@ -351,44 +406,71 @@ export default function AdminPhotos() {
             <div>
               <h3>Manage existing categories</h3>
               <p>
-                Rename the existing categories. You cannot add or delete
-                categories here. Renaming a category updates every photo
-                assigned to it.
+                Add or rename up to {MAX_EDITABLE_CATEGORIES} categories. Deleting one moves its photos to the fixed Other category.
               </p>
             </div>
           </div>
 
           <div className="am-category-grid">
-            {categoryDrafts.map((category, index) => (
-              <label
-                className="am-field"
-                key={`${categories[index] || index}-${index}`}
-              >
-                Category {index + 1}
-
-                <input
-                  value={category}
-                  onChange={(event) =>
-                    setCategoryDrafts((items) =>
-                      items.map((item, i) =>
-                        i === index ? event.target.value : item
-                      )
-                    )
-                  }
-                />
-              </label>
+            {categories.map((category, index) => (
+              <div className="am-category-option" key={category}>
+                <label className="am-field">
+                  Category {index + 1}
+                  <input
+                    value={categoryDraftFor(category)}
+                    maxLength={40}
+                    onChange={(event) =>
+                      setCategoryDrafts((items) => ({ ...items, [category]: event.target.value }))
+                    }
+                  />
+                </label>
+                <div className="am-actions">
+                  <button
+                    type="button"
+                    className="am-btn am-btn--primary"
+                    onClick={() => renameCategory(category)}
+                    disabled={busy || loading || categoryDraftFor(category).trim() === category}
+                  >
+                    Save name
+                  </button>
+                  <button
+                    type="button"
+                    className="am-btn am-btn--danger"
+                    onClick={() => removeCategory(category)}
+                    disabled={busy || loading}
+                  >
+                    <FiTrash2 /> Delete
+                  </button>
+                </div>
+              </div>
             ))}
+            <div className="am-category-option am-category-option--fixed">
+              <strong>Other <span>Fixed</span></strong>
+              <p>Uncategorized and moved photos go here. This category cannot be renamed or deleted.</p>
+              <small>{photos.filter((photo) => photo.category === OTHER_CATEGORY).length} photos</small>
+            </div>
           </div>
 
-          <div className="am-actions">
+          <div className="am-category-add">
+            <label className="am-field">
+              New category name
+              <input
+                value={newCategoryName}
+                maxLength={40}
+                onChange={(event) => setNewCategoryName(event.target.value)}
+                placeholder="e.g. Campus events"
+                disabled={busy || loading || categories.length >= MAX_EDITABLE_CATEGORIES}
+              />
+            </label>
             <button
               type="button"
               className="am-btn am-btn--primary"
-              onClick={saveCategories}
-              disabled={busy || loading || !categoryDrafts.length}
+              onClick={addCategory}
+              disabled={busy || loading || categories.length >= MAX_EDITABLE_CATEGORIES || !newCategoryName.trim()}
             >
-              Save category names
+              <FiPlus /> Add category
             </button>
+            <span className="am-category-count">{categories.length}/{MAX_EDITABLE_CATEGORIES} editable categories · Other is fixed</span>
           </div>
         </section>
 
@@ -419,7 +501,7 @@ export default function AdminPhotos() {
                 value={newCategory}
                 onChange={(event) => setNewCategory(event.target.value)}
               >
-                {categories.map((category) => (
+                {[...categories, OTHER_CATEGORY].map((category) => (
                   <option key={category}>{category}</option>
                 ))}
               </select>
@@ -470,8 +552,7 @@ export default function AdminPhotos() {
             <div>
               <h3>Existing photos ({photos.length})</h3>
               <p>
-                Edit the title/category, replace an image, or remove it from
-                the gallery.
+                Edit each title or category, replace an image, or remove it. Save your photo changes with the button below.
               </p>
             </div>
           </div>
@@ -511,12 +592,12 @@ export default function AdminPhotos() {
                   <label className="am-field">
                     Category
                     <select
-                      value={photo.category || "Campus"}
+                      value={categories.includes(photo.category) || photo.category === OTHER_CATEGORY ? photo.category : OTHER_CATEGORY}
                       onChange={(event) =>
                         edit(index, { category: event.target.value })
                       }
                     >
-                      {categories.map((category) => (
+                      {[...categories, OTHER_CATEGORY].map((category) => (
                         <option key={category}>{category}</option>
                       ))}
                     </select>

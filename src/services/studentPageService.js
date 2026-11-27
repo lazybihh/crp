@@ -56,6 +56,7 @@ export const uploadStudentDocument = async (file) => {
 // Saved content wins over the defaults. Objects are merged key by key; a saved list replaces the default list.
 export function mergeStudentContent(defaultValue, savedValue) {
   if (savedValue == null) return defaultValue;
+  if (savedValue === "/images/pages-banner.png" && typeof defaultValue === "string" && defaultValue.startsWith("/images/campus-")) return defaultValue;
   if (Array.isArray(defaultValue) && Array.isArray(savedValue)) return mergeStudentList(defaultValue, savedValue);
   const bothObjects =
     defaultValue && savedValue &&

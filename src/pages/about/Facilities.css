@@ -504,6 +504,13 @@ main#main.fac-page .fac-panel h3 {
   top: 110px;
 }
 
+.fac-gallery--two {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto;
+  height: auto;
+  position: static;
+}
+
 .fac-photo {
   position: relative;
   margin: 0;
@@ -518,6 +525,10 @@ main#main.fac-page .fac-panel h3 {
 
 .fac-photo--main {
   grid-row: span 2;
+}
+
+.fac-gallery--two .fac-photo--main {
+  grid-row: auto;
 }
 
 .fac-photo:nth-child(2) {
@@ -550,6 +561,42 @@ main#main.fac-page .fac-panel h3 {
 
 .fac-photo:hover img {
   transform: scale(1.06);
+}
+
+/* Facility galleries use ordinary, naturally sized stacked photos. */
+.fac-gallery--two .fac-photo {
+  display: flex;
+  justify-content: center;
+  aspect-ratio: auto;
+  min-height: 0;
+  overflow: visible;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.fac-gallery--two .fac-photo img {
+  position: static;
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: clamp(220px, 25vw, 320px);
+  height: auto;
+  object-fit: initial;
+  border-radius: 20px;
+  box-shadow: var(--shadow-soft);
+}
+
+.fac-gallery--two .fac-photo:hover img {
+  transform: none;
+}
+
+.fac-gallery--two .fac-photo::after {
+  display: none;
+}
+
+.fac-gallery--two .fac-photo:has(.fac-photo__empty) {
+  aspect-ratio: 16 / 9;
 }
 
 /* shown when a photo file is missing */
@@ -773,6 +820,12 @@ main#main.fac-page .fac-subhead::before {
     grid-template-rows: 240px 160px;
   }
 
+  .fac-gallery--two {
+    height: auto;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+  }
+
   .fac-photo--main {
     grid-column: span 2;
     grid-row: auto;
@@ -799,6 +852,15 @@ main#main.fac-page .fac-subhead::before {
 
 /* phones: the 16 tabs become one swipeable row of chips instead of eight tall rows */
 @media (max-width: 560px) {
+  .fac-gallery--two .fac-photo {
+    width: 100%;
+  }
+
+  .fac-gallery--two .fac-photo img {
+    width: min(100%, 420px);
+    max-width: 100%;
+  }
+
   .fac-tabs {
     display: flex;
     gap: 10px;
@@ -844,6 +906,11 @@ main#main.fac-page .fac-subhead::before {
 
   .fac-gallery {
     grid-template-rows: 200px 130px;
+  }
+
+  .fac-gallery--two {
+    height: auto;
+    grid-template-rows: auto;
   }
 
   .fac-stats > div {

@@ -11,7 +11,6 @@
 // ADMIN-READY: Site settings covers contact details and links. The intro and enquiry topics can be
 // edited in Admin > Contact us. Its hero banner is edited there too. Messages from the form are saved as enquiries.
 //
-// NO FILES TO COPY: this page uses no pictures except the shared banner (public/images/pages-banner.png).
 // The map is an embedded Google Map (the only thing loaded from outside). If it cannot load, the "Get directions" button still works.
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -27,7 +26,7 @@ import { getContactPage } from "../../services/contactPageService";
 import { mediaUrl } from "../../services/homeService";
 import PageLoader, { usePageReady } from "../../components/PageLoader";
 
-const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
+const hero = { image: "/images/campus-2.jpg" }; // wide photo; if it is missing a patterned navy banner shows instead
 
 const intro = {
   eyebrow: "About us",
@@ -267,7 +266,7 @@ export default function Contact() {
     lead: savedPage?.intro?.lead || intro.lead,
   };
   const pageTopics = Array.isArray(savedPage?.topics) && savedPage.topics.length ? savedPage.topics : formConfig.topics;
-  const heroImage = mediaUrl(savedPage?.bannerImage) || hero.image;
+  const heroImage = mediaUrl(savedPage?.bannerImage === "/images/pages-banner.png" ? hero.image : savedPage?.bannerImage) || hero.image;
   const contact = {
     name: institute?.name || "Chhotu Ram Polytechnic",
     phones: contactSettings?.phones || [],

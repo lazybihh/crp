@@ -11,7 +11,7 @@ import { mediaUrl } from "../../services/mediaService";
 
 const img = (file) => `/images/${file}`;
 
-const defaultHero = { image: "/images/pages-banner.png" };
+const defaultHero = { image: "/images/campus-3.jpg" };
 
 const defaultIntro = {
   eyebrow: "About us",

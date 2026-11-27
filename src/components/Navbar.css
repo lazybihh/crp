@@ -144,15 +144,13 @@
   top: 0;
   z-index: 130;
   overflow: hidden;
-  background:
-    radial-gradient(520px 260px at 92% 40%, rgba(63, 176, 236, 0.17), transparent 70%),
-    radial-gradient(420px 220px at 8% 0%, rgba(63, 176, 236, 0.14), transparent 70%),
-    linear-gradient(105deg, #eaf6fd 0%, #ffffff 55%, #fff6ea 100%);
+  background: var(--crp-white);
   border-bottom: 1px solid var(--crp-line);
 }
 
 /* soft diagonal logo-colour stripes in the far left corner */
 .navbar::before {
+  display: none;
   content: "";
   position: absolute;
   left: -40px;
@@ -198,7 +196,7 @@
   width: 74px;
   height: 74px;
   object-fit: contain;
-  filter: drop-shadow(0 6px 10px rgba(10, 47, 92, 0.16));
+  filter: none;
   transition: transform 0.3s var(--crp-ease);
 }
 

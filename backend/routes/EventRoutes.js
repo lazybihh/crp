@@ -27,7 +27,7 @@ const validDate = (value) => {
 
 router.get("/page/banner", async (req, res) => {
   try {
-    const page = (await EventsPage.findOne().lean()) || { bannerImage: "/images/pages-banner.png" };
+    const page = (await EventsPage.findOne().lean()) || { bannerImage: "/images/campus-3.jpg" };
     res.json({ page });
   } catch (error) {
     res.status(500).json({ message: "Failed to load the Events banner", error: error.message });
@@ -41,7 +41,7 @@ router.put("/page/banner", async (req, res) => {
     const before = await EventsPage.findOne();
     const page = await EventsPage.findOneAndUpdate(
       {},
-      { $set: { bannerImage: image || "/images/pages-banner.png" } },
+      { $set: { bannerImage: image || "/images/campus-3.jpg" } },
       { new: true, upsert: true, runValidators: true }
     );
     await removeUnused(before, page);

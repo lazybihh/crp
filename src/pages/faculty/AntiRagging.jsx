@@ -54,7 +54,7 @@ export default function AntiRagging() {
 
   return (
     <main data-faculty-content-key="anti-ragging" id="main" className="pol-page pol-ragging">
-      <section className="pol-hero" aria-label="Anti Ragging" style={{ "--pol-img": `url("${mediaUrl(backendContent?.heroImage || '/images/pages-banner.png')}")` }}>
+      <section className="pol-hero" aria-label="Anti Ragging" style={{ "--pol-img": `url("${mediaUrl(backendContent?.heroImage && backendContent.heroImage !== "/images/pages-banner.png" ? backendContent.heroImage : "/images/campus-workshop.jpg")}")` }}>
         <div className="pol-hero__photo" />
         <div className="pol-hero__tags">
           <span className="pol-hero__tag pol-hero__tag--left">

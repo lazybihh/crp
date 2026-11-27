@@ -70,7 +70,7 @@ export default function AdminSocialLinks() {
     {message.text && <p className={`am-message${message.error ? " is-error" : ""}`} role="status">{message.text}</p>}
     <section className="am-panel am-banner-panel">
       <div className="am-panel__head"><div><h3>Social Links page banner</h3><p>Upload or replace this page's banner. Removing it shows the existing frontend banner.</p></div></div>
-      <div className="am-banner-preview"><img src={banner ? mediaUrl(banner) : "/images/pages-banner.png"} alt="Social Links page banner preview" /></div>
+      <div className="am-banner-preview"><img src={banner ? mediaUrl(banner) : "/images/campus-workshop.jpg"} alt="Social Links page banner preview" /></div>
       <div className="am-actions">
         <label className="am-upload"><FiUpload /> {banner ? "Replace banner" : "Upload banner"}<input type="file" accept="image/*" onChange={updateBanner} disabled={busy} /></label>
         {banner && <button type="button" className="am-btn am-btn--danger" onClick={removeBanner} disabled={busy}><FiTrash2 /> Remove custom banner</button>}

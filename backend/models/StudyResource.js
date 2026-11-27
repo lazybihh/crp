@@ -10,7 +10,7 @@ const ResourceSchema = new mongoose.Schema({
     subtitle: { type: String, default: "Study resources" },
     lead: { type: String, default: "" },
   }),
-  heroImage: { type: String, default: "/images/pages-banner.png" },
+  heroImage: { type: String, default: "/images/campus-2.jpg" },
   aboutLink: { type: String, default: "" },
   related: [sub({
     label: { type: String, default: "" },
@@ -44,7 +44,7 @@ const startingData = [
       "subtitle": "Study resources",
       "lead": "Lesson plans, outline notes, previous question papers and the syllabus for every semester - all in one place."
     },
-    "heroImage": "/images/pages-banner.png",
+    "heroImage": "/images/campus-3.jpg",
     "aboutLink": "/departments/applied-science",
     "related": [
       {
@@ -137,7 +137,7 @@ const startingData = [
       "subtitle": "Study resources",
       "lead": "Lesson plans, outline notes, previous question papers and the syllabus for every semester - all in one place."
     },
-    "heroImage": "/images/pages-banner.png",
+    "heroImage": "/images/campus-workshop.jpg",
     "aboutLink": "/departments/civil",
     "related": [
       {
@@ -228,7 +228,7 @@ const startingData = [
       "subtitle": "Study resources",
       "lead": "Lesson plans, outline notes, previous question papers and the syllabus for every semester - all in one place."
     },
-    "heroImage": "/images/pages-banner.png",
+    "heroImage": "/images/campus-2.jpg",
     "aboutLink": "/departments/computer",
     "related": [
       {
@@ -471,7 +471,7 @@ const startingData = [
       "subtitle": "Study resources",
       "lead": "Lesson plans, outline notes, previous question papers and the syllabus for every semester - all in one place."
     },
-    "heroImage": "/images/pages-banner.png",
+    "heroImage": "/images/campus-3.jpg",
     "aboutLink": "/departments/electrical",
     "related": [
       {
@@ -592,7 +592,7 @@ const startingData = [
       "subtitle": "Study resources",
       "lead": "Lesson plans, outline notes, previous question papers and the syllabus for every semester - all in one place."
     },
-    "heroImage": "/images/pages-banner.png",
+    "heroImage": "/images/campus-workshop.jpg",
     "aboutLink": "/departments/electronics",
     "related": [
       {
@@ -741,7 +741,7 @@ const startingData = [
       "subtitle": "Study resources",
       "lead": "Lesson plans, outline notes, previous question papers and the syllabus for every semester - all in one place."
     },
-    "heroImage": "/images/pages-banner.png",
+    "heroImage": "/images/campus-2.jpg",
     "aboutLink": "/departments/mechanical",
     "related": [
       {
@@ -856,7 +856,7 @@ const startingData = [
       "subtitle": "Study resources",
       "lead": "Lesson plans, outline notes, previous question papers and the syllabus for every semester - all in one place."
     },
-    "heroImage": "/images/pages-banner.png",
+    "heroImage": "/images/campus-3.jpg",
     "aboutLink": "/departments/plastic",
     "related": [
       {

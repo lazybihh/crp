@@ -22,7 +22,7 @@ router.put("/banner", async (req, res) => {
     const before = await ContactPage.findOne();
     const page = await ContactPage.findOneAndUpdate(
       {},
-      { $set: { bannerImage: image || "/images/pages-banner.png" } },
+      { $set: { bannerImage: image || "/images/campus-2.jpg" } },
       { new: true, upsert: true, runValidators: true }
     );
     await removeUnused(before, page);

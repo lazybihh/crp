@@ -14,7 +14,7 @@ import PageLoader from "../../components/PageLoader";
 import { mediaUrl } from "../../services/mediaService";
 import { CourseEnquiryButton } from "../../components/LeadForm";
 
-const defaultHero = { image: "/images/pages-banner.png" };
+const defaultHero = { image: "/images/campus-2.jpg" };
 
 const defaultIntro = {
   eyebrow: "About us",

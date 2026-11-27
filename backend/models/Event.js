@@ -47,7 +47,7 @@ const Event = mongoose.model("Event", EventSchema);
 
 const EventsPageSchema = new mongoose.Schema(
   {
-    bannerImage: { type: String, default: "/images/pages-banner.png" },
+    bannerImage: { type: String, default: "/images/campus-3.jpg" },
   },
   { timestamps: true }
 );
@@ -57,7 +57,7 @@ EventsPageSchema.statics.seed = async function () {
     await this.create({});
     return;
   }
-  await this.updateOne({ bannerImage: { $exists: false } }, { $set: { bannerImage: "/images/pages-banner.png" } });
+  await this.updateOne({ bannerImage: { $exists: false } }, { $set: { bannerImage: "/images/campus-3.jpg" } });
 };
 
 const EventsPage = mongoose.model("EventsPage", EventsPageSchema);

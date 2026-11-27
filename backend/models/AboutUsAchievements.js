@@ -13,7 +13,7 @@ const seedRows = [
     "content": {
       "key": "luminaries",
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-2.jpg"
       },
       "intro": {
         "eyebrow": "About us",
@@ -67,7 +67,7 @@ const seedRows = [
     "content": {
       "key": "projects",
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-3.jpg"
       },
       "intro": {
         "eyebrow": "About us",
@@ -118,7 +118,7 @@ const seedRows = [
     "content": {
       "key": "extracurricular",
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-workshop.jpg"
       },
       "intro": {
         "eyebrow": "About us",
@@ -176,7 +176,7 @@ const seedRows = [
     "content": {
       "key": "unnat-bharat-abhiyan",
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-2.jpg"
       },
       "intro": {
         "eyebrow": "About us",

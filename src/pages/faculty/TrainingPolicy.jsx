@@ -21,7 +21,7 @@ export default function TrainingPolicy() {
 
   return (
     <main data-faculty-content-key="training-policy" id="main" className="pol-page pol-training">
-      <section className="pol-hero" aria-label="Training Policy" style={{ "--pol-img": `url("${mediaUrl(backendContent?.heroImage || '/images/pages-banner.png')}")` }}>
+      <section className="pol-hero" aria-label="Training Policy" style={{ "--pol-img": `url("${mediaUrl(backendContent?.heroImage && backendContent.heroImage !== "/images/pages-banner.png" ? backendContent.heroImage : "/images/campus-workshop.jpg")}")` }}>
         <div className="pol-hero__photo" />
         <div className="pol-hero__tags">
           <span className="pol-hero__tag pol-hero__tag--left"><span className="pol-hero__tag-icon"><FaGraduationCap aria-hidden="true" /></span>{backendContent?.heroLeft || "Government Polytechnic"}</span>

@@ -19,7 +19,7 @@ export default function ServiceRules(){
  if (!ready) return <main data-faculty-content-key="service-rules" id="main" className="pol-page pol-service"><PageLoader /></main>;
 
  return <main data-faculty-content-key="service-rules" id="main" className="pol-page pol-service">
- <section className="pol-hero" aria-label="Service Rules" style={{"--pol-img":`url("${mediaUrl(backendContent?.heroImage || "/images/pages-banner.png")}")`}}>
+ <section className="pol-hero" aria-label="Service Rules" style={{"--pol-img":`url("${mediaUrl(backendContent?.heroImage && backendContent.heroImage !== "/images/pages-banner.png" ? backendContent.heroImage : "/images/campus-3.jpg")}")`}}>
   <div className="pol-hero__photo" />
   <div className="pol-hero__tags">
    <span className="pol-hero__tag pol-hero__tag--left"><span className="pol-hero__tag-icon"><FaGraduationCap aria-hidden="true" /></span>{backendContent?.heroLeft || "Government Polytechnic"}</span>

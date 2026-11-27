@@ -101,7 +101,7 @@ const PagePair = new mongoose.Schema({ value: String, label: String }, { _id: fa
 
 const FacilitiesPageSchema = new mongoose.Schema(
   {
-    bannerImage: { type: String, default: "/images/pages-banner.png" },
+    bannerImage: { type: String, default: "/images/campus-2.jpg" },
     intro: {
       eyebrow: { type: String, default: "About us" },
       title: { type: String, default: "Facilities" },
@@ -146,7 +146,7 @@ FacilitiesPageSchema.statics.seed = async function () {
     console.log("Facilities page text added");
     return;
   }
-  await this.updateOne({ bannerImage: { $exists: false } }, { $set: { bannerImage: "/images/pages-banner.png" } });
+  await this.updateOne({ bannerImage: { $exists: false } }, { $set: { bannerImage: "/images/campus-2.jpg" } });
 };
 
 const FacilitiesPage = mongoose.model("FacilitiesPage", FacilitiesPageSchema);

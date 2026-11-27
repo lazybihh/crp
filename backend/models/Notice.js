@@ -97,7 +97,7 @@ const Notice = mongoose.model("Notice", NoticeSchema);
 
 // Notices page content
 const NoticePageSchema = new mongoose.Schema({
-  banner: { type: String, default: "/images/pages-banner.png" },
+  banner: { type: String, default: "/images/campus-3.jpg" },
   eyebrow: { type: String, default: "Latest updates" },
   title: { type: String, default: "Notices" },
   lead: {

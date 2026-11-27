@@ -20,6 +20,7 @@ async function request(path, options = {}) {
 
 export function mergeAboutContent(defaultValue, savedValue) {
   if (savedValue === undefined || savedValue === null) return defaultValue;
+  if (savedValue === "/images/pages-banner.png" && typeof defaultValue === "string" && defaultValue.startsWith("/images/campus-")) return defaultValue;
   if (Array.isArray(defaultValue) && Array.isArray(savedValue)) {
     return defaultValue.map((item, index) => index < savedValue.length ? mergeAboutContent(item, savedValue[index]) : item);
   }

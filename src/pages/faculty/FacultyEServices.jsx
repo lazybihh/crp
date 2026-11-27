@@ -18,7 +18,7 @@ export default function FacultyEServices() {
 
   return (
     <main data-faculty-content-key="e-services" id="main" className="svc-page svc-eservices">
-      <section className="svc-hero" aria-label="Faculty E-services" style={{ "--svc-img": `url("${mediaUrl(backendContent?.heroImage || '/images/pages-banner.png')}")` }}>
+      <section className="svc-hero" aria-label="Faculty E-services" style={{ "--svc-img": `url("${mediaUrl(backendContent?.heroImage && backendContent.heroImage !== "/images/pages-banner.png" ? backendContent.heroImage : "/images/campus-2.jpg")}")` }}>
         <div className="svc-hero__photo" />
         <div className="svc-hero__tags">
           <span className="svc-hero__tag svc-hero__tag--left"><span className="svc-hero__tag-icon"><FaGraduationCap aria-hidden="true" /></span>{backendContent?.heroLeft || "Government Polytechnic"}</span>

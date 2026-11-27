@@ -1,12 +1,39 @@
 const mongoose = require("mongoose");
 
 const PHOTO_CATEGORIES = ["Campus", "Workshop", "Events", "Labs", "Library", "Hostels", "Sports", "Placements"];
+const OTHER_PHOTO_CATEGORY = "Other";
 const SOCIAL_PLATFORMS = ["facebook", "instagram", "youtube", "twitter", "linkedin", "whatsapp", "other"];
+const DEFAULT_GALLERY_PHOTOS = [
+  { src: "/images/facilities/girls-common-room-2.jpg", title: "Student gathering", category: "Events", order: 0 },
+  { src: "/images/orientation-2025.jpg", title: "Student orientation", category: "Events", order: 1 },
+  { src: "/images/rangoli.jpg", title: "Rangoli activity", category: "Events", order: 2 },
+  { src: "/images/facilities/hostels-3.jpg", title: "Hostel building", category: "Hostels", order: 3 },
+  { src: "/images/facilities/hostels-2.jpg", title: "Hostel grounds", category: "Hostels", order: 4 },
+  { src: "/images/facilities/facility-library.jpg", title: "Students in the library", category: "Library", order: 5 },
+  { src: "/images/facilities/facility-sports.jpg", title: "Basketball on campus", category: "Sports", order: 6 },
+  { src: "/images/facilities/placement-cell-1.jpg", title: "Micron campus placement drive", category: "Placements", order: 7 },
+  { src: "/images/facilities/industrial-visits-1.jpg", title: "Industrial visit to Amul", category: "Events", order: 8 },
+  { src: "/images/facilities/conference-hall-1.jpg", title: "Student seminar", category: "Campus", order: 9 },
+];
+const LEGACY_SEED_PHOTO_SRCS = [
+  "/images/campus-2.jpg", "/images/campus-3.jpg", "/images/campus-workshop.jpg",
+  "/images/events.jpg", "/images/facilities/communication-lab-1.jpg",
+  "/images/facilities/facility-computer-labs.jpg", "/images/facilities/library-2.jpg",
+  "/images/facilities/facility-hostels.jpg", "/images/facilities/facility-sports.jpg",
+  "/images/placement-activities.jpg",
+];
+const PREVIOUS_VERIFIED_SEED_PHOTO_SRCS = [
+  "/images/events.jpg", "/images/orientation-2025.jpg", "/images/rangoli.jpg",
+  "/images/facilities/facility-hostels.jpg", "/images/facilities/hostels-2.jpg",
+  "/images/facilities/facility-library.jpg", "/images/facilities/facility-sports.jpg",
+  "/images/facilities/placement-cell-1.jpg", "/images/facilities/industrial-visits-1.jpg",
+  "/images/facilities/conference-hall-1.jpg",
+];
 
 const PhotoSchema = new mongoose.Schema({
   src: { type: String, required: true, trim: true },
   title: { type: String, required: true, trim: true },
-  category: { type: String, required: true, trim: true, default: "Campus" },
+  category: { type: String, required: true, trim: true, default: OTHER_PHOTO_CATEGORY },
   order: { type: Number, default: 0 },
 }, { timestamps: true });
 
@@ -51,18 +78,7 @@ MediaSchema.statics.seed = async function (siteSocialLinks = []) {
   const existing = await this.findOne();
   if (existing) return;
 
-  const photos = [
-    { src: "/images/campus-2.jpg", title: "Main campus", category: "Campus", order: 0 },
-    { src: "/images/campus-3.jpg", title: "Campus grounds", category: "Campus", order: 1 },
-    { src: "/images/campus-workshop.jpg", title: "Workshop session", category: "Workshop", order: 2 },
-    { src: "/images/events.jpg", title: "College events", category: "Events", order: 3 },
-    { src: "/images/facilities/communication-lab-1.jpg", title: "Communication lab", category: "Labs", order: 4 },
-    { src: "/images/facilities/facility-computer-labs.jpg", title: "Computer lab", category: "Labs", order: 5 },
-    { src: "/images/facilities/library-2.jpg", title: "Library", category: "Library", order: 6 },
-    { src: "/images/facilities/facility-hostels.jpg", title: "Hostel premises", category: "Hostels", order: 7 },
-    { src: "/images/facilities/facility-sports.jpg", title: "Sports facilities", category: "Sports", order: 8 },
-    { src: "/images/placement-activities.jpg", title: "Placement activities", category: "Placements", order: 9 },
-  ];
+  const photos = DEFAULT_GALLERY_PHOTOS;
 
   const videos = [{
     title: "Welcome to C.R. Polytechnic",
@@ -102,6 +118,11 @@ MediaSchema.statics.seed = async function (siteSocialLinks = []) {
 };
 
 MediaSchema.statics.photoCategories = PHOTO_CATEGORIES;
+MediaSchema.statics.otherPhotoCategory = OTHER_PHOTO_CATEGORY;
+MediaSchema.statics.maxPhotoCategories = 8;
 MediaSchema.statics.socialPlatforms = SOCIAL_PLATFORMS;
+MediaSchema.statics.defaultGalleryPhotos = DEFAULT_GALLERY_PHOTOS;
+MediaSchema.statics.legacySeedPhotoSources = LEGACY_SEED_PHOTO_SRCS;
+MediaSchema.statics.previousVerifiedSeedPhotoSources = PREVIOUS_VERIFIED_SEED_PHOTO_SRCS;
 
 module.exports = mongoose.models.Media || mongoose.model("Media", MediaSchema);

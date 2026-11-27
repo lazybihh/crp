@@ -15,7 +15,7 @@ const builtIn = {
   },
   topics: ["Admissions", "Courses and fees", "Results and exams", "Something else"],
 };
-const DEFAULT_BANNER = "/images/pages-banner.png";
+const DEFAULT_BANNER = "/images/campus-2.jpg";
 const MAX_BANNER_SIZE = 5 * 1024 * 1024;
 
 function Card({ title, open, setOpen, count, children }) {

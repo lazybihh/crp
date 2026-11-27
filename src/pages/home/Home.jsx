@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import * as Fi from "react-icons/fi";
 import { FaGraduationCap } from "react-icons/fa";
 import { FiMapPin, FiArrowRight, FiBell, FiArrowUpRight, FiBookOpen, FiBriefcase, FiUsers, FiAward } from "react-icons/fi";
-import { categories, isNew } from "../../data/notices";
+import { categories, isNew, notices as frontendNotices } from "../../data/notices";
 import { getHomeContent, mediaUrl } from "../../services/homeService";
 import { noticeFileUrl } from "../../services/noticeService";
 import PageLoader, { usePageReady } from "../../components/PageLoader";
@@ -90,7 +90,7 @@ const homeDefaults = {
     {
       id: "events",
       title: "Upcoming events",
-      image: img("events.jpg"),
+      image: img("orientation-2025.jpg"),
       items: [
         { date: "Dec 2026", text: "Annual technical exhibition" },
         { date: "Jan 2027", text: "Republic Day parade and NCC display" },
@@ -100,7 +100,7 @@ const homeDefaults = {
     {
       id: "achievements",
       title: "Achievements",
-      image: img("achievements.jpg"),
+      image: "https://crprohtak.ac.in/media/Gallery/ade1a472-4615-4c38-972b-32ad8c05afa2.jpeg",
       items: [
         { date: "2026", text: "NCC cadets selected for state camp" },
         { date: "2026", text: "Students win inter-polytechnic sports meet" },
@@ -110,7 +110,7 @@ const homeDefaults = {
     {
       id: "placement",
       title: "Placement activities",
-      image: img("placement-activities.jpg"),
+      image: img("facilities/placement-cell-1.jpg"),
       items: [
         { date: "23 Feb 2026", text: "Campus drive by VVDN Technologies, Manesar, in the Conference Hall" },
         { date: "2026", text: "Industrial visits for 3rd and 5th semester students" },
@@ -512,6 +512,24 @@ function NoticeBoard() {
 
 function Highlights() {
   const { highlights: highlightsData, sectionContent } = useHomeContent();
+  const [preview, setPreview] = useState(null);
+
+  useEffect(() => {
+    if (!preview) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setPreview(null);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [preview]);
+
   return (
     <section className="section highlights reveal">
       <div className="container">
@@ -521,7 +539,21 @@ function Highlights() {
         </div>
         <div className="panels">
           {highlightsData.map((panel, index) => (
-            <article key={panel.id} className="panel" tabIndex={0} style={{ "--img": `url("${panel.image}")` }}>
+            <article
+              key={panel.id}
+              className="panel"
+              tabIndex={0}
+              role="button"
+              aria-label={`Preview photo: ${panel.title}`}
+              onClick={() => setPreview(panel)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  setPreview(panel);
+                }
+              }}
+              style={{ "--img": `url("${panel.image}")` }}
+            >
               <span className="panel__no">0{index + 1}</span>
               <h3>{panel.title}</h3>
               <ul className="panel__list">
@@ -533,6 +565,31 @@ function Highlights() {
           ))}
         </div>
       </div>
+
+      {preview && (
+        <div
+          className="home-photo-viewer"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Photo preview: ${preview.title}`}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setPreview(null);
+          }}
+        >
+          <button
+            type="button"
+            className="home-photo-viewer__close"
+            onClick={() => setPreview(null)}
+            aria-label="Close photo preview"
+          >
+            <Fi.FiX aria-hidden="true" />
+          </button>
+          <figure className="home-photo-viewer__figure">
+            <img src={preview.image} alt={preview.title} />
+            <figcaption>{preview.title}</figcaption>
+          </figure>
+        </div>
+      )}
     </section>
   );
 }
@@ -712,7 +769,7 @@ export default function Home() {
     principalInitials: (c.principal.name || "").replace(/^(Dr|Mr|Mrs|Sh)\.?\s+/i, "").split(" ").map((word) => word[0]).join("").slice(0, 2),
     news: { ...c.news, image: mediaUrl(c.news.image) },
     dignitaries: c.dignitaries.map((person) => ({ ...person, image: mediaUrl(person.image) })),
-    notices: Array.isArray(c.notices) ? c.notices : [],
+    notices: Array.isArray(saved?.notices) ? saved.notices : frontendNotices,
     noticesLoading: false,
     noticesError: "",
     highlights: c.highlights.map((panel) => ({ ...panel, image: mediaUrl(panel.image), items: (panel.items || []).map((item) => ({ ...item, image: mediaUrl(item.photo || "") })) })),

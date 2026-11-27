@@ -11,13 +11,11 @@
 //                (empty fields are simply not shown - add them whenever they are available)
 //   highlights   the four visual cards at the bottom
 // Department and collage photos use /images/faculty/workshop/; staff photos remain under /images/departments/workshop/staff/.
-// The hero shows /images/pages-banner.png exactly as it is (no tint over it).
 // A missing picture shows a clean placeholder, a missing staff photo shows the person's initials.
 //
 //   /media/teachers/<name>.jpeg               -> public/images/departments/workshop/staff/<name>.jpeg   (9 photos, same file names as the live site, see `staff` below)
 //   hero.jpg, about-1.jpg, about-2.jpg, about-3.jpg -> /images/faculty/workshop/ (department picture and About collage)
 //   highlight-staff.jpg, highlight-instructors.jpg, highlight-superintendent.jpg, highlight-foreman.jpg -> backgrounds of the highlight cards
-// The banner /images/pages-banner.png is the same one the About / Facilities pages use.
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { getDepartment, getDepartments, mediaUrl } from "../../services/departmentService";
@@ -33,7 +31,7 @@ const IMG = "/images/departments/workshop";
 const DEPT_IMG = "/images/faculty/workshop";
 
 // Same banner as the About / Facilities pages (a patterned navy banner shows if it is missing).
-const fallbackBanner = "/images/pages-banner.png";
+const fallbackBanner = "/images/campus-2.jpg";
 
 const fallbackDept = {
   title: "Workshop Department",
@@ -205,7 +203,7 @@ export default function Workshop() {
   const fallbackLabels = {
     eyebrow: "Department", bannerTagLeft: "Government Polytechnic", bannerTagRight: "Rohtak (Haryana)", breadcrumb: "Workshop", switcherLabel: "Department", aboutTab: "About", staffTab: "Staff", searchAbout: "Search the department information", searchStaff: "Search staff by name or role", qualificationLabel: "Qualification", interestLabel: "Interested area", highlightsEyebrow: "At a glance", highlightsTitle: "Department", highlightsTitleHighlight: "highlights", photoPlaceholder: "Photo coming soon", };
   const pageLabels = Object.fromEntries(Object.entries({ ...fallbackLabels, ...(serverData?.labels || {}) }).map(([key, value]) => [key, value || fallbackLabels[key]]));
-  const banner = mediaUrl(serverData?.banner || fallbackBanner);
+  const banner = mediaUrl(serverData?.banner && serverData.banner !== "/images/pages-banner.png" ? serverData.banner : fallbackBanner);
   const dept = serverData ? { ...fallbackDept, ...serverData, facts: (serverData.facts || []).map((item, i) => ({ ...item, icon: fallbackDept.facts[i]?.icon || fallbackDept.facts[0]?.icon })), image: mediaUrl(serverData.image ?? fallbackDept.image) } : fallbackDept;
   const collage = serverData ? (serverData.collage || []).map((item) => ({ ...item, src: mediaUrl(item.src) })) : fallbackCollage;
   const aboutTiles = serverData ? (serverData.tiles || []).map((item, i) => ({ ...item, icon: fallbackAboutTiles[i]?.icon || fallbackAboutTiles[0]?.icon })) : fallbackAboutTiles;

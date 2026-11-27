@@ -21,7 +21,9 @@ const json = (method, data) => ({
 
 export const getMedia = () => request("/media", undefined, "Failed to load media content.");
 export const savePhotos = (photos) => request("/media/photos", json("PUT", { photos }), "Failed to save photos.");
-export const savePhotoCategories = (categories) => request("/media/photo-categories", json("PUT", { categories }), "Failed to update photo categories.");
+export const addPhotoCategory = (name) => request("/media/photo-categories", json("POST", { name }), "Failed to add photo category.");
+export const renamePhotoCategory = (category, name) => request(`/media/photo-categories/${encodeURIComponent(category)}`, json("PATCH", { name }), "Failed to rename photo category.");
+export const deletePhotoCategory = (category) => request(`/media/photo-categories/${encodeURIComponent(category)}`, { method: "DELETE" }, "Failed to delete photo category.");
 export const saveVideos = (videos) => request("/media/videos", json("PUT", { videos }), "Failed to save video links.");
 export const saveSocialLinks = (socialLinks) => request("/media/social-links", json("PUT", { socialLinks }), "Failed to save social links.");
 export const savePageBanner = (page, src) => request(`/media/banners/${encodeURIComponent(page)}`, json("PUT", { src }), "Failed to save page banner.");

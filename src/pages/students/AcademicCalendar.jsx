@@ -10,7 +10,7 @@ import "./AcademicCalendar.css";
 
 const defaults = {
   key: "academic-calendar",
-  hero: { image: "/images/pages-banner.png" },
+  hero: { image: "/images/campus-2.jpg" },
   intro: {
     eyebrow: "Students",
     title: "Academic Calendar",

@@ -12,6 +12,15 @@ const LABEL_FIELDS = ["eyebrow", "bannerTagLeft", "bannerTagRight", "breadcrumb"
 const text = (value) => (typeof value === "string" ? value.trim() : "");
 const list = (value) => (Array.isArray(value) ? value.map(text).filter(Boolean) : []);
 const fixed = (value, size, make) => Array.from({ length: size }, (_, i) => make((Array.isArray(value) && value[i]) || {}));
+const normalizeDepartmentImages = (department) => {
+  if (!department || department.slug !== "mechanical") return department;
+  const oldImage = "/images/faculty/mechanical-engineering/hero.jpg";
+  const newImage = "/images/faculty/mechanical-engineering/hero.png";
+  return {
+    ...department,
+    image: department.image === oldImage ? newImage : department.image,
+  };
+};
 
 // keep only the known fields, in the right shape
 function clean(body) {
@@ -52,7 +61,8 @@ function clean(body) {
 // all departments in order (the public pages and the admin editor)
 router.get("/", async (req, res) => {
   try {
-    res.json(await Department.find().sort({ order: 1 }).lean());
+    const departments = await Department.find().sort({ order: 1 }).lean();
+    res.json(departments.map(normalizeDepartmentImages));
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch the departments", error: error.message });
   }
@@ -63,7 +73,7 @@ router.get("/:slug", async (req, res) => {
   try {
     const department = await Department.findOne({ slug: req.params.slug }).lean();
     if (!department) return res.status(404).json({ message: "Department not found" });
-    res.json(department);
+    res.json(normalizeDepartmentImages(department));
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch the department", error: error.message });
   }

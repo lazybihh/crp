@@ -13,7 +13,7 @@ const seedRows = [
     "content": {
       "key": "history",
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-2.jpg"
       },
       "intro": {
         "eyebrow": "About us",
@@ -81,7 +81,7 @@ const seedRows = [
     "content": {
       "key": "principal-message",
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-3.jpg"
       },
       "intro": {
         "eyebrow": "About us",
@@ -120,7 +120,7 @@ const seedRows = [
     "content": {
       "key": "rank-accreditation",
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-workshop.jpg"
       },
       "intro": {
         "eyebrow": "About us",
@@ -168,7 +168,7 @@ const seedRows = [
     "content": {
       "key": "alumni",
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-2.jpg"
       },
       "intro": {
         "eyebrow": "About us",

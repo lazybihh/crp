@@ -37,7 +37,7 @@ import "./Admissions.css";
 import { useSite } from "../../context/SiteSettingsContext";
 import { CourseEnquiryButton, LeadForm, LeadModal } from "../../components/LeadForm";
 
-const defaultHero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
+const defaultHero = { image: "/images/campus-3.jpg" }; // wide photo; if it is missing a patterned navy banner shows instead
 
 const defaultSession = "2026-27";
 

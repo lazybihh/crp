@@ -6,7 +6,7 @@ const seedRows = [
     "key": "skill-courses",
     "content": {
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-2.jpg"
       },
       "intro": {
         "eyebrow": "Students",
@@ -68,7 +68,7 @@ const seedRows = [
     "key": "freelancing",
     "content": {
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-3.jpg"
       },
       "intro": {
         "eyebrow": "Students",
@@ -143,7 +143,7 @@ const seedRows = [
     "key": "incubator",
     "content": {
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-workshop.jpg"
       },
       "intro": {
         "eyebrow": "Students",
@@ -210,7 +210,7 @@ const seedRows = [
     "key": "apprenticeship",
     "content": {
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-2.jpg"
       },
       "intro": {
         "eyebrow": "Students",
@@ -290,7 +290,7 @@ const seedRows = [
     "key": "ncc-nss",
     "content": {
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-3.jpg"
       },
       "photo": {
         "src": "/images/ncc/ncc-activity.jpg",

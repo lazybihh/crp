@@ -34,7 +34,7 @@ import "./Notices.css";
 import { useSite } from "../../context/SiteSettingsContext";
 import PageLoader, { usePageReady } from "../../components/PageLoader";
 
-const defaultPage = { banner:"/images/pages-banner.png", eyebrow:"Latest updates", title:"Notices", lead:"Admission lists, exam datesheets, scholarships, holidays and other announcements from the institute.", leftTag:"Government Polytechnic", rightTag:"Rohtak (Haryana)", glanceTitle:"At a glance", noticesLabel:"Notices", activitiesLabel:"Activities", latestLabel:"Latest notice", browseEyebrow:"Browse", listTitle:"All announcements", searchPlaceholder:"Search by title", helpTitle:"Can't find a notice?", helpText:"Ask the institute office. Some older notices may not be on this page.", homeBreadcrumb:"Home", noticesBreadcrumb:"Notices", allLabel:"All", chooseCategoryLabel:"Choose a category", fileMissingLabel:"File coming soon", openFileLabel:"Open", emptyMessage:"No notices match your search. Try a different word or choose All.", showMoreLabel:"Show more", showingLabel:"Showing", categoryAdmissions:"Admissions", categoryExams:"Exams", categoryScholarships:"Scholarships", categoryEvents:"Holidays & events", categoryTenders:"Tenders", categoryOther:"Other" };
+const defaultPage = { banner:"/images/campus-3.jpg", eyebrow:"Latest updates", title:"Notices", lead:"Admission lists, exam datesheets, scholarships, holidays and other announcements from the institute.", leftTag:"Government Polytechnic", rightTag:"Rohtak (Haryana)", glanceTitle:"At a glance", noticesLabel:"Notices", activitiesLabel:"Activities", latestLabel:"Latest notice", browseEyebrow:"Browse", listTitle:"All announcements", searchPlaceholder:"Search by title", helpTitle:"Can't find a notice?", helpText:"Ask the institute office. Some older notices may not be on this page.", homeBreadcrumb:"Home", noticesBreadcrumb:"Notices", allLabel:"All", chooseCategoryLabel:"Choose a category", fileMissingLabel:"File coming soon", openFileLabel:"Open", emptyMessage:"No notices match your search. Try a different word or choose All.", showMoreLabel:"Show more", showingLabel:"Showing", categoryAdmissions:"Admissions", categoryExams:"Exams", categoryScholarships:"Scholarships", categoryEvents:"Holidays & events", categoryTenders:"Tenders", categoryOther:"Other" };
 
 const PAGE_SIZE = 10; // rows shown at first, and added each time "Show more" is pressed
 
@@ -63,9 +63,13 @@ export default function Notices() {
   const noticeRows = noticesResult?.status === "fulfilled" && Array.isArray(noticesResult.value.notices)
     ? noticesResult.value.notices
     : starterNotices;
+  const savedPage = pageResult?.status === "fulfilled" ? pageResult.value.page || {} : {};
   const page = {
     ...defaultPage,
-    ...(pageResult?.status === "fulfilled" ? pageResult.value.page || {} : {}),
+    ...savedPage,
+    banner: savedPage.banner && savedPage.banner !== "/images/pages-banner.png"
+      ? savedPage.banner
+      : defaultPage.banner,
   };
   const [tab, setTab] = useState("notices"); // "notices" or "activities"
   const [category, setCategory] = useState("all");

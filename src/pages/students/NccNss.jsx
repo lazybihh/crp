@@ -30,7 +30,7 @@ import {
 import "./NccNss.css";
 import { useSite } from "../../context/SiteSettingsContext";
 
-const defaultHero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
+const defaultHero = { image: "/images/campus-3.jpg" }; // wide photo; if it is missing a patterned navy banner shows instead
 const defaultPhoto = { src: "/images/ncc/ncc-activity.jpg", alt: "NCC cadets taking part in an activity at the institute" };
 
 const defaultIntro = {

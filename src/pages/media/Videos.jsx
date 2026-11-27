@@ -133,7 +133,7 @@ export default function Videos() {
         aria-label="Videos"
         style={{
           "--img": `url("${mediaUrl(
-            banner || "/images/pages-banner.png"
+            banner && banner !== "/images/pages-banner.png" ? banner : "/images/campus-2.jpg"
           )}")`,
         }}
       >

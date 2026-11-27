@@ -50,7 +50,7 @@ router.put("/page/banner", async (req, res) => {
     const before = await FacilitiesPage.findOne();
     const page = await FacilitiesPage.findOneAndUpdate(
       {},
-      { $set: { bannerImage: image || "/images/pages-banner.png" } },
+      { $set: { bannerImage: image || "/images/campus-2.jpg" } },
       { new: true, upsert: true, runValidators: true }
     );
     await removeUnused(before, page);

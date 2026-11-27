@@ -228,7 +228,9 @@ main#main.rece-page .rece-intro h1 {
   font-size: clamp(1.5rem, 5vw, 3.3rem);
   line-height: 1.06;
   max-width: none;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .rece-intro h1 small {
@@ -893,7 +895,7 @@ main#main.rece-page .rece-none h2 {
   }
 }
 
-/* the title may wrap on phones (it is forced onto one line on wide screens) */
+/* Keep the long department title within its column at every screen size. */
 @media (max-width: 760px) {
   main#main.rece-page .rece-intro h1 {
     white-space: normal;

@@ -11,7 +11,7 @@ import "./AdminHome.css";
 import "./AdminFacilities.css";
 
 const SLOTS = ["Large photo (left)", "Top-right photo", "Bottom-right photo"];
-const DEFAULT_BANNER = "/images/pages-banner.png";
+const DEFAULT_BANNER = "/images/campus-2.jpg";
 const MAX_BANNER_SIZE = 5 * 1024 * 1024;
 
 /* ---------- small building blocks ---------- */

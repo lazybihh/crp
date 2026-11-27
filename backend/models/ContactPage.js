@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const ContactPageSchema = new mongoose.Schema(
   {
-    bannerImage: { type: String, default: "/images/pages-banner.png" },
+    bannerImage: { type: String, default: "/images/campus-2.jpg" },
     intro: {
       eyebrow: { type: String, default: "About us" },
       title: { type: String, default: "Contact us" },
@@ -22,7 +22,7 @@ ContactPageSchema.statics.seed = async function () {
       ["intro.eyebrow", "About us"],
       ["intro.title", "Contact us"],
       ["intro.lead", "Call, write or visit the institute office. Everything you need to find us is on this page."],
-      ["bannerImage", "/images/pages-banner.png"],
+      ["bannerImage", "/images/campus-2.jpg"],
       ["topics", ["Admissions", "Courses and fees", "Results and exams", "Something else"]],
     ]) {
       const parts = key.split(".");

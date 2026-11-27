@@ -17,7 +17,6 @@
 //   /media/teachers/<file>                    -> public/images/departments/electrical/staff/<file>   (7 photos, file names used below)
 //   hero.jpg, about-1.jpg, about-2.jpg, about-3.jpg -> /images/faculty/electrical-engineering/ (department picture and About collage)
 //   electrical-highlight-labs.jpg, electrical-highlight-since.jpg, electrical-highlight-results.jpg, electrical-highlight-placements.jpg -> backgrounds of the highlight cards
-// The banner /images/pages-banner.png is the same one the About / Facilities pages use.
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { getDepartment, getDepartments, mediaUrl } from "../../services/departmentService";
@@ -33,7 +32,7 @@ const IMG = "/images/departments/electrical";
 const DEPT_IMG = "/images/faculty/electrical-engineering";
 
 // Same banner as the About / Facilities pages (a patterned navy banner shows if it is missing).
-const fallbackBanner = "/images/pages-banner.png";
+const fallbackBanner = "/images/campus-3.jpg";
 
 const fallbackDept = {
   title: "Electrical Engineering",
@@ -283,7 +282,7 @@ export default function Electrical() {
   const fallbackLabels = {
     eyebrow: "Department", bannerTagLeft: "Government Polytechnic", bannerTagRight: "Rohtak (Haryana)", breadcrumb: "Electrical", switcherLabel: "Department", aboutTab: "About", staffTab: "Staff", searchAbout: "Search the department information", searchStaff: "Search staff by name or role", qualificationLabel: "Qualification", interestLabel: "Interested area", highlightsEyebrow: "At a glance", highlightsTitle: "Department", highlightsTitleHighlight: "highlights", photoPlaceholder: "Photo coming soon", };
   const pageLabels = Object.fromEntries(Object.entries({ ...fallbackLabels, ...(serverData?.labels || {}) }).map(([key, value]) => [key, value || fallbackLabels[key]]));
-  const banner = mediaUrl(serverData?.banner || fallbackBanner);
+  const banner = mediaUrl(serverData?.banner && serverData.banner !== "/images/pages-banner.png" ? serverData.banner : fallbackBanner);
   const dept = serverData ? { ...fallbackDept, ...serverData, facts: (serverData.facts || []).map((item, i) => ({ ...item, icon: fallbackDept.facts[i]?.icon || fallbackDept.facts[0]?.icon })), image: mediaUrl(serverData.image ?? fallbackDept.image) } : fallbackDept;
   const collage = serverData ? (serverData.collage || []).map((item) => ({ ...item, src: mediaUrl(item.src) })) : fallbackCollage;
   const aboutTiles = serverData ? (serverData.tiles || []).map((item, i) => ({ ...item, icon: fallbackAboutTiles[i]?.icon || fallbackAboutTiles[0]?.icon })) : fallbackAboutTiles;

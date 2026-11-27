@@ -30,7 +30,7 @@ import { getFacilities, mediaUrl } from "../../services/facilityService";
 import PageLoader, { usePageReady } from "../../components/PageLoader";
 import "./Facilities.css";
 
-const hero = { image: "/images/pages-banner.png" }; // if it is missing a patterned navy banner shows instead
+const hero = { image: "/images/campus-2.jpg" }; // if it is missing a patterned navy banner shows instead
 
 const fallbackIntro = {
   eyebrow: "About us",
@@ -404,7 +404,8 @@ export default function Facilities() {
   const wantedId = params.get("facility");
   const wanted = facilities.findIndex((item) => item.id === wantedId);
   const [active, setActive] = useState(wanted >= 0 ? wanted : 0);
-  const heroImage = mediaUrl(saved?.page?.bannerImage) || hero.image;
+  const savedBanner = saved?.page?.bannerImage;
+  const heroImage = mediaUrl(savedBanner && savedBanner !== "/images/pages-banner.png" ? savedBanner : hero.image) || hero.image;
 
   // when the list arrives or changes, keep the open tab valid (and open the facility named in the link, if any)
   useEffect(() => {
@@ -565,8 +566,8 @@ export default function Facilities() {
                 </ul>
               </div>
 
-              <div className="fac-gallery">
-                {current.photos.map((src, n) => (
+              <div className="fac-gallery fac-gallery--two">
+                {current.photos.slice(0, 2).map((src, n) => (
                   <Photo
                     key={n}
                     placeholder={page.panel.photoPlaceholder}

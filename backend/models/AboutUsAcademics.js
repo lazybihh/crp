@@ -13,7 +13,7 @@ const seedRows = [
     "content": {
       "key": "courses",
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-2.jpg"
       },
       "intro": {
         "eyebrow": "About us",
@@ -77,7 +77,7 @@ const seedRows = [
     "content": {
       "key": "results",
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-3.jpg"
       },
       "intro": {
         "eyebrow": "About us",
@@ -125,7 +125,7 @@ const seedRows = [
     "content": {
       "key": "placements",
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-workshop.jpg"
       },
       "intro": {
         "eyebrow": "About us",
@@ -205,7 +205,7 @@ const seedRows = [
     "content": {
       "key": "entrepreneurship",
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-2.jpg"
       },
       "intro": {
         "eyebrow": "About us",
@@ -260,7 +260,7 @@ const seedRows = [
     "content": {
       "key": "annual-report",
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-3.jpg"
       },
       "intro": {
         "eyebrow": "About us",

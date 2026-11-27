@@ -6,7 +6,7 @@ const seedRows = [
     "key": "admissions",
     "content": {
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-2.jpg"
       },
       "session": "2026-27",
       "intro": {
@@ -127,7 +127,7 @@ const seedRows = [
     "content": {
       "key": "academic-calendar",
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-3.jpg"
       },
       "intro": {
         "eyebrow": "Students",
@@ -149,7 +149,7 @@ const seedRows = [
     "key": "online-learning",
     "content": {
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-workshop.jpg"
       },
       "intro": {
         "eyebrow": "Students",
@@ -235,7 +235,7 @@ const seedRows = [
     "key": "helpline",
     "content": {
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-2.jpg"
       },
       "intro": {
         "eyebrow": "Students",
@@ -301,7 +301,7 @@ const seedRows = [
     "key": "grievance",
     "content": {
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-3.jpg"
       },
       "intro": {
         "eyebrow": "Students",
@@ -375,7 +375,7 @@ const seedRows = [
     "key": "e-services",
     "content": {
       "hero": {
-        "image": "/images/pages-banner.png"
+        "image": "/images/campus-workshop.jpg"
       },
       "intro": {
         "eyebrow": "Students",

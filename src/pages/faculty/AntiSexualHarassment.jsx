@@ -70,7 +70,7 @@ export default function AntiSexualHarassment() {
 
   return (
     <main data-faculty-content-key="anti-sexual-harassment" id="main" className="pol-page pol-harassment">
-      <section className="pol-hero" aria-label="Anti Sexual Harassment" style={{ "--pol-img": `url("${mediaUrl(backendContent?.heroImage || '/images/pages-banner.png')}")` }}>
+      <section className="pol-hero" aria-label="Anti Sexual Harassment" style={{ "--pol-img": `url("${mediaUrl(backendContent?.heroImage && backendContent.heroImage !== "/images/pages-banner.png" ? backendContent.heroImage : "/images/campus-2.jpg")}")` }}>
         <div className="pol-hero__photo" />
         <div className="pol-hero__tags">
           <span className="pol-hero__tag pol-hero__tag--left">

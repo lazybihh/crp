@@ -11,12 +11,10 @@
 //                (empty fields are simply not shown - add them whenever they are available)
 //   highlights   the four visual cards at the bottom
 // All pictures live in public/images/faculty/administrative/. Missing images intentionally show placeholders.
-// The hero shows /images/pages-banner.png exactly as it is (no tint over it).
 // A missing picture shows a clean placeholder, a missing staff photo shows the person's initials.
 //
 //   Add the administrative office hero, collage, staff and highlight images under /images/faculty/administrative/.
 //   /media/teachers/<file> -> public/images/faculty/administrative/staff/<file>   (9 photos, same file names as the live site; Meenakshi and Sunder Singh have none, so initials are shown)
-// The banner /images/pages-banner.png is the same one the About / Facilities pages use.
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { getDepartment, getDepartments, mediaUrl } from "../../services/departmentService";
@@ -31,7 +29,7 @@ import "./Administrative.css";
 const IMG = "/images/faculty/administrative";
 
 // Same banner as the About / Facilities pages (a patterned navy banner shows if it is missing).
-const fallbackBanner = "/images/pages-banner.png";
+const fallbackBanner = "/images/campus-3.jpg";
 
 const fallbackDept = {
   title: "Administrative Staff",
@@ -215,7 +213,7 @@ export default function Administrative() {
   const fallbackLabels = {
     eyebrow: "Faculty", bannerTagLeft: "Government Polytechnic", bannerTagRight: "Rohtak (Haryana)", breadcrumb: "Administrative Staff", switcherLabel: "Staff", aboutTab: "About", staffTab: "Staff", searchAbout: "Search administrative information", searchStaff: "Search staff by name or role", qualificationLabel: "Qualification", interestLabel: "Interested area", highlightsEyebrow: "At a glance", highlightsTitle: "Administrative", highlightsTitleHighlight: "overview", photoPlaceholder: "Photo coming soon", };
   const pageLabels = Object.fromEntries(Object.entries({ ...fallbackLabels, ...(serverData?.labels || {}) }).map(([key, value]) => [key, value || fallbackLabels[key]]));
-  const banner = mediaUrl(serverData?.banner || fallbackBanner);
+  const banner = mediaUrl(serverData?.banner && serverData.banner !== "/images/pages-banner.png" ? serverData.banner : fallbackBanner);
   const dept = serverData ? { ...fallbackDept, ...serverData, facts: (serverData.facts || []).map((item, i) => ({ ...item, icon: fallbackDept.facts[i]?.icon || fallbackDept.facts[0]?.icon })), image: mediaUrl(serverData.image ?? fallbackDept.image) } : fallbackDept;
   const collage = serverData ? (serverData.collage || []).map((item) => ({ ...item, src: mediaUrl(item.src) })) : fallbackCollage;
   const aboutTiles = serverData ? (serverData.tiles || []).map((item, i) => ({ ...item, icon: fallbackAboutTiles[i]?.icon || fallbackAboutTiles[0]?.icon })) : fallbackAboutTiles;

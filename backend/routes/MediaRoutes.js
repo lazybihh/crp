@@ -5,8 +5,81 @@ const { removeUnused } = require("../utils/uploads");
 
 const router = express.Router();
 const PHOTO_CATEGORIES = Media.photoCategories;
+const OTHER_PHOTO_CATEGORY = Media.otherPhotoCategory;
+const MAX_PHOTO_CATEGORIES = Media.maxPhotoCategories;
 const SOCIAL_PLATFORMS = Media.socialPlatforms;
 const text = (value) => String(value ?? "").trim();
+const normalizedName = (value) => text(value).toLocaleLowerCase();
+
+function cleanStoredCategories(value) {
+  const seen = new Set();
+  const categories = [];
+  for (const entry of Array.isArray(value) ? value : PHOTO_CATEGORIES) {
+    const name = text(entry);
+    const key = normalizedName(name);
+    if (!name || key === normalizedName(OTHER_PHOTO_CATEGORY) || seen.has(key)) continue;
+    seen.add(key);
+    categories.push(name);
+    if (categories.length === MAX_PHOTO_CATEGORIES) break;
+  }
+  return categories;
+}
+
+async function normalizePhotoData(media) {
+  let changed = false;
+  // Replace only the exact original untouched seed set; keep Admin-managed galleries intact.
+  const photoSources = media.photos.map((photo) => text(photo.src)).sort();
+  const knownDefaultSets = [Media.legacySeedPhotoSources, Media.previousVerifiedSeedPhotoSources]
+    .map((sources) => [...sources].sort());
+  if (knownDefaultSets.some((sources) =>
+    photoSources.length === sources.length &&
+    photoSources.every((src, index) => src === sources[index])
+  )) {
+    media.photos = Media.defaultGalleryPhotos;
+    changed = true;
+  }
+
+  const stored = Array.isArray(media.photoCategories) ? media.photoCategories : PHOTO_CATEGORIES;
+  const categories = cleanStoredCategories(stored);
+  if (JSON.stringify(stored) !== JSON.stringify(categories)) {
+    media.photoCategories = categories;
+    changed = true;
+  }
+
+  for (const photo of media.photos) {
+    const current = text(photo.category);
+    const next = normalizedName(current) === normalizedName(OTHER_PHOTO_CATEGORY)
+      ? OTHER_PHOTO_CATEGORY
+      : categories.includes(current) ? current : OTHER_PHOTO_CATEGORY;
+    if (photo.category !== next) {
+      photo.category = next;
+      changed = true;
+    }
+  }
+
+  if (changed) await media.save();
+  return media;
+}
+
+function categoryName(value) {
+  const name = text(value);
+  if (!name) throw new Error("Category names cannot be empty.");
+  if (name.length > 40) throw new Error("Category names must be 40 characters or fewer.");
+  if (normalizedName(name) === normalizedName(OTHER_PHOTO_CATEGORY)) {
+    throw new Error("Other is a fixed category and cannot be renamed or added.");
+  }
+  return name;
+}
+
+function validateCategoryList(value) {
+  if (!Array.isArray(value)) throw new Error("Categories must be a list.");
+  if (value.length > MAX_PHOTO_CATEGORIES) throw new Error(`You can have up to ${MAX_PHOTO_CATEGORIES} editable categories. Other is fixed.`);
+  const categories = value.map(categoryName);
+  if (new Set(categories.map(normalizedName)).size !== categories.length) {
+    throw new Error("Each category must have a unique name.");
+  }
+  return categories;
+}
 const httpsUrl = (value) => {
   const url = text(value);
   if (!url) throw new Error("A link is required.");
@@ -28,7 +101,7 @@ async function getOrCreate() {
 
 router.get("/", async (_req, res) => {
   try {
-    const media = await getOrCreate();
+    const media = await normalizePhotoData(await getOrCreate());
     res.json({ media });
   } catch (error) {
     res.status(500).json({ message: error.message || "Failed to load media." });
@@ -77,31 +150,15 @@ router.put("/banners/:page", async (req, res) => {
   }
 });
 
-// Rename the existing photo categories. The list length is fixed: admins cannot add or delete categories.
+// Replace the editable category list. Removed categories send their photos to fixed Other.
 router.put("/photo-categories", async (req, res) => {
   try {
-    if (!Array.isArray(req.body.categories)) {
-      return res.status(400).json({ message: "Categories must be a list." });
-    }
-
-    const media = await getOrCreate();
-    const current = [...(media.photoCategories || PHOTO_CATEGORIES)];
-    const categories = req.body.categories.map((value) => text(value));
-
-    if (categories.length !== current.length) {
-      return res.status(400).json({ message: "Existing categories can be renamed, but cannot be added or removed." });
-    }
-    if (categories.some((name) => !name)) {
-      return res.status(400).json({ message: "Category names cannot be empty." });
-    }
-    if (new Set(categories.map((name) => name.toLowerCase())).size !== categories.length) {
-      return res.status(400).json({ message: "Each category must have a unique name." });
-    }
-
-    const renamed = new Map(current.map((oldName, index) => [oldName, categories[index]]));
+    const categories = validateCategoryList(req.body.categories);
+    const media = await normalizePhotoData(await getOrCreate());
+    const removed = new Set(media.photoCategories.filter((name) => !categories.includes(name)));
     media.photos = media.photos.map((photo) => ({
       ...photo.toObject(),
-      category: renamed.get(photo.category) || photo.category,
+      category: removed.has(photo.category) ? OTHER_PHOTO_CATEGORY : photo.category,
     }));
     media.photoCategories = categories;
     await media.save();
@@ -112,18 +169,91 @@ router.put("/photo-categories", async (req, res) => {
   }
 });
 
+router.post("/photo-categories", async (req, res) => {
+  try {
+    const name = categoryName(req.body.name);
+    const media = await normalizePhotoData(await getOrCreate());
+    if (media.photoCategories.length >= MAX_PHOTO_CATEGORIES) {
+      return res.status(409).json({ message: `You can have up to ${MAX_PHOTO_CATEGORIES} editable categories. Other is fixed.` });
+    }
+    if (media.photoCategories.some((item) => normalizedName(item) === normalizedName(name))) {
+      return res.status(409).json({ message: "A category with that name already exists." });
+    }
+    media.photoCategories.push(name);
+    await media.save();
+    res.status(201).json({ message: "Photo category added.", categories: media.photoCategories, photos: media.photos });
+  } catch (error) {
+    res.status(400).json({ message: error.message || "Failed to add photo category." });
+  }
+});
+
+router.patch("/photo-categories/:category", async (req, res) => {
+  try {
+    const oldName = text(req.params.category);
+    if (normalizedName(oldName) === normalizedName(OTHER_PHOTO_CATEGORY)) {
+      return res.status(400).json({ message: "Other is fixed and cannot be renamed." });
+    }
+    const name = categoryName(req.body.name);
+    const media = await normalizePhotoData(await getOrCreate());
+    if (!media.photoCategories.includes(oldName)) return res.status(404).json({ message: "Photo category not found." });
+    if (media.photoCategories.some((item) => item !== oldName && normalizedName(item) === normalizedName(name))) {
+      return res.status(409).json({ message: "A category with that name already exists." });
+    }
+
+    media.photoCategories = media.photoCategories.map((item) => item === oldName ? name : item);
+    media.photos = media.photos.map((photo) => ({
+      ...photo.toObject(),
+      category: photo.category === oldName ? name : photo.category,
+    }));
+    await media.save();
+    res.json({ message: "Photo category renamed.", categories: media.photoCategories, photos: media.photos });
+  } catch (error) {
+    res.status(400).json({ message: error.message || "Failed to rename photo category." });
+  }
+});
+
+router.delete("/photo-categories/:category", async (req, res) => {
+  try {
+    const name = text(req.params.category);
+    if (normalizedName(name) === normalizedName(OTHER_PHOTO_CATEGORY)) {
+      return res.status(400).json({ message: "Other is fixed and cannot be deleted." });
+    }
+    const media = await normalizePhotoData(await getOrCreate());
+    if (!media.photoCategories.includes(name)) return res.status(404).json({ message: "Photo category not found." });
+
+    let movedPhotos = 0;
+    media.photoCategories = media.photoCategories.filter((item) => item !== name);
+    media.photos = media.photos.map((photo) => {
+      if (photo.category !== name) return photo.toObject();
+      movedPhotos += 1;
+      return { ...photo.toObject(), category: OTHER_PHOTO_CATEGORY };
+    });
+    await media.save();
+    res.json({
+      message: `Category deleted. ${movedPhotos} photo${movedPhotos === 1 ? "" : "s"} moved to Other.`,
+      categories: media.photoCategories,
+      photos: media.photos,
+      movedPhotos,
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message || "Failed to delete photo category." });
+  }
+});
+
 router.put("/photos", async (req, res) => {
   try {
     if (!Array.isArray(req.body.photos)) return res.status(400).json({ message: "Photos must be a list." });
-    const media = await getOrCreate();
-    const allowedCategories = media.photoCategories || PHOTO_CATEGORIES;
+    const media = await normalizePhotoData(await getOrCreate());
+    const allowedCategories = media.photoCategories || [];
     const photos = req.body.photos.map((photo, index) => {
       const src = text(photo.src);
       const title = text(photo.title);
-      const category = text(photo.category);
+      const requestedCategory = text(photo.category);
+      const category = allowedCategories.includes(requestedCategory) || normalizedName(requestedCategory) === normalizedName(OTHER_PHOTO_CATEGORY)
+        ? (normalizedName(requestedCategory) === normalizedName(OTHER_PHOTO_CATEGORY) ? OTHER_PHOTO_CATEGORY : requestedCategory)
+        : OTHER_PHOTO_CATEGORY;
       if (!src || !title) throw new Error("Every photo needs an image and a title.");
       if (!src.startsWith("/images/") && !src.startsWith("/uploads/")) throw new Error("Photos must use an existing site image or an uploaded image.");
-      if (!allowedCategories.includes(category)) throw new Error(`Choose one of the existing photo categories: ${allowedCategories.join(", ")}.`);
       return { ...(photo._id ? { _id: photo._id } : {}), src, title, category, order: index };
     });
 

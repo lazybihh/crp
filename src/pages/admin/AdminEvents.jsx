@@ -11,7 +11,7 @@ import "./AdminHome.css";
 import "./AdminEvents.css";
 
 const KINDS = ["Event", "Activity"];
-const DEFAULT_BANNER = "/images/pages-banner.png";
+const DEFAULT_BANNER = "/images/campus-3.jpg";
 const MAX_BANNER_SIZE = 5 * 1024 * 1024;
 
 /* ---------- small building blocks ---------- */

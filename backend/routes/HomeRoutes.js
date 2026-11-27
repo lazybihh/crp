@@ -17,7 +17,26 @@ const getLatestNotices = () =>
 router.get("/", async (req, res) => {
   try {
     // the first time, the record is created from the model's starting content
-    const home = (await HomeContent.findOne().lean()) || (await HomeContent.create({})).toObject();
+    let home = (await HomeContent.findOne().lean()) || (await HomeContent.create({})).toObject();
+    // Update the old built-in sample images while preserving any Admin-selected images.
+    const defaultImageUpdates = {};
+    if (home.highlights?.some((panel) => panel.id === "events" && panel.image === "/images/events.jpg")) {
+      defaultImageUpdates["highlights.$[events].image"] = "/images/orientation-2025.jpg";
+    }
+    if (home.highlights?.some((panel) => panel.id === "placement" && panel.image === "/images/placement-activities.jpg")) {
+      defaultImageUpdates["highlights.$[placement].image"] = "/images/facilities/placement-cell-1.jpg";
+    }
+    if (home.highlights?.some((panel) => panel.id === "achievements" && panel.image === "/images/achievements.jpg")) {
+      defaultImageUpdates["highlights.$[achievements].image"] = "https://crprohtak.ac.in/media/Gallery/ade1a472-4615-4c38-972b-32ad8c05afa2.jpeg";
+    }
+    if (Object.keys(defaultImageUpdates).length) {
+      const arrayFilters = [];
+      if (defaultImageUpdates["highlights.$[events].image"]) arrayFilters.push({ "events.id": "events", "events.image": "/images/events.jpg" });
+      if (defaultImageUpdates["highlights.$[placement].image"]) arrayFilters.push({ "placement.id": "placement", "placement.image": "/images/placement-activities.jpg" });
+      if (defaultImageUpdates["highlights.$[achievements].image"]) arrayFilters.push({ "achievements.id": "achievements", "achievements.image": "/images/achievements.jpg" });
+      await HomeContent.updateOne({ _id: home._id }, { $set: defaultImageUpdates }, { arrayFilters });
+      home = await HomeContent.findById(home._id).lean();
+    }
 
     const principalPage = await AboutUsInstitute.findOne({ key: "principal-message" }).lean();
     const principal = principalPage?.content?.principal;

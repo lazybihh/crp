@@ -99,7 +99,7 @@ const HomeContentSchema = new mongoose.Schema(
       {
         id: "events",
         title: "Upcoming events",
-        image: "/images/events.jpg",
+        image: "/images/orientation-2025.jpg",
         items: [
           { date: "Dec 2026", text: "Annual technical exhibition" },
           { date: "Jan 2027", text: "Republic Day parade and NCC display" },
@@ -109,7 +109,7 @@ const HomeContentSchema = new mongoose.Schema(
       {
         id: "achievements",
         title: "Achievements",
-        image: "/images/achievements.jpg",
+        image: "https://crprohtak.ac.in/media/Gallery/ade1a472-4615-4c38-972b-32ad8c05afa2.jpeg",
         items: [
           { date: "2026", text: "NCC cadets selected for state camp" },
           { date: "2026", text: "Students win inter-polytechnic sports meet" },
@@ -119,7 +119,7 @@ const HomeContentSchema = new mongoose.Schema(
       {
         id: "placement",
         title: "Placement activities",
-        image: "/images/placement-activities.jpg",
+        image: "/images/facilities/placement-cell-1.jpg",
         items: [
           { date: "23 Feb 2026", text: "Campus drive by VVDN Technologies, Manesar, in the Conference Hall" },
           { date: "2026", text: "Industrial visits for 3rd and 5th semester students" }

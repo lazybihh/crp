@@ -25,7 +25,7 @@ import "./ComputerResources.css";
 import { getStudyResources, studyResourceFileUrl } from "../../services/studyResourceService";
 import PageLoader, { usePageReady } from "../../components/PageLoader";
 
-const defaultHero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
+const defaultHero = { image: "/images/campus-workshop.jpg" }; // wide photo; if it is missing a patterned navy banner shows instead
 
 const PAGE_SIZE = 12;
 

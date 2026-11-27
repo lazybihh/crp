@@ -15,32 +15,10 @@ import { FiMapPin, FiChevronRight as FiCrumbArrow } from "react-icons/fi";
 import "./Gallery.css";
 import { getMedia, mediaUrl } from "../../services/mediaService";
 import PageLoader, { usePageReady } from "../../components/PageLoader";
+import { DEFAULT_GALLERY_CATEGORIES, DEFAULT_GALLERY_PHOTOS } from "../../data/galleryDefaults";
 
 const PAGE_SIZE = 12;
-
-const FALLBACK_PHOTOS = [
-  { src: "/images/campus-2.jpg", title: "Main campus", category: "Campus" },
-  { src: "/images/campus-3.jpg", title: "Campus grounds", category: "Campus" },
-  { src: "/images/campus-workshop.jpg", title: "Workshop session", category: "Workshop" },
-  { src: "/images/events.jpg", title: "College events", category: "Events" },
-  { src: "/images/facilities/communication-lab-1.jpg", title: "Communication lab", category: "Labs" },
-  { src: "/images/facilities/facility-computer-labs.jpg", title: "Computer lab", category: "Labs" },
-  { src: "/images/facilities/library-2.jpg", title: "Library", category: "Library" },
-  { src: "/images/facilities/facility-hostels.jpg", title: "Hostel premises", category: "Hostels" },
-  { src: "/images/facilities/facility-sports.jpg", title: "Sports facilities", category: "Sports" },
-  { src: "/images/placement-activities.jpg", title: "Placement activities", category: "Placements" },
-];
-
-const FALLBACK_CATEGORIES = [
-  "Campus",
-  "Workshop",
-  "Events",
-  "Labs",
-  "Library",
-  "Hostels",
-  "Sports",
-  "Placements",
-];
+const OTHER_CATEGORY = "Other";
 
 const intro = {
   eyebrow: "Media",
@@ -107,12 +85,12 @@ function Picture({ src, alt }) {
 export default function Gallery() {
   const { ready, data } = usePageReady(() => getMedia());
   const media = data?.media;
-  const photos = media
-    ? (media.photos || []).filter((photo) => photo.src)
-    : FALLBACK_PHOTOS;
-  const photoCategories = media
-    ? (media.photoCategories?.length ? media.photoCategories : FALLBACK_CATEGORIES)
-    : FALLBACK_CATEGORIES;
+  const photos = media?.photos?.length
+    ? media.photos.filter((photo) => photo.src)
+    : DEFAULT_GALLERY_PHOTOS;
+  const photoCategories = media?.photoCategories?.length
+    ? [...new Set([...media.photoCategories, OTHER_CATEGORY])]
+    : DEFAULT_GALLERY_CATEGORIES;
   const banner = media?.banners?.gallery || "";
   const [category, setCategory] = useState("All");
   const [query, setQuery] = useState("");
@@ -231,7 +209,7 @@ export default function Gallery() {
         aria-label="Photo gallery"
         style={{
           "--img": `url("${mediaUrl(
-            banner || "/images/pages-banner.png"
+            banner && banner !== "/images/pages-banner.png" ? banner : "/images/campus-3.jpg"
           )}")`,
         }}
       >

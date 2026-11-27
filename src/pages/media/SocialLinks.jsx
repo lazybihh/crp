@@ -173,7 +173,7 @@ export default function SocialLinks() {
         aria-label="Social links"
         style={{
           "--img": `url("${mediaUrl(
-            banner || "/images/pages-banner.png"
+            banner && banner !== "/images/pages-banner.png" ? banner : "/images/campus-workshop.jpg"
           )}")`,
         }}
       >

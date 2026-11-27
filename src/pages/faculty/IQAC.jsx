@@ -20,7 +20,7 @@ export default function IQAC() {
 
   return (
     <main data-faculty-content-key="iqac" id="main" className="svc-page svc-iqac">
-      <section className="svc-hero" aria-label="IQAC" style={{ "--svc-img": `url("${mediaUrl(backendContent?.heroImage || '/images/pages-banner.png')}")` }}>
+      <section className="svc-hero" aria-label="IQAC" style={{ "--svc-img": `url("${mediaUrl(backendContent?.heroImage && backendContent.heroImage !== "/images/pages-banner.png" ? backendContent.heroImage : "/images/campus-3.jpg")}")` }}>
         <div className="svc-hero__photo" />
         <div className="svc-hero__tags">
           <span className="svc-hero__tag svc-hero__tag--left"><span className="svc-hero__tag-icon"><FaGraduationCap aria-hidden="true" /></span>{backendContent?.heroLeft || "Government Polytechnic"}</span>

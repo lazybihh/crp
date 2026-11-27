@@ -34,7 +34,7 @@ import { useSite, telHref } from "../../context/SiteSettingsContext";
 import { getEvents, getEventsBanner, mediaUrl } from "../../services/eventService";
 import PageLoader, { usePageReady } from "../../components/PageLoader";
 
-const hero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
+const hero = { image: "/images/campus-3.jpg" }; // wide photo; if it is missing a patterned navy banner shows instead
 
 const intro = {
   eyebrow: "What's happening",
@@ -111,7 +111,7 @@ export default function Events() {
   const bannerResult = results?.[0];
   const eventsResult = results?.[1];
   const heroImage = bannerResult?.status === "fulfilled"
-    ? mediaUrl(bannerResult.value.page?.bannerImage) || hero.image
+    ? mediaUrl(bannerResult.value.page?.bannerImage && bannerResult.value.page.bannerImage !== "/images/pages-banner.png" ? bannerResult.value.page.bannerImage : hero.image) || hero.image
     : hero.image;
   const eventsData = eventsResult?.status === "fulfilled" ? eventsResult.value : null;
   const events = Array.isArray(eventsData?.events) ? eventsData.events : fallbackEvents;

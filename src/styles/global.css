@@ -210,7 +210,7 @@ button {
   z-index: 9999;
   display: grid;
   place-items: center;
-  background: var(--ink-950);
+  background: #fff;
   transition: opacity 0.6s var(--ease), visibility 0.6s;
 }
 
@@ -240,4 +240,19 @@ button {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
+}
+
+/* Keep the letterboxed space around page banner photos on the same white
+   surface as the rest of the page instead of exposing the navy fallback. */
+main section[class$="-hero"]:has([class$="-hero__photo"]) {
+  background: var(--paper, #fff) !important;
+}
+
+main section[class$="-hero"] [class$="-hero__photo"] {
+  background-color: var(--paper, #fff);
+  background-size: cover, auto !important;
+  background-position: center, center !important;
+  background-image:
+    var(--img, var(--pol-img, var(--svc-img, none))),
+    linear-gradient(var(--paper, #fff), var(--paper, #fff)) !important;
 }

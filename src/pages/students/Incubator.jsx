@@ -24,7 +24,7 @@ import { mediaUrl } from "../../services/mediaService";
 import "./Incubator.css";
 import { useSite } from "../../context/SiteSettingsContext";
 
-const defaultHero = { image: "/images/pages-banner.png" }; // wide photo; if it is missing a patterned navy banner shows instead
+const defaultHero = { image: "/images/campus-workshop.jpg" }; // wide photo; if it is missing a patterned navy banner shows instead
 
 const defaultIntro = {
   eyebrow: "Students",

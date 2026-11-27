@@ -9,7 +9,7 @@ import { useAboutPage, mergeAboutContent } from "../../services/aboutUsService";
 import PageLoader from "../../components/PageLoader";
 import { mediaUrl } from "../../services/mediaService";
 
-const defaultHero = { image: "/images/pages-banner.png" }; // if it is missing a navy gradient shows instead
+const defaultHero = { image: "/images/campus-3.jpg" }; // if it is missing a navy gradient shows instead
 
 const defaultIntro = {
   eyebrow: "About us",

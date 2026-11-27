@@ -9,7 +9,7 @@ import { useAboutPage, mergeAboutContent } from "../../services/aboutUsService";
 import PageLoader from "../../components/PageLoader";
 import { mediaUrl } from "../../services/mediaService";
 
-const defaultHero = { image: "/images/pages-banner.png" };
+const defaultHero = { image: "/images/campus-2.jpg" };
 
 const defaultIntro = {
   eyebrow: "About us",

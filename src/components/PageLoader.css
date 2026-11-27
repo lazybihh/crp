@@ -4,7 +4,7 @@
   display: grid;
   place-items: start center;
   padding-top: clamp(48px, 14vh, 140px);
-  background: var(--ink-950);
+  background: #fff;
 }
 
 .pld-loader__logo {
@@ -12,8 +12,6 @@
   width: min(220px, 52vw);
   height: auto;
   object-fit: contain;
-  border-radius: 18px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   animation: pld-pulse 1.4s ease-in-out infinite;
 }
 
